@@ -37,7 +37,7 @@ default_params = {
     'learn_h0': True,
     'ulaw': True,
     'q_levels': 256,
-    'weight_norm' : False,
+    'weight_norm': True,
     'seq_len': 1024,
     'batch_size': 128,
     'val_frac': 0.1,
