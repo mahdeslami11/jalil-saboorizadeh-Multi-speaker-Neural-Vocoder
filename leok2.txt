@@ -1,0 +1,4748 @@
+Start samplernn
+seed 547632
+results path /home/usuaris/veu/tfgveu6/projecte/testsample/results
+Create model
+Done!
+predictor Predictor (
+  (model): SampleRNN (
+    (frame_level_rnns): ModuleList (
+      (0): FrameLevelRNN (
+        (input_expand): Conv1d(20, 1024, kernel_size=(1,), stride=(1,))
+        (rnn): GRU(1024, 1024, num_layers=2, batch_first=True)
+        (upsampling): LearnedUpsampling1d (
+          (conv_t): ConvTranspose1d(1024, 1024, kernel_size=(20,), stride=(20,), bias=False)
+        )
+      )
+      (1): FrameLevelRNN (
+        (input_expand): Conv1d(80, 1024, kernel_size=(1,), stride=(1,))
+        (cond_expand): Conv1d(43, 1024, kernel_size=(1,), stride=(1,))
+        (rnn): GRU(1024, 1024, num_layers=2, batch_first=True)
+        (upsampling): LearnedUpsampling1d (
+          (conv_t): ConvTranspose1d(1024, 1024, kernel_size=(4,), stride=(4,), bias=False)
+        )
+      )
+    )
+    (sample_level_mlp): SampleLevelMLP (
+      (embedding): Embedding(256, 256)
+      (input): Conv1d(256, 1024, kernel_size=(20,), stride=(1,), bias=False)
+      (hidden): Conv1d(1024, 1024, kernel_size=(1,), stride=(1,))
+      (output): Conv1d(1024, 256, kernel_size=(1,), stride=(1,))
+    )
+  )
+)
+model.frame_level_rnns.0.h0 torch.Size([2, 1024])
+model.frame_level_rnns.0.input_expand.bias torch.Size([1024])
+model.frame_level_rnns.0.input_expand.weight_g torch.Size([1024, 1, 1])
+model.frame_level_rnns.0.input_expand.weight_v torch.Size([1024, 20, 1])
+model.frame_level_rnns.0.rnn.weight_ih_l0 torch.Size([3072, 1024])
+model.frame_level_rnns.0.rnn.weight_hh_l0 torch.Size([3072, 1024])
+model.frame_level_rnns.0.rnn.bias_ih_l0 torch.Size([3072])
+model.frame_level_rnns.0.rnn.bias_hh_l0 torch.Size([3072])
+model.frame_level_rnns.0.rnn.weight_ih_l1 torch.Size([3072, 1024])
+model.frame_level_rnns.0.rnn.weight_hh_l1 torch.Size([3072, 1024])
+model.frame_level_rnns.0.rnn.bias_ih_l1 torch.Size([3072])
+model.frame_level_rnns.0.rnn.bias_hh_l1 torch.Size([3072])
+model.frame_level_rnns.0.upsampling.bias torch.Size([1024, 20])
+model.frame_level_rnns.0.upsampling.conv_t.weight_g torch.Size([1024, 1, 1])
+model.frame_level_rnns.0.upsampling.conv_t.weight_v torch.Size([1024, 1024, 20])
+model.frame_level_rnns.1.h0 torch.Size([2, 1024])
+model.frame_level_rnns.1.input_expand.bias torch.Size([1024])
+model.frame_level_rnns.1.input_expand.weight_g torch.Size([1024, 1, 1])
+model.frame_level_rnns.1.input_expand.weight_v torch.Size([1024, 80, 1])
+model.frame_level_rnns.1.cond_expand.bias torch.Size([1024])
+model.frame_level_rnns.1.cond_expand.weight_g torch.Size([1024, 1, 1])
+model.frame_level_rnns.1.cond_expand.weight_v torch.Size([1024, 43, 1])
+model.frame_level_rnns.1.rnn.weight_ih_l0 torch.Size([3072, 1024])
+model.frame_level_rnns.1.rnn.weight_hh_l0 torch.Size([3072, 1024])
+model.frame_level_rnns.1.rnn.bias_ih_l0 torch.Size([3072])
+model.frame_level_rnns.1.rnn.bias_hh_l0 torch.Size([3072])
+model.frame_level_rnns.1.rnn.weight_ih_l1 torch.Size([3072, 1024])
+model.frame_level_rnns.1.rnn.weight_hh_l1 torch.Size([3072, 1024])
+model.frame_level_rnns.1.rnn.bias_ih_l1 torch.Size([3072])
+model.frame_level_rnns.1.rnn.bias_hh_l1 torch.Size([3072])
+model.frame_level_rnns.1.upsampling.bias torch.Size([1024, 4])
+model.frame_level_rnns.1.upsampling.conv_t.weight_g torch.Size([1024, 1, 1])
+model.frame_level_rnns.1.upsampling.conv_t.weight_v torch.Size([1024, 1024, 4])
+model.sample_level_mlp.embedding.weight torch.Size([256, 256])
+model.sample_level_mlp.input.weight_g torch.Size([1024, 1, 1])
+model.sample_level_mlp.input.weight_v torch.Size([1024, 256, 20])
+model.sample_level_mlp.hidden.bias torch.Size([1024])
+model.sample_level_mlp.hidden.weight_g torch.Size([1024, 1, 1])
+model.sample_level_mlp.hidden.weight_v torch.Size([1024, 1024, 1])
+model.sample_level_mlp.output.bias torch.Size([256])
+model.sample_level_mlp.output.weight_g torch.Size([256, 1, 1])
+model.sample_level_mlp.output.weight_v torch.Size([256, 1024, 1])
+Saving results in path /home/usuaris/veu/tfgveu6/projecte/testsample/results/exp:test-frame_sizes:20,4-n_rnn:2-seq_len:1040-dataset:73-condset:73ok-seed:547632-weight_norm:T
+Read data
+cond path /home/usuaris/veu/tfgveu7/musa_tts/73ok
+Done!
+Extracting wav from:  datasets/73
+Extracting conditioning from:  /home/usuaris/veu/tfgveu7/musa_tts/73ok
+BD 0 0.8
+
+Create dataset  ------------------------------------------------------------
+1162
+datasets/73/T6B73110000.wav
+oversize 48
+Teorically 2533.0
+real cond (2533, 40)
+datasets/73/T6B73110001.wav
+oversize 0
+Teorically 2249.0
+real cond (2249, 40)
+datasets/73/T6B73110002.wav
+oversize 48
+Teorically 2109.0
+real cond (2109, 40)
+datasets/73/T6B73110003.wav
+oversize 48
+Teorically 5849.0
+real cond (5849, 40)
+datasets/73/T6B73110004.wav
+oversize 64
+Teorically 2869.0
+real cond (2869, 40)
+datasets/73/T6B73110005.wav
+oversize 48
+Teorically 2033.0
+real cond (2033, 40)
+datasets/73/T6B73110006.wav
+oversize 16
+Teorically 1259.0
+real cond (1259, 40)
+datasets/73/T6B73110007.wav
+oversize 32
+Teorically 2963.0
+real cond (2963, 40)
+datasets/73/T6B73110008.wav
+oversize 16
+Teorically 2773.0
+real cond (2773, 40)
+datasets/73/T6B73110009.wav
+oversize 48
+Teorically 5413.0
+real cond (5413, 40)
+datasets/73/T6B73110010.wav
+oversize 32
+Teorically 8044.0
+real cond (8044, 40)
+datasets/73/T6B73110011.wav
+oversize 16
+Teorically 2743.0
+real cond (2743, 40)
+datasets/73/T6B73110012.wav
+oversize 32
+Teorically 1866.0
+real cond (1866, 40)
+datasets/73/T6B73110013.wav
+oversize 32
+Teorically 3134.0
+real cond (3134, 40)
+datasets/73/T6B73110014.wav
+oversize 16
+Teorically 2859.0
+real cond (2859, 40)
+datasets/73/T6B73110015.wav
+oversize 48
+Teorically 4123.0
+real cond (4123, 40)
+datasets/73/T6B73110016.wav
+oversize 0
+Teorically 7374.0
+real cond (7374, 40)
+datasets/73/T6B73110017.wav
+oversize 48
+Teorically 5815.0
+real cond (5815, 40)
+datasets/73/T6B73110018.wav
+oversize 16
+Teorically 2493.0
+real cond (2493, 40)
+datasets/73/T6B73110019.wav
+oversize 0
+Teorically 2286.0
+real cond (2286, 40)
+datasets/73/T6B73110020.wav
+oversize 64
+Teorically 2107.0
+real cond (2107, 40)
+datasets/73/T6B73110021.wav
+oversize 16
+Teorically 4919.0
+real cond (4919, 40)
+datasets/73/T6B73110022.wav
+oversize 0
+Teorically 3420.0
+real cond (3420, 40)
+datasets/73/T6B73110023.wav
+oversize 48
+Teorically 1925.0
+real cond (1925, 40)
+datasets/73/T6B73110024.wav
+oversize 16
+Teorically 3397.0
+real cond (3397, 40)
+datasets/73/T6B73110025.wav
+oversize 32
+Teorically 3072.0
+real cond (3072, 40)
+datasets/73/T6B73110026.wav
+oversize 64
+Teorically 1445.0
+real cond (1445, 40)
+datasets/73/T6B73110027.wav
+oversize 48
+Teorically 1823.0
+real cond (1823, 40)
+datasets/73/T6B73110028.wav
+oversize 16
+Teorically 2605.0
+real cond (2605, 40)
+datasets/73/T6B73110029.wav
+oversize 48
+Teorically 2183.0
+real cond (2183, 40)
+datasets/73/T6B73110030.wav
+oversize 32
+Teorically 2806.0
+real cond (2806, 40)
+datasets/73/T6B73110031.wav
+oversize 64
+Teorically 3471.0
+real cond (3471, 40)
+datasets/73/T6B73110032.wav
+oversize 0
+Teorically 2318.0
+real cond (2318, 40)
+datasets/73/T6B73110033.wav
+oversize 64
+Teorically 1805.0
+real cond (1805, 40)
+datasets/73/T6B73110034.wav
+oversize 64
+Teorically 2063.0
+real cond (2063, 40)
+datasets/73/T6B73110035.wav
+oversize 48
+Teorically 2119.0
+real cond (2119, 40)
+datasets/73/T6B73110036.wav
+oversize 48
+Teorically 2507.0
+real cond (2507, 40)
+datasets/73/T6B73110037.wav
+oversize 64
+Teorically 7113.0
+real cond (7113, 40)
+datasets/73/T6B73110038.wav
+oversize 64
+Teorically 3975.0
+real cond (3975, 40)
+datasets/73/T6B73110039.wav
+oversize 32
+Teorically 2324.0
+real cond (2324, 40)
+datasets/73/T6B73110040.wav
+oversize 16
+Teorically 1805.0
+real cond (1805, 40)
+datasets/73/T6B73110041.wav
+oversize 16
+Teorically 4515.0
+real cond (4515, 40)
+datasets/73/T6B73110042.wav
+oversize 64
+Teorically 1999.0
+real cond (1999, 40)
+datasets/73/T6B73110043.wav
+oversize 48
+Teorically 1415.0
+real cond (1415, 40)
+datasets/73/T6B73110044.wav
+oversize 48
+Teorically 3811.0
+real cond (3811, 40)
+datasets/73/T6B73110045.wav
+oversize 64
+Teorically 2681.0
+real cond (2681, 40)
+datasets/73/T6B73110046.wav
+oversize 48
+Teorically 1807.0
+real cond (1807, 40)
+datasets/73/T6B73110047.wav
+oversize 32
+Teorically 5392.0
+real cond (5392, 40)
+datasets/73/T6B73110048.wav
+oversize 0
+Teorically 3754.0
+real cond (3754, 40)
+datasets/73/T6B73110049.wav
+oversize 16
+Teorically 2353.0
+real cond (2353, 40)
+datasets/73/T6B73110050.wav
+oversize 0
+Teorically 1918.0
+real cond (1918, 40)
+datasets/73/T6B73110051.wav
+oversize 16
+Teorically 2873.0
+real cond (2873, 40)
+datasets/73/T6B73110052.wav
+oversize 0
+Teorically 2210.0
+real cond (2210, 40)
+datasets/73/T6B73110053.wav
+oversize 32
+Teorically 4156.0
+real cond (4156, 40)
+datasets/73/T6B73110054.wav
+oversize 0
+Teorically 2604.0
+real cond (2604, 40)
+datasets/73/T6B73110055.wav
+oversize 0
+Teorically 3078.0
+real cond (3078, 40)
+datasets/73/T6B73110056.wav
+oversize 0
+Teorically 2902.0
+real cond (2902, 40)
+datasets/73/T6B73110057.wav
+oversize 64
+Teorically 1775.0
+real cond (1775, 40)
+datasets/73/T6B73110058.wav
+oversize 0
+Teorically 2062.0
+real cond (2062, 40)
+datasets/73/T6B73110059.wav
+oversize 64
+Teorically 3451.0
+real cond (3451, 40)
+datasets/73/T6B73110060.wav
+oversize 64
+Teorically 3605.0
+real cond (3605, 40)
+datasets/73/T6B73110061.wav
+oversize 16
+Teorically 2705.0
+real cond (2705, 40)
+datasets/73/T6B73110062.wav
+oversize 16
+Teorically 2965.0
+real cond (2965, 40)
+datasets/73/T6B73110063.wav
+oversize 32
+Teorically 4940.0
+real cond (4940, 40)
+datasets/73/T6B73110064.wav
+oversize 16
+Teorically 2965.0
+real cond (2965, 40)
+datasets/73/T6B73110065.wav
+oversize 0
+Teorically 2162.0
+real cond (2162, 40)
+datasets/73/T6B73110066.wav
+oversize 64
+Teorically 1895.0
+real cond (1895, 40)
+datasets/73/T6B73110067.wav
+oversize 32
+Teorically 6260.0
+real cond (6260, 40)
+datasets/73/T6B73110068.wav
+oversize 0
+Teorically 2302.0
+real cond (2302, 40)
+datasets/73/T6B73110069.wav
+oversize 64
+Teorically 2799.0
+real cond (2799, 40)
+datasets/73/T6B73110070.wav
+oversize 16
+Teorically 2657.0
+real cond (2657, 40)
+datasets/73/T6B73110071.wav
+oversize 32
+Teorically 2348.0
+real cond (2348, 40)
+datasets/73/T6B73110072.wav
+oversize 32
+Teorically 5044.0
+real cond (5044, 40)
+datasets/73/T6B73110073.wav
+oversize 48
+Teorically 4105.0
+real cond (4105, 40)
+datasets/73/T6B73110074.wav
+oversize 32
+Teorically 6548.0
+real cond (6548, 40)
+datasets/73/T6B73110075.wav
+oversize 32
+Teorically 2044.0
+real cond (2044, 40)
+datasets/73/T6B73110076.wav
+oversize 64
+Teorically 3363.0
+real cond (3363, 40)
+datasets/73/T6B73110077.wav
+oversize 48
+Teorically 3671.0
+real cond (3671, 40)
+datasets/73/T6B73110078.wav
+oversize 16
+Teorically 3273.0
+real cond (3273, 40)
+datasets/73/T6B73110079.wav
+oversize 64
+Teorically 2451.0
+real cond (2451, 40)
+datasets/73/T6B73110080.wav
+oversize 32
+Teorically 3352.0
+real cond (3352, 40)
+datasets/73/T6B73110081.wav
+oversize 32
+Teorically 2760.0
+real cond (2760, 40)
+datasets/73/T6B73110082.wav
+oversize 48
+Teorically 1377.0
+real cond (1377, 40)
+datasets/73/T6B73110083.wav
+oversize 0
+Teorically 1322.0
+real cond (1322, 40)
+datasets/73/T6B73110084.wav
+oversize 48
+Teorically 4583.0
+real cond (4583, 40)
+datasets/73/T6B73110085.wav
+oversize 32
+Teorically 1228.0
+real cond (1228, 40)
+datasets/73/T6B73110086.wav
+oversize 16
+Teorically 2277.0
+real cond (2277, 40)
+datasets/73/T6B73110087.wav
+oversize 32
+Teorically 2538.0
+real cond (2538, 40)
+datasets/73/T6B73110088.wav
+oversize 48
+Teorically 8019.0
+real cond (8019, 40)
+datasets/73/T6B73110089.wav
+oversize 64
+Teorically 5015.0
+real cond (5015, 40)
+datasets/73/T6B73110090.wav
+oversize 0
+Teorically 3514.0
+real cond (3514, 40)
+datasets/73/T6B73110091.wav
+oversize 32
+Teorically 2380.0
+real cond (2380, 40)
+datasets/73/T6B73110092.wav
+oversize 64
+Teorically 2921.0
+real cond (2921, 40)
+datasets/73/T6B73110093.wav
+oversize 16
+Teorically 2229.0
+real cond (2229, 40)
+datasets/73/T6B73110094.wav
+oversize 32
+Teorically 1496.0
+real cond (1496, 40)
+datasets/73/T6B73110095.wav
+oversize 32
+Teorically 6048.0
+real cond (6048, 40)
+datasets/73/T6B73110096.wav
+oversize 0
+Teorically 3166.0
+real cond (3166, 40)
+datasets/73/T6B73110097.wav
+oversize 64
+Teorically 1283.0
+real cond (1283, 40)
+datasets/73/T6B73110098.wav
+oversize 48
+Teorically 3903.0
+real cond (3903, 40)
+datasets/73/T6B73110099.wav
+oversize 0
+Teorically 1756.0
+real cond (1756, 40)
+datasets/73/T6B73110100.wav
+oversize 0
+Teorically 5488.0
+real cond (5488, 40)
+datasets/73/T6B73110101.wav
+oversize 64
+Teorically 1423.0
+real cond (1423, 40)
+datasets/73/T6B73110102.wav
+oversize 16
+Teorically 2649.0
+real cond (2649, 40)
+datasets/73/T6B73110103.wav
+oversize 32
+Teorically 2648.0
+real cond (2648, 40)
+datasets/73/T6B73110104.wav
+oversize 0
+Teorically 2928.0
+real cond (2928, 40)
+datasets/73/T6B73110105.wav
+oversize 16
+Teorically 3705.0
+real cond (3705, 40)
+datasets/73/T6B73110106.wav
+oversize 16
+Teorically 1233.0
+real cond (1233, 40)
+datasets/73/T6B73110107.wav
+oversize 64
+Teorically 3509.0
+real cond (3509, 40)
+datasets/73/T6B73110108.wav
+oversize 32
+Teorically 4384.0
+real cond (4384, 40)
+datasets/73/T6B73110109.wav
+oversize 0
+Teorically 4958.0
+real cond (4958, 40)
+datasets/73/T6B73110110.wav
+oversize 48
+Teorically 3637.0
+real cond (3637, 40)
+datasets/73/T6B73110111.wav
+oversize 16
+Teorically 3521.0
+real cond (3521, 40)
+datasets/73/T6B73110112.wav
+oversize 0
+Teorically 2696.0
+real cond (2696, 40)
+datasets/73/T6B73110113.wav
+oversize 32
+Teorically 2384.0
+real cond (2384, 40)
+datasets/73/T6B73110114.wav
+oversize 16
+Teorically 2345.0
+real cond (2345, 40)
+datasets/73/T6B73110115.wav
+oversize 64
+Teorically 3315.0
+real cond (3315, 40)
+datasets/73/T6B73110116.wav
+oversize 32
+Teorically 2640.0
+real cond (2640, 40)
+datasets/73/T6B73110117.wav
+oversize 64
+Teorically 2103.0
+real cond (2103, 40)
+datasets/73/T6B73110118.wav
+oversize 32
+Teorically 3624.0
+real cond (3624, 40)
+datasets/73/T6B73110119.wav
+oversize 16
+Teorically 1765.0
+real cond (1765, 40)
+datasets/73/T6B73110120.wav
+oversize 32
+Teorically 2176.0
+real cond (2176, 40)
+datasets/73/T6B73110121.wav
+oversize 16
+Teorically 2731.0
+real cond (2731, 40)
+datasets/73/T6B73110122.wav
+oversize 48
+Teorically 11419.0
+real cond (11419, 40)
+datasets/73/T6B73110123.wav
+oversize 32
+Teorically 2044.0
+real cond (2044, 40)
+datasets/73/T6B73110124.wav
+oversize 16
+Teorically 5393.0
+real cond (5393, 40)
+datasets/73/T6B73110125.wav
+oversize 32
+Teorically 1808.0
+real cond (1808, 40)
+datasets/73/T6B73110126.wav
+oversize 0
+Teorically 5332.0
+real cond (5332, 40)
+datasets/73/T6B73110127.wav
+oversize 48
+Teorically 3529.0
+real cond (3529, 40)
+datasets/73/T6B73110128.wav
+oversize 64
+Teorically 4085.0
+real cond (4085, 40)
+datasets/73/T6B73110129.wav
+oversize 16
+Teorically 7609.0
+real cond (7609, 40)
+datasets/73/T6B73110130.wav
+oversize 64
+Teorically 3285.0
+real cond (3285, 40)
+datasets/73/T6B73110131.wav
+oversize 32
+Teorically 2372.0
+real cond (2372, 40)
+datasets/73/T6B73110132.wav
+oversize 16
+Teorically 3217.0
+real cond (3217, 40)
+datasets/73/T6B73110133.wav
+oversize 64
+Teorically 3131.0
+real cond (3131, 40)
+datasets/73/T6B73110134.wav
+oversize 48
+Teorically 1977.0
+real cond (1977, 40)
+datasets/73/T6B73110135.wav
+oversize 0
+Teorically 2736.0
+real cond (2736, 40)
+datasets/73/T6B73110136.wav
+oversize 64
+Teorically 1955.0
+real cond (1955, 40)
+datasets/73/T6B73110137.wav
+oversize 16
+Teorically 1993.0
+real cond (1993, 40)
+datasets/73/T6B73110138.wav
+oversize 16
+Teorically 2673.0
+real cond (2673, 40)
+datasets/73/T6B73110139.wav
+oversize 32
+Teorically 4082.0
+real cond (4082, 40)
+datasets/73/T6B73110140.wav
+oversize 48
+Teorically 4405.0
+real cond (4405, 40)
+datasets/73/T6B73110141.wav
+oversize 0
+Teorically 2542.0
+real cond (2542, 40)
+datasets/73/T6B73110142.wav
+oversize 0
+Teorically 3334.0
+real cond (3334, 40)
+datasets/73/T6B73110143.wav
+oversize 16
+Teorically 2817.0
+real cond (2817, 40)
+datasets/73/T6B73110144.wav
+oversize 0
+Teorically 2390.0
+real cond (2390, 40)
+datasets/73/T6B73110145.wav
+oversize 16
+Teorically 2241.0
+real cond (2241, 40)
+datasets/73/T6B73110146.wav
+oversize 16
+Teorically 2545.0
+real cond (2545, 40)
+datasets/73/T6B73110147.wav
+oversize 32
+Teorically 5254.0
+real cond (5254, 40)
+datasets/73/T6B73110148.wav
+oversize 16
+Teorically 2501.0
+real cond (2501, 40)
+datasets/73/T6B73110149.wav
+oversize 32
+Teorically 2420.0
+real cond (2420, 40)
+datasets/73/T6B73110150.wav
+oversize 48
+Teorically 1603.0
+real cond (1603, 40)
+datasets/73/T6B73110151.wav
+oversize 16
+Teorically 1861.0
+real cond (1861, 40)
+datasets/73/T6B73110152.wav
+oversize 48
+Teorically 3663.0
+real cond (3663, 40)
+datasets/73/T6B73110153.wav
+oversize 0
+Teorically 11318.0
+real cond (11318, 40)
+datasets/73/T6B73110154.wav
+oversize 16
+Teorically 4217.0
+real cond (4217, 40)
+datasets/73/T6B73110155.wav
+oversize 64
+Teorically 3625.0
+real cond (3625, 40)
+datasets/73/T6B73110156.wav
+oversize 0
+Teorically 3082.0
+real cond (3082, 40)
+datasets/73/T6B73110157.wav
+oversize 0
+Teorically 3108.0
+real cond (3108, 40)
+datasets/73/T6B73110158.wav
+oversize 48
+Teorically 2533.0
+real cond (2533, 40)
+datasets/73/T6B73110159.wav
+oversize 48
+Teorically 3783.0
+real cond (3783, 40)
+datasets/73/T6B73110160.wav
+oversize 48
+Teorically 4619.0
+real cond (4619, 40)
+datasets/73/T6B73110161.wav
+oversize 48
+Teorically 2529.0
+real cond (2529, 40)
+datasets/73/T6B73110162.wav
+oversize 16
+Teorically 2413.0
+real cond (2413, 40)
+datasets/73/T6B73110163.wav
+oversize 64
+Teorically 1859.0
+real cond (1859, 40)
+datasets/73/T6B73110164.wav
+oversize 16
+Teorically 3617.0
+real cond (3617, 40)
+datasets/73/T6B73110165.wav
+oversize 64
+Teorically 7255.0
+real cond (7255, 40)
+datasets/73/T6B73110166.wav
+oversize 64
+Teorically 1635.0
+real cond (1635, 40)
+datasets/73/T6B73110167.wav
+oversize 32
+Teorically 1130.0
+real cond (1130, 40)
+datasets/73/T6B73110168.wav
+oversize 32
+Teorically 1318.0
+real cond (1318, 40)
+datasets/73/T6B73110169.wav
+oversize 16
+Teorically 5269.0
+real cond (5269, 40)
+datasets/73/T6B73110170.wav
+oversize 16
+Teorically 4149.0
+real cond (4149, 40)
+datasets/73/T6B73110171.wav
+oversize 16
+Teorically 1789.0
+real cond (1789, 40)
+datasets/73/T6B73110172.wav
+oversize 0
+Teorically 1894.0
+real cond (1894, 40)
+datasets/73/T6B73110173.wav
+oversize 0
+Teorically 2006.0
+real cond (2006, 40)
+datasets/73/T6B73110174.wav
+oversize 48
+Teorically 3323.0
+real cond (3323, 40)
+datasets/73/T6B73110175.wav
+oversize 48
+Teorically 4727.0
+real cond (4727, 40)
+datasets/73/T6B73110176.wav
+oversize 64
+Teorically 3035.0
+real cond (3035, 40)
+datasets/73/T6B73110177.wav
+oversize 0
+Teorically 3908.0
+real cond (3908, 40)
+datasets/73/T6B73110178.wav
+oversize 16
+Teorically 4611.0
+real cond (4611, 40)
+datasets/73/T6B73110179.wav
+oversize 32
+Teorically 2670.0
+real cond (2670, 40)
+datasets/73/T6B73110180.wav
+oversize 32
+Teorically 2552.0
+real cond (2552, 40)
+datasets/73/T6B73110181.wav
+oversize 48
+Teorically 4277.0
+real cond (4277, 40)
+datasets/73/T6B73110182.wav
+oversize 32
+Teorically 2762.0
+real cond (2762, 40)
+datasets/73/T6B73110184.wav
+oversize 64
+Teorically 2161.0
+real cond (2161, 40)
+datasets/73/T6B73110185.wav
+oversize 32
+Teorically 2382.0
+real cond (2382, 40)
+datasets/73/T6B73110186.wav
+oversize 48
+Teorically 3025.0
+real cond (3025, 40)
+datasets/73/T6B73110187.wav
+oversize 48
+Teorically 3025.0
+real cond (3025, 40)
+datasets/73/T6B73110188.wav
+oversize 16
+Teorically 3951.0
+real cond (3951, 40)
+datasets/73/T6B73110189.wav
+oversize 48
+Teorically 3593.0
+real cond (3593, 40)
+datasets/73/T6B73110190.wav
+oversize 64
+Teorically 5339.0
+real cond (5339, 40)
+datasets/73/T6B73110191.wav
+oversize 62
+Teorically 1811.0
+real cond (1811, 40)
+datasets/73/T6B73110192.wav
+oversize 16
+Teorically 2883.0
+real cond (2883, 40)
+datasets/73/T6B73110193.wav
+oversize 32
+Teorically 2154.0
+real cond (2154, 40)
+datasets/73/T6B73110194.wav
+oversize 32
+Teorically 4602.0
+real cond (4602, 40)
+datasets/73/T6B73110195.wav
+oversize 8
+Teorically 1785.0
+real cond (1785, 40)
+datasets/73/T6B73110196.wav
+oversize 48
+Teorically 2525.0
+real cond (2525, 40)
+datasets/73/T6B73110197.wav
+oversize 48
+Teorically 6155.0
+real cond (6155, 40)
+datasets/73/T6B73110198.wav
+oversize 16
+Teorically 2111.0
+real cond (2111, 40)
+datasets/73/T6B73110199.wav
+oversize 32
+Teorically 4170.0
+real cond (4170, 40)
+datasets/73/T6B73110200.wav
+oversize 32
+Teorically 2998.0
+real cond (2998, 40)
+datasets/73/T6B73110201.wav
+oversize 16
+Teorically 1843.0
+real cond (1843, 40)
+datasets/73/T6B73110202.wav
+oversize 16
+Teorically 3325.0
+real cond (3325, 40)
+datasets/73/T6B73110203.wav
+oversize 64
+Teorically 2315.0
+real cond (2315, 40)
+datasets/73/T6B73110204.wav
+oversize 16
+Teorically 6095.0
+real cond (6095, 40)
+datasets/73/T6B73110205.wav
+oversize 64
+Teorically 2737.0
+real cond (2737, 40)
+datasets/73/T6B73110206.wav
+oversize 32
+Teorically 3634.0
+real cond (3634, 40)
+datasets/73/T6B73110207.wav
+oversize 48
+Teorically 3785.0
+real cond (3785, 40)
+datasets/73/T6B73110208.wav
+oversize 64
+Teorically 4777.0
+real cond (4777, 40)
+datasets/73/T6B73110209.wav
+oversize 24
+Teorically 1690.0
+real cond (1690, 40)
+datasets/73/T6B73110210.wav
+oversize 64
+Teorically 2337.0
+real cond (2337, 40)
+datasets/73/T6B73110211.wav
+oversize 48
+Teorically 11351.0
+real cond (11351, 40)
+datasets/73/T6B73110212.wav
+oversize 32
+Teorically 4070.0
+real cond (4070, 40)
+datasets/73/T6B73110213.wav
+oversize 32
+Teorically 2226.0
+real cond (2226, 40)
+datasets/73/T6B73110214.wav
+oversize 0
+Teorically 4496.0
+real cond (4496, 40)
+datasets/73/T6B73110215.wav
+oversize 48
+Teorically 4729.0
+real cond (4729, 40)
+datasets/73/T6B73110216.wav
+oversize 48
+Teorically 5087.0
+real cond (5087, 40)
+datasets/73/T6B73110217.wav
+oversize 48
+Teorically 4420.0
+real cond (4420, 40)
+datasets/73/T6B73110218.wav
+oversize 48
+Teorically 2661.0
+real cond (2661, 40)
+datasets/73/T6B73110219.wav
+oversize 48
+Teorically 1953.0
+real cond (1953, 40)
+datasets/73/T6B73110220.wav
+oversize 16
+Teorically 2229.0
+real cond (2229, 40)
+datasets/73/T6B73120000.wav
+oversize 64
+Teorically 3890.0
+real cond (3890, 40)
+datasets/73/T6B73120001.wav
+oversize 0
+Teorically 2142.0
+real cond (2142, 40)
+datasets/73/T6B73120002.wav
+oversize 16
+Teorically 4693.0
+real cond (4693, 40)
+datasets/73/T6B73120003.wav
+oversize 48
+Teorically 1955.0
+real cond (1955, 40)
+datasets/73/T6B73120004.wav
+oversize 0
+Teorically 2554.0
+real cond (2554, 40)
+datasets/73/T6B73120005.wav
+oversize 0
+Teorically 2932.0
+real cond (2932, 40)
+datasets/73/T6B73120006.wav
+oversize 16
+Teorically 2125.0
+real cond (2125, 40)
+datasets/73/T6B73120007.wav
+oversize 32
+Teorically 2098.0
+real cond (2098, 40)
+datasets/73/T6B73120008.wav
+oversize 32
+Teorically 3308.0
+real cond (3308, 40)
+datasets/73/T6B73120009.wav
+oversize 0
+Teorically 2054.0
+real cond (2054, 40)
+datasets/73/T6B73120010.wav
+oversize 48
+Teorically 6151.0
+real cond (6151, 40)
+datasets/73/T6B73120011.wav
+oversize 16
+Teorically 2277.0
+real cond (2277, 40)
+datasets/73/T6B73120012.wav
+oversize 0
+Teorically 2054.0
+real cond (2054, 40)
+datasets/73/T6B73120013.wav
+oversize 48
+Teorically 2433.0
+real cond (2433, 40)
+datasets/73/T6B73120014.wav
+oversize 32
+Teorically 7800.0
+real cond (7800, 40)
+datasets/73/T6B73120015.wav
+oversize 0
+Teorically 2482.0
+real cond (2482, 40)
+datasets/73/T6B73120016.wav
+oversize 64
+Teorically 6863.0
+real cond (6863, 40)
+datasets/73/T6B73120017.wav
+oversize 64
+Teorically 2899.0
+real cond (2899, 40)
+datasets/73/T6B73120018.wav
+oversize 48
+Teorically 4415.0
+real cond (4415, 40)
+datasets/73/T6B73120019.wav
+oversize 32
+Teorically 4368.0
+real cond (4368, 40)
+datasets/73/T6B73120020.wav
+oversize 32
+Teorically 1580.0
+real cond (1580, 40)
+datasets/73/T6B73120021.wav
+oversize 16
+Teorically 1953.0
+real cond (1953, 40)
+datasets/73/T6B73120022.wav
+oversize 48
+Teorically 4211.0
+real cond (4211, 40)
+datasets/73/T6B73120023.wav
+oversize 48
+Teorically 4359.0
+real cond (4359, 40)
+datasets/73/T6B73120024.wav
+oversize 64
+Teorically 3123.0
+real cond (3123, 40)
+datasets/73/T6B73120025.wav
+oversize 48
+Teorically 2691.0
+real cond (2691, 40)
+datasets/73/T6B73120026.wav
+oversize 64
+Teorically 1063.0
+real cond (1063, 40)
+datasets/73/T6B73120027.wav
+oversize 48
+Teorically 1733.0
+real cond (1733, 40)
+datasets/73/T6B73120028.wav
+oversize 64
+Teorically 2071.0
+real cond (2071, 40)
+datasets/73/T6B73120029.wav
+oversize 64
+Teorically 2775.0
+real cond (2775, 40)
+datasets/73/T6B73120030.wav
+oversize 48
+Teorically 1109.0
+real cond (1109, 40)
+datasets/73/T6B73120031.wav
+oversize 48
+Teorically 2513.0
+real cond (2513, 40)
+datasets/73/T6B73120032.wav
+oversize 0
+Teorically 2280.0
+real cond (2280, 40)
+datasets/73/T6B73120033.wav
+oversize 64
+Teorically 3331.0
+real cond (3331, 40)
+datasets/73/T6B73120034.wav
+oversize 32
+Teorically 3798.0
+real cond (3798, 40)
+datasets/73/T6B73120035.wav
+oversize 32
+Teorically 4592.0
+real cond (4592, 40)
+datasets/73/T6B73120036.wav
+oversize 16
+Teorically 1117.0
+real cond (1117, 40)
+datasets/73/T6B73120037.wav
+oversize 64
+Teorically 2221.0
+real cond (2221, 40)
+datasets/73/T6B73120038.wav
+oversize 16
+Teorically 2581.0
+real cond (2581, 40)
+datasets/73/T6B73120039.wav
+oversize 16
+Teorically 2501.0
+real cond (2501, 40)
+datasets/73/T6B73120040.wav
+oversize 64
+Teorically 2421.0
+real cond (2421, 40)
+datasets/73/T6B73120041.wav
+oversize 48
+Teorically 3367.0
+real cond (3367, 40)
+datasets/73/T6B73120042.wav
+oversize 16
+Teorically 5729.0
+real cond (5729, 40)
+datasets/73/T6B73120043.wav
+oversize 48
+Teorically 1831.0
+real cond (1831, 40)
+datasets/73/T6B73120044.wav
+oversize 64
+Teorically 4507.0
+real cond (4507, 40)
+datasets/73/T6B73120045.wav
+oversize 48
+Teorically 3931.0
+real cond (3931, 40)
+datasets/73/T6B73120046.wav
+oversize 0
+Teorically 3082.0
+real cond (3082, 40)
+datasets/73/T6B73120047.wav
+oversize 0
+Teorically 4246.0
+real cond (4246, 40)
+datasets/73/T6B73120048.wav
+oversize 32
+Teorically 1048.0
+real cond (1048, 40)
+datasets/73/T6B73120049.wav
+oversize 0
+Teorically 1986.0
+real cond (1986, 40)
+datasets/73/T6B73120050.wav
+oversize 32
+Teorically 1042.0
+real cond (1042, 40)
+datasets/73/T6B73120051.wav
+oversize 64
+Teorically 2521.0
+real cond (2521, 40)
+datasets/73/T6B73120052.wav
+oversize 32
+Teorically 5710.0
+real cond (5710, 40)
+datasets/73/T6B73120053.wav
+oversize 16
+Teorically 2241.0
+real cond (2241, 40)
+datasets/73/T6B73120054.wav
+oversize 0
+Teorically 3748.0
+real cond (3748, 40)
+datasets/73/T6B73120055.wav
+oversize 0
+Teorically 1582.0
+real cond (1582, 40)
+datasets/73/T6B73120056.wav
+oversize 32
+Teorically 1788.0
+real cond (1788, 40)
+datasets/73/T6B73120057.wav
+oversize 16
+Teorically 4523.0
+real cond (4523, 40)
+datasets/73/T6B73120058.wav
+oversize 0
+Teorically 1878.0
+real cond (1878, 40)
+datasets/73/T6B73120059.wav
+oversize 32
+Teorically 4522.0
+real cond (4522, 40)
+datasets/73/T6B73120060.wav
+oversize 0
+Teorically 6422.0
+real cond (6422, 40)
+datasets/73/T6B73120061.wav
+oversize 32
+Teorically 6692.0
+real cond (6692, 40)
+datasets/73/T6B73120062.wav
+oversize 16
+Teorically 3017.0
+real cond (3017, 40)
+datasets/73/T6B73120063.wav
+oversize 32
+Teorically 2556.0
+real cond (2556, 40)
+datasets/73/T6B73120064.wav
+oversize 48
+Teorically 1929.0
+real cond (1929, 40)
+datasets/73/T6B73120065.wav
+oversize 0
+Teorically 9116.0
+real cond (9116, 40)
+datasets/73/T6B73120066.wav
+oversize 0
+Teorically 3482.0
+real cond (3482, 40)
+datasets/73/T6B73120067.wav
+oversize 48
+Teorically 4981.0
+real cond (4981, 40)
+datasets/73/T6B73120068.wav
+oversize 48
+Teorically 3185.0
+real cond (3185, 40)
+datasets/73/T6B73120069.wav
+oversize 32
+Teorically 1064.0
+real cond (1064, 40)
+datasets/73/T6B73120070.wav
+oversize 16
+Teorically 4425.0
+real cond (4425, 40)
+datasets/73/T6B73120071.wav
+oversize 16
+Teorically 3875.0
+real cond (3875, 40)
+datasets/73/T6B73120072.wav
+oversize 0
+Teorically 2526.0
+real cond (2526, 40)
+datasets/73/T6B73120073.wav
+oversize 16
+Teorically 4007.0
+real cond (4007, 40)
+datasets/73/T6B73120074.wav
+oversize 64
+Teorically 2833.0
+real cond (2833, 40)
+datasets/73/T6B73120075.wav
+oversize 48
+Teorically 10329.0
+real cond (10329, 40)
+datasets/73/T6B73120076.wav
+oversize 48
+Teorically 2449.0
+real cond (2449, 40)
+datasets/73/T6B73120077.wav
+oversize 48
+Teorically 4063.0
+real cond (4063, 40)
+datasets/73/T6B73120078.wav
+oversize 32
+Teorically 2166.0
+real cond (2166, 40)
+datasets/73/T6B73120079.wav
+oversize 32
+Teorically 9566.0
+real cond (9566, 40)
+datasets/73/T6B73120080.wav
+oversize 64
+Teorically 3531.0
+real cond (3531, 40)
+datasets/73/T6B73120081.wav
+oversize 32
+Teorically 5814.0
+real cond (5814, 40)
+datasets/73/T6B73120082.wav
+oversize 48
+Teorically 6777.0
+real cond (6777, 40)
+datasets/73/T6B73120083.wav
+oversize 0
+Teorically 3538.0
+real cond (3538, 40)
+datasets/73/T6B73120084.wav
+oversize 64
+Teorically 3403.0
+real cond (3403, 40)
+datasets/73/T6B73120085.wav
+oversize 32
+Teorically 2428.0
+real cond (2428, 40)
+datasets/73/T6B73120086.wav
+oversize 32
+Teorically 2060.0
+real cond (2060, 40)
+datasets/73/T6B73120087.wav
+oversize 0
+Teorically 4502.0
+real cond (4502, 40)
+datasets/73/T6B73120088.wav
+oversize 16
+Teorically 5413.0
+real cond (5413, 40)
+datasets/73/T6B73120089.wav
+oversize 16
+Teorically 4441.0
+real cond (4441, 40)
+datasets/73/T6B73120090.wav
+oversize 48
+Teorically 2699.0
+real cond (2699, 40)
+datasets/73/T6B73120091.wav
+oversize 0
+Teorically 1452.0
+real cond (1452, 40)
+datasets/73/T6B73120092.wav
+oversize 32
+Teorically 2888.0
+real cond (2888, 40)
+datasets/73/T6B73120093.wav
+oversize 32
+Teorically 4752.0
+real cond (4752, 40)
+datasets/73/T6B73120094.wav
+oversize 64
+Teorically 3763.0
+real cond (3763, 40)
+datasets/73/T6B73120095.wav
+oversize 48
+Teorically 3429.0
+real cond (3429, 40)
+datasets/73/T6B73120096.wav
+oversize 64
+Teorically 4985.0
+real cond (4985, 40)
+datasets/73/T6B73120097.wav
+oversize 0
+Teorically 4750.0
+real cond (4750, 40)
+datasets/73/T6B73120098.wav
+oversize 0
+Teorically 2242.0
+real cond (2242, 40)
+datasets/73/T6B73120099.wav
+oversize 32
+Teorically 6662.0
+real cond (6662, 40)
+datasets/73/T6B73120100.wav
+oversize 0
+Teorically 3788.0
+real cond (3788, 40)
+datasets/73/T6B73120101.wav
+oversize 32
+Teorically 3972.0
+real cond (3972, 40)
+datasets/73/T6B73120102.wav
+oversize 64
+Teorically 4901.0
+real cond (4901, 40)
+datasets/73/T6B73120103.wav
+oversize 0
+Teorically 3312.0
+real cond (3312, 40)
+datasets/73/T6B73120104.wav
+oversize 16
+Teorically 2463.0
+real cond (2463, 40)
+datasets/73/T6B73120105.wav
+oversize 64
+Teorically 3805.0
+real cond (3805, 40)
+datasets/73/T6B73120106.wav
+oversize 64
+Teorically 8559.0
+real cond (8559, 40)
+datasets/73/T6B73120107.wav
+oversize 16
+Teorically 3749.0
+real cond (3749, 40)
+datasets/73/T6B73120108.wav
+oversize 0
+Teorically 4634.0
+real cond (4634, 40)
+datasets/73/T6B73120109.wav
+oversize 32
+Teorically 4858.0
+real cond (4858, 40)
+datasets/73/T6B73120110.wav
+oversize 0
+Teorically 3694.0
+real cond (3694, 40)
+datasets/73/T6B73120111.wav
+oversize 32
+Teorically 2644.0
+real cond (2644, 40)
+datasets/73/T6B73120112.wav
+oversize 16
+Teorically 5633.0
+real cond (5633, 40)
+datasets/73/T6B73120113.wav
+oversize 32
+Teorically 3526.0
+real cond (3526, 40)
+datasets/73/T6B73120114.wav
+oversize 32
+Teorically 3692.0
+real cond (3692, 40)
+datasets/73/T6B73120115.wav
+oversize 48
+Teorically 3547.0
+real cond (3547, 40)
+datasets/73/T6B73120116.wav
+oversize 0
+Teorically 2410.0
+real cond (2410, 40)
+datasets/73/T6B73120117.wav
+oversize 32
+Teorically 6962.0
+real cond (6962, 40)
+datasets/73/T6B73120118.wav
+oversize 48
+Teorically 2775.0
+real cond (2775, 40)
+datasets/73/T6B73120119.wav
+oversize 16
+Teorically 3499.0
+real cond (3499, 40)
+datasets/73/T6B73120120.wav
+oversize 64
+Teorically 2187.0
+real cond (2187, 40)
+datasets/73/T6B73120121.wav
+oversize 16
+Teorically 1417.0
+real cond (1417, 40)
+datasets/73/T6B73120122.wav
+oversize 32
+Teorically 2452.0
+real cond (2452, 40)
+datasets/73/T6B73120123.wav
+oversize 32
+Teorically 4008.0
+real cond (4008, 40)
+datasets/73/T6B73120124.wav
+oversize 0
+Teorically 2840.0
+real cond (2840, 40)
+datasets/73/T6B73120125.wav
+oversize 32
+Teorically 6936.0
+real cond (6936, 40)
+datasets/73/T6B73120126.wav
+oversize 0
+Teorically 3064.0
+real cond (3064, 40)
+datasets/73/T6B73120127.wav
+oversize 64
+Teorically 2499.0
+real cond (2499, 40)
+datasets/73/T6B73120128.wav
+oversize 16
+Teorically 1721.0
+real cond (1721, 40)
+datasets/73/T6B73120129.wav
+oversize 64
+Teorically 2261.0
+real cond (2261, 40)
+datasets/73/T6B73120130.wav
+oversize 64
+Teorically 2075.0
+real cond (2075, 40)
+datasets/73/T6B73120131.wav
+oversize 48
+Teorically 4601.0
+real cond (4601, 40)
+datasets/73/T6B73120132.wav
+oversize 64
+Teorically 5983.0
+real cond (5983, 40)
+datasets/73/T6B73120133.wav
+oversize 64
+Teorically 3671.0
+real cond (3671, 40)
+datasets/73/T6B73120134.wav
+oversize 0
+Teorically 4246.0
+real cond (4246, 40)
+datasets/73/T6B73120135.wav
+oversize 0
+Teorically 3706.0
+real cond (3706, 40)
+datasets/73/T6B73120136.wav
+oversize 32
+Teorically 3436.0
+real cond (3436, 40)
+datasets/73/T6B73120137.wav
+oversize 16
+Teorically 4497.0
+real cond (4497, 40)
+datasets/73/T6B73120138.wav
+oversize 32
+Teorically 2236.0
+real cond (2236, 40)
+datasets/73/T6B73120139.wav
+oversize 64
+Teorically 2123.0
+real cond (2123, 40)
+datasets/73/T6B73120140.wav
+oversize 0
+Teorically 3850.0
+real cond (3850, 40)
+datasets/73/T6B73120141.wav
+oversize 64
+Teorically 6427.0
+real cond (6427, 40)
+datasets/73/T6B73120142.wav
+oversize 64
+Teorically 4347.0
+real cond (4347, 40)
+datasets/73/T6B73120143.wav
+oversize 32
+Teorically 848.0
+real cond (848, 40)
+datasets/73/T6B73120144.wav
+oversize 64
+Teorically 2257.0
+real cond (2257, 40)
+datasets/73/T6B73120145.wav
+oversize 32
+Teorically 3125.0
+real cond (3125, 40)
+datasets/73/T6B73120146.wav
+oversize 32
+Teorically 5552.0
+real cond (5552, 40)
+datasets/73/T6B73120149.wav
+oversize 32
+Teorically 3278.0
+real cond (3278, 40)
+datasets/73/T6B73120150.wav
+oversize 64
+Teorically 1801.0
+real cond (1801, 40)
+datasets/73/T6B73120151.wav
+oversize 64
+Teorically 4461.0
+real cond (4461, 40)
+datasets/73/T6B73120153.wav
+oversize 48
+Teorically 4263.0
+real cond (4263, 40)
+datasets/73/T6B73120155.wav
+oversize 64
+Teorically 3695.0
+real cond (3695, 40)
+datasets/73/T6B73120157.wav
+oversize 48
+Teorically 2971.0
+real cond (2971, 40)
+datasets/73/T6B73120158.wav
+oversize 48
+Teorically 2069.0
+real cond (2069, 40)
+datasets/73/T6B73120159.wav
+oversize 32
+Teorically 4406.0
+real cond (4406, 40)
+datasets/73/T6B73120160.wav
+oversize 64
+Teorically 3655.0
+real cond (3655, 40)
+datasets/73/T6B73120161.wav
+oversize 16
+Teorically 2183.0
+real cond (2183, 40)
+datasets/73/T6B73120162.wav
+oversize 32
+Teorically 3750.0
+real cond (3750, 40)
+datasets/73/T6B73120163.wav
+oversize 64
+Teorically 1529.0
+real cond (1529, 40)
+datasets/73/T6B73120164.wav
+oversize 64
+Teorically 3507.0
+real cond (3507, 40)
+datasets/73/T6B73120165.wav
+oversize 48
+Teorically 3995.0
+real cond (3995, 40)
+datasets/73/T6B73120166.wav
+oversize 0
+Teorically 2526.0
+real cond (2526, 40)
+datasets/73/T6B73120168.wav
+oversize 48
+Teorically 4723.0
+real cond (4723, 40)
+datasets/73/T6B73120169.wav
+oversize 64
+Teorically 2587.0
+real cond (2587, 40)
+datasets/73/T6B73120170.wav
+oversize 48
+Teorically 2061.0
+real cond (2061, 40)
+datasets/73/T6B73120171.wav
+oversize 0
+Teorically 3840.0
+real cond (3840, 40)
+datasets/73/T6B73120172.wav
+oversize 0
+Teorically 3372.0
+real cond (3372, 40)
+datasets/73/T6B73120173.wav
+oversize 0
+Teorically 3892.0
+real cond (3892, 40)
+datasets/73/T6B73120174.wav
+oversize 32
+Teorically 7032.0
+real cond (7032, 40)
+datasets/73/T6B73120175.wav
+oversize 16
+Teorically 5721.0
+real cond (5721, 40)
+datasets/73/T6B73120176.wav
+oversize 48
+Teorically 5883.0
+real cond (5883, 40)
+datasets/73/T6B73120177.wav
+oversize 0
+Teorically 2414.0
+real cond (2414, 40)
+datasets/73/T6B73120178.wav
+oversize 48
+Teorically 10127.0
+real cond (10127, 40)
+datasets/73/T6B73120179.wav
+oversize 48
+Teorically 3109.0
+real cond (3109, 40)
+datasets/73/T6B73120180.wav
+oversize 32
+Teorically 4192.0
+real cond (4192, 40)
+datasets/73/T6B73120181.wav
+oversize 0
+Teorically 2642.0
+real cond (2642, 40)
+datasets/73/T6B73120182.wav
+oversize 32
+Teorically 2666.0
+real cond (2666, 40)
+datasets/73/T6B73120183.wav
+oversize 32
+Teorically 2256.0
+real cond (2256, 40)
+datasets/73/T6B73120184.wav
+oversize 48
+Teorically 6719.0
+real cond (6719, 40)
+datasets/73/T6B73120185.wav
+oversize 32
+Teorically 4536.0
+real cond (4536, 40)
+datasets/73/T6B73120186.wav
+oversize 48
+Teorically 1367.0
+real cond (1367, 40)
+datasets/73/T6B73120187.wav
+oversize 0
+Teorically 6632.0
+real cond (6632, 40)
+datasets/73/T6B73120188.wav
+oversize 48
+Teorically 2215.0
+real cond (2215, 40)
+datasets/73/T6B73120189.wav
+oversize 48
+Teorically 2551.0
+real cond (2551, 40)
+datasets/73/T6B73120190.wav
+oversize 32
+Teorically 2870.0
+real cond (2870, 40)
+datasets/73/T6B73120191.wav
+oversize 16
+Teorically 3821.0
+real cond (3821, 40)
+datasets/73/T6B73120192.wav
+oversize 32
+Teorically 8024.0
+real cond (8024, 40)
+datasets/73/T6B73120193.wav
+oversize 48
+Teorically 2095.0
+real cond (2095, 40)
+datasets/73/T6B73120194.wav
+oversize 0
+Teorically 2550.0
+real cond (2550, 40)
+datasets/73/T6B73120195.wav
+oversize 16
+Teorically 2549.0
+real cond (2549, 40)
+datasets/73/T6B73120196.wav
+oversize 16
+Teorically 2549.0
+real cond (2549, 40)
+datasets/73/T6B73120197.wav
+oversize 0
+Teorically 4826.0
+real cond (4826, 40)
+datasets/73/T6B73120198.wav
+oversize 48
+Teorically 2187.0
+real cond (2187, 40)
+datasets/73/T6B73120199.wav
+oversize 0
+Teorically 2950.0
+real cond (2950, 40)
+datasets/73/T6B73120200.wav
+oversize 32
+Teorically 2682.0
+real cond (2682, 40)
+datasets/73/T6B73120201.wav
+oversize 48
+Teorically 2681.0
+real cond (2681, 40)
+datasets/73/T6B73120202.wav
+oversize 64
+Teorically 3733.0
+real cond (3733, 40)
+datasets/73/T6B73120203.wav
+oversize 32
+Teorically 1800.0
+real cond (1800, 40)
+datasets/73/T6B73120204.wav
+oversize 0
+Teorically 3618.0
+real cond (3618, 40)
+datasets/73/T6B73120205.wav
+oversize 32
+Teorically 3128.0
+real cond (3128, 40)
+datasets/73/T6B73120206.wav
+oversize 48
+Teorically 3619.0
+real cond (3619, 40)
+datasets/73/T6B73120207.wav
+oversize 32
+Teorically 1808.0
+real cond (1808, 40)
+datasets/73/T6B73120208.wav
+oversize 64
+Teorically 3219.0
+real cond (3219, 40)
+datasets/73/T6B73120209.wav
+oversize 16
+Teorically 2043.0
+real cond (2043, 40)
+datasets/73/T6B73120210.wav
+oversize 0
+Teorically 5344.0
+real cond (5344, 40)
+datasets/73/T6B73120211.wav
+oversize 48
+Teorically 4915.0
+real cond (4915, 40)
+datasets/73/T6B73120212.wav
+oversize 32
+Teorically 3792.0
+real cond (3792, 40)
+datasets/73/T6B73120213.wav
+oversize 48
+Teorically 2583.0
+real cond (2583, 40)
+datasets/73/T6B73120214.wav
+oversize 32
+Teorically 3508.0
+real cond (3508, 40)
+datasets/73/T6B73120215.wav
+oversize 16
+Teorically 1159.0
+real cond (1159, 40)
+datasets/73/T6B73120216.wav
+oversize 16
+Teorically 2469.0
+real cond (2469, 40)
+datasets/73/T6B73120217.wav
+oversize 0
+Teorically 1602.0
+real cond (1602, 40)
+datasets/73/T6B73120218.wav
+oversize 32
+Teorically 3346.0
+real cond (3346, 40)
+datasets/73/T6B73120219.wav
+oversize 48
+Teorically 4115.0
+real cond (4115, 40)
+datasets/73/T6B73120220.wav
+oversize 48
+Teorically 4867.0
+real cond (4867, 40)
+datasets/73/T6B73120221.wav
+oversize 32
+Teorically 4036.0
+real cond (4036, 40)
+datasets/73/T6B73120222.wav
+oversize 64
+Teorically 5767.0
+real cond (5767, 40)
+datasets/73/T6B73120223.wav
+oversize 0
+Teorically 3244.0
+real cond (3244, 40)
+datasets/73/T6B73120224.wav
+oversize 0
+Teorically 2858.0
+real cond (2858, 40)
+datasets/73/T6B73120225.wav
+oversize 0
+Teorically 3346.0
+real cond (3346, 40)
+datasets/73/T6B73120226.wav
+oversize 48
+Teorically 1139.0
+real cond (1139, 40)
+datasets/73/T6B73120227.wav
+oversize 64
+Teorically 4551.0
+real cond (4551, 40)
+datasets/73/T6B73120228.wav
+oversize 0
+Teorically 5074.0
+real cond (5074, 40)
+datasets/73/T6B73120229.wav
+oversize 48
+Teorically 2605.0
+real cond (2605, 40)
+datasets/73/T6B73120230.wav
+oversize 48
+Teorically 3537.0
+real cond (3537, 40)
+datasets/73/T6B73120231.wav
+oversize 0
+Teorically 3982.0
+real cond (3982, 40)
+datasets/73/T6B73120232.wav
+oversize 64
+Teorically 4831.0
+real cond (4831, 40)
+datasets/73/T6B73120233.wav
+oversize 32
+Teorically 4130.0
+real cond (4130, 40)
+datasets/73/T6B73120234.wav
+oversize 64
+Teorically 3115.0
+real cond (3115, 40)
+datasets/73/T6B73120235.wav
+oversize 32
+Teorically 3340.0
+real cond (3340, 40)
+datasets/73/T6B73120236.wav
+oversize 16
+Teorically 2545.0
+real cond (2545, 40)
+datasets/73/T6B73120237.wav
+oversize 64
+Teorically 4135.0
+real cond (4135, 40)
+datasets/73/T6B73120238.wav
+oversize 0
+Teorically 3310.0
+real cond (3310, 40)
+datasets/73/T6B73120239.wav
+oversize 0
+Teorically 2776.0
+real cond (2776, 40)
+datasets/73/T6B73120240.wav
+oversize 32
+Teorically 4704.0
+real cond (4704, 40)
+datasets/73/T6B73120241.wav
+oversize 0
+Teorically 4838.0
+real cond (4838, 40)
+datasets/73/T6B73120242.wav
+oversize 48
+Teorically 1843.0
+real cond (1843, 40)
+datasets/73/T6B73120243.wav
+oversize 64
+Teorically 4855.0
+real cond (4855, 40)
+datasets/73/T6B73120244.wav
+oversize 32
+Teorically 1350.0
+real cond (1350, 40)
+datasets/73/T6B73120245.wav
+oversize 0
+Teorically 2270.0
+real cond (2270, 40)
+datasets/73/T6B73120246.wav
+oversize 64
+Teorically 4563.0
+real cond (4563, 40)
+datasets/73/T6B73120247.wav
+oversize 16
+Teorically 4253.0
+real cond (4253, 40)
+datasets/73/T6B73120248.wav
+oversize 64
+Teorically 3723.0
+real cond (3723, 40)
+datasets/73/T6B73120249.wav
+oversize 48
+Teorically 3293.0
+real cond (3293, 40)
+datasets/73/T6B73120250.wav
+oversize 48
+Teorically 3413.0
+real cond (3413, 40)
+datasets/73/T6B73120251.wav
+oversize 32
+Teorically 6672.0
+real cond (6672, 40)
+datasets/73/T6B73120252.wav
+oversize 32
+Teorically 6104.0
+real cond (6104, 40)
+datasets/73/T6B73120253.wav
+oversize 32
+Teorically 3876.0
+real cond (3876, 40)
+datasets/73/T6B73120254.wav
+oversize 32
+Teorically 4108.0
+real cond (4108, 40)
+datasets/73/T6B73120255.wav
+oversize 32
+Teorically 4424.0
+real cond (4424, 40)
+datasets/73/T6B73120256.wav
+oversize 64
+Teorically 4525.0
+real cond (4525, 40)
+datasets/73/T6B73120257.wav
+oversize 64
+Teorically 5093.0
+real cond (5093, 40)
+datasets/73/T6B73120258.wav
+oversize 32
+Teorically 2472.0
+real cond (2472, 40)
+datasets/73/T6B73120259.wav
+oversize 32
+Teorically 5252.0
+real cond (5252, 40)
+datasets/73/T6B73120260.wav
+oversize 32
+Teorically 5068.0
+real cond (5068, 40)
+datasets/73/T6B73120261.wav
+oversize 16
+Teorically 4545.0
+real cond (4545, 40)
+datasets/73/T6B73120262.wav
+oversize 32
+Teorically 2286.0
+real cond (2286, 40)
+datasets/73/T6B73120263.wav
+oversize 32
+Teorically 5092.0
+real cond (5092, 40)
+datasets/73/T6B73120264.wav
+oversize 64
+Teorically 2975.0
+real cond (2975, 40)
+datasets/73/T6B73120265.wav
+oversize 48
+Teorically 2755.0
+real cond (2755, 40)
+datasets/73/T6B73120266.wav
+oversize 16
+Teorically 3929.0
+real cond (3929, 40)
+datasets/73/T6B73120267.wav
+oversize 64
+Teorically 2175.0
+real cond (2175, 40)
+datasets/73/T6B73120268.wav
+oversize 16
+Teorically 3567.0
+real cond (3567, 40)
+datasets/73/T6B73120269.wav
+oversize 64
+Teorically 4231.0
+real cond (4231, 40)
+datasets/73/T6B73120270.wav
+oversize 0
+Teorically 4698.0
+real cond (4698, 40)
+datasets/73/T6B73120271.wav
+oversize 64
+Teorically 2377.0
+real cond (2377, 40)
+datasets/73/T6B73120272.wav
+oversize 16
+Teorically 1745.0
+real cond (1745, 40)
+datasets/73/T6B73120273.wav
+oversize 16
+Teorically 1961.0
+real cond (1961, 40)
+datasets/73/T6B73120274.wav
+oversize 32
+Teorically 1758.0
+real cond (1758, 40)
+datasets/73/T6B73120275.wav
+oversize 0
+Teorically 2580.0
+real cond (2580, 40)
+datasets/73/T6B73120276.wav
+oversize 64
+Teorically 6197.0
+real cond (6197, 40)
+datasets/73/T6B73120277.wav
+oversize 0
+Teorically 5228.0
+real cond (5228, 40)
+datasets/73/T6B73120278.wav
+oversize 32
+Teorically 5752.0
+real cond (5752, 40)
+datasets/73/T6B73120279.wav
+oversize 32
+Teorically 3642.0
+real cond (3646, 40)
+error____________________________________
+datasets/73/T6B73120280.wav
+oversize 16
+Teorically 2553.0
+real cond (2553, 40)
+datasets/73/T6B73120281.wav
+oversize 64
+Teorically 3745.0
+real cond (3745, 40)
+datasets/73/T6B73120282.wav
+oversize 32
+Teorically 4348.0
+real cond (4348, 40)
+datasets/73/T6B73120283.wav
+oversize 16
+Teorically 8109.0
+real cond (8109, 40)
+datasets/73/T6B73120284.wav
+oversize 32
+Teorically 1896.0
+real cond (1896, 40)
+datasets/73/T6B73120285.wav
+oversize 32
+Teorically 5230.0
+real cond (5230, 40)
+datasets/73/T6B73120286.wav
+oversize 48
+Teorically 2195.0
+real cond (2195, 40)
+datasets/73/T6B73120287.wav
+oversize 0
+Teorically 4030.0
+real cond (4030, 40)
+datasets/73/T6B73120288.wav
+oversize 16
+Teorically 3561.0
+real cond (3561, 40)
+datasets/73/T6B73120289.wav
+oversize 64
+Teorically 3935.0
+real cond (3935, 40)
+datasets/73/T6B73120290.wav
+oversize 32
+Teorically 2184.0
+real cond (2184, 40)
+datasets/73/T6B73120291.wav
+oversize 32
+Teorically 3516.0
+real cond (3516, 40)
+datasets/73/T6B73120292.wav
+oversize 64
+Teorically 9139.0
+real cond (9139, 40)
+datasets/73/T6B73120293.wav
+oversize 48
+Teorically 4859.0
+real cond (4859, 40)
+datasets/73/T6B73120294.wav
+oversize 0
+Teorically 6938.0
+real cond (6938, 40)
+datasets/73/T6B73120295.wav
+oversize 64
+Teorically 2813.0
+real cond (2813, 40)
+datasets/73/T6B73120296.wav
+oversize 64
+Teorically 5603.0
+real cond (5603, 40)
+datasets/73/T6B73120297.wav
+oversize 16
+Teorically 4221.0
+real cond (4221, 40)
+datasets/73/T6B73120298.wav
+oversize 64
+Teorically 3123.0
+real cond (3123, 40)
+datasets/73/T6B73120299.wav
+oversize 48
+Teorically 3251.0
+real cond (3251, 40)
+datasets/73/T6B73120300.wav
+oversize 16
+Teorically 1773.0
+real cond (1773, 40)
+datasets/73/T6B73120301.wav
+oversize 0
+Teorically 1948.0
+real cond (1948, 40)
+datasets/73/T6B73120302.wav
+oversize 16
+Teorically 2979.0
+real cond (2979, 40)
+datasets/73/T6B73120303.wav
+oversize 16
+Teorically 2109.0
+real cond (2109, 40)
+datasets/73/T6B73120304.wav
+oversize 16
+Teorically 4493.0
+real cond (4493, 40)
+datasets/73/T6B73120305.wav
+oversize 64
+Teorically 3119.0
+real cond (3119, 40)
+datasets/73/T6B73120306.wav
+oversize 16
+Teorically 2499.0
+real cond (2499, 40)
+datasets/73/T6B73120307.wav
+oversize 64
+Teorically 1987.0
+real cond (1987, 40)
+datasets/73/T6B73120308.wav
+oversize 32
+Teorically 2488.0
+real cond (2488, 40)
+datasets/73/T6B73120309.wav
+oversize 0
+Teorically 1366.0
+real cond (1366, 40)
+datasets/73/T6B73120310.wav
+oversize 32
+Teorically 752.0
+real cond (752, 40)
+datasets/73/T6B73120311.wav
+oversize 16
+Teorically 3273.0
+real cond (3273, 40)
+datasets/73/T6B73120312.wav
+oversize 32
+Teorically 3576.0
+real cond (3576, 40)
+datasets/73/T6B73120313.wav
+oversize 32
+Teorically 2094.0
+real cond (2094, 40)
+datasets/73/T6B73120314.wav
+oversize 32
+Teorically 3048.0
+real cond (3048, 40)
+datasets/73/T6B73120315.wav
+oversize 32
+Teorically 2962.0
+real cond (2962, 40)
+datasets/73/T6B73120316.wav
+oversize 16
+Teorically 3589.0
+real cond (3589, 40)
+datasets/73/T6B73120317.wav
+oversize 64
+Teorically 3023.0
+real cond (3023, 40)
+datasets/73/T6B73120318.wav
+oversize 64
+Teorically 1887.0
+real cond (1887, 40)
+datasets/73/T6B73120319.wav
+oversize 16
+Teorically 5585.0
+real cond (5585, 40)
+datasets/73/T6B73120320.wav
+oversize 16
+Teorically 2207.0
+real cond (2207, 40)
+datasets/73/T6B73120321.wav
+oversize 48
+Teorically 5837.0
+real cond (5837, 40)
+datasets/73/T6B73120322.wav
+oversize 16
+Teorically 4667.0
+real cond (4667, 40)
+datasets/73/T6B73120323.wav
+oversize 48
+Teorically 5169.0
+real cond (5169, 40)
+datasets/73/T6B73120324.wav
+oversize 0
+Teorically 2978.0
+real cond (2978, 40)
+datasets/73/T6B73120325.wav
+oversize 48
+Teorically 6489.0
+real cond (6489, 40)
+datasets/73/T6B73120326.wav
+oversize 64
+Teorically 2907.0
+real cond (2907, 40)
+datasets/73/T6B73120327.wav
+oversize 16
+Teorically 3877.0
+real cond (3877, 40)
+datasets/73/T6B73120328.wav
+oversize 0
+Teorically 2042.0
+real cond (2042, 40)
+datasets/73/T6B73120329.wav
+oversize 0
+Teorically 3258.0
+real cond (3258, 40)
+datasets/73/T6B73120330.wav
+oversize 32
+Teorically 2216.0
+real cond (2216, 40)
+datasets/73/T6B73120331.wav
+oversize 0
+Teorically 6102.0
+real cond (6102, 40)
+datasets/73/T6B73120332.wav
+oversize 16
+Teorically 4421.0
+real cond (4421, 40)
+datasets/73/T6B73120333.wav
+oversize 0
+Teorically 6506.0
+real cond (6506, 40)
+datasets/73/T6B73120334.wav
+oversize 16
+Teorically 3821.0
+real cond (3821, 40)
+datasets/73/T6B73120335.wav
+oversize 64
+Teorically 3007.0
+real cond (3007, 40)
+datasets/73/T6B73120336.wav
+oversize 32
+Teorically 5244.0
+real cond (5244, 40)
+datasets/73/T6B73120337.wav
+oversize 64
+Teorically 2795.0
+real cond (2795, 40)
+datasets/73/T6B73120338.wav
+oversize 64
+Teorically 2051.0
+real cond (2051, 40)
+datasets/73/T6B73120339.wav
+oversize 32
+Teorically 4460.0
+real cond (4460, 40)
+datasets/73/T6B73120340.wav
+oversize 16
+Teorically 6417.0
+real cond (6417, 40)
+datasets/73/T6B73120341.wav
+oversize 64
+Teorically 3975.0
+real cond (3975, 40)
+datasets/73/T6B73120342.wav
+oversize 32
+Teorically 2662.0
+real cond (2662, 40)
+datasets/73/T6B73120343.wav
+oversize 0
+Teorically 2600.0
+real cond (2600, 40)
+datasets/73/T6B73120344.wav
+oversize 0
+Teorically 4674.0
+real cond (4674, 40)
+datasets/73/T6B73120345.wav
+oversize 16
+Teorically 7363.0
+real cond (7363, 40)
+datasets/73/T6B73120346.wav
+oversize 64
+Teorically 8183.0
+real cond (8183, 40)
+datasets/73/T6B73120347.wav
+oversize 0
+Teorically 5074.0
+real cond (5074, 40)
+datasets/73/T6B73120348.wav
+oversize 16
+Teorically 1885.0
+real cond (1885, 40)
+datasets/73/T6B73120349.wav
+oversize 64
+Teorically 9027.0
+real cond (9027, 40)
+datasets/73/T6B73120350.wav
+oversize 48
+Teorically 3787.0
+real cond (3787, 40)
+datasets/73/T6B73120351.wav
+oversize 32
+Teorically 5304.0
+real cond (5304, 40)
+datasets/73/T6B73120352.wav
+oversize 0
+Teorically 3178.0
+real cond (3178, 40)
+datasets/73/T6B73120353.wav
+oversize 32
+Teorically 5020.0
+real cond (5020, 40)
+datasets/73/T6B73120354.wav
+oversize 16
+Teorically 4553.0
+real cond (4553, 40)
+datasets/73/T6B73120355.wav
+oversize 64
+Teorically 4947.0
+real cond (4947, 40)
+datasets/73/T6B73120356.wav
+oversize 32
+Teorically 3184.0
+real cond (3184, 40)
+datasets/73/T6B73120357.wav
+oversize 16
+Teorically 2501.0
+real cond (2501, 40)
+datasets/73/T6B73120358.wav
+oversize 48
+Teorically 3639.0
+real cond (3639, 40)
+datasets/73/T6B73120359.wav
+oversize 48
+Teorically 4079.0
+real cond (4079, 40)
+datasets/73/T6B73120360.wav
+oversize 64
+Teorically 3527.0
+real cond (3527, 40)
+datasets/73/T6B73120361.wav
+oversize 0
+Teorically 3032.0
+real cond (3032, 40)
+datasets/73/T6B73120362.wav
+oversize 32
+Teorically 3044.0
+real cond (3044, 40)
+datasets/73/T6B73120363.wav
+oversize 48
+Teorically 2431.0
+real cond (2431, 40)
+datasets/73/T6B73120364.wav
+oversize 64
+Teorically 2489.0
+real cond (2489, 40)
+datasets/73/T6B73120365.wav
+oversize 48
+Teorically 3219.0
+real cond (3219, 40)
+datasets/73/T6B73120366.wav
+oversize 16
+Teorically 4813.0
+real cond (4813, 40)
+datasets/73/T6B73120367.wav
+oversize 64
+Teorically 3593.0
+real cond (3593, 40)
+datasets/73/T6B73120368.wav
+oversize 48
+Teorically 2653.0
+real cond (2653, 40)
+datasets/73/T6B73120369.wav
+oversize 48
+Teorically 3081.0
+real cond (3081, 40)
+datasets/73/T6B73120370.wav
+oversize 16
+Teorically 2571.0
+real cond (2571, 40)
+datasets/73/T6B73120371.wav
+oversize 16
+Teorically 4117.0
+real cond (4117, 40)
+datasets/73/T6B73120372.wav
+oversize 64
+Teorically 2787.0
+real cond (2787, 40)
+datasets/73/T6B73120373.wav
+oversize 48
+Teorically 7927.0
+real cond (7927, 40)
+datasets/73/T6B73120374.wav
+oversize 32
+Teorically 4244.0
+real cond (4244, 40)
+datasets/73/T6B73120375.wav
+oversize 48
+Teorically 3603.0
+real cond (3603, 40)
+datasets/73/T6B73120376.wav
+oversize 32
+Teorically 1804.0
+real cond (1804, 40)
+datasets/73/T6B73120377.wav
+oversize 48
+Teorically 3651.0
+real cond (3651, 40)
+datasets/73/T6B73120378.wav
+oversize 48
+Teorically 4787.0
+real cond (4787, 40)
+datasets/73/T6B73120379.wav
+oversize 32
+Teorically 6832.0
+real cond (6832, 40)
+datasets/73/T6B73120380.wav
+oversize 32
+Teorically 2758.0
+real cond (2758, 40)
+datasets/73/T6B73120381.wav
+oversize 48
+Teorically 2555.0
+real cond (2555, 40)
+datasets/73/T6B73120382.wav
+oversize 32
+Teorically 2996.0
+real cond (2996, 40)
+datasets/73/T6B73120383.wav
+oversize 16
+Teorically 4847.0
+real cond (4847, 40)
+datasets/73/T6B73120384.wav
+oversize 64
+Teorically 3253.0
+real cond (3253, 40)
+datasets/73/T6B73120385.wav
+oversize 48
+Teorically 4715.0
+real cond (4715, 40)
+datasets/73/T6B73120386.wav
+oversize 32
+Teorically 2812.0
+real cond (2812, 40)
+datasets/73/T6B73120387.wav
+oversize 16
+Teorically 5027.0
+real cond (5027, 40)
+datasets/73/T6B73120388.wav
+oversize 0
+Teorically 2632.0
+real cond (2632, 40)
+datasets/73/T6B73120389.wav
+oversize 0
+Teorically 2558.0
+real cond (2558, 40)
+datasets/73/T6B73120390.wav
+oversize 64
+Teorically 3511.0
+real cond (3511, 40)
+datasets/73/T6B73120391.wav
+oversize 16
+Teorically 4369.0
+real cond (4369, 40)
+datasets/73/T6B73120392.wav
+oversize 32
+Teorically 4188.0
+real cond (4188, 40)
+datasets/73/T6B73120393.wav
+oversize 64
+Teorically 3127.0
+real cond (3127, 40)
+datasets/73/T6B73120394.wav
+oversize 48
+Teorically 4015.0
+real cond (4015, 40)
+datasets/73/T6B73120395.wav
+oversize 64
+Teorically 4035.0
+real cond (4035, 40)
+datasets/73/T6B73120396.wav
+oversize 0
+Teorically 2646.0
+real cond (2646, 40)
+datasets/73/T6B73120397.wav
+oversize 0
+Teorically 3950.0
+real cond (3950, 40)
+datasets/73/T6B73120398.wav
+oversize 0
+Teorically 4572.0
+real cond (4572, 40)
+datasets/73/T6B73120399.wav
+oversize 48
+Teorically 2923.0
+real cond (2923, 40)
+datasets/73/T6B73120400.wav
+oversize 64
+Teorically 2403.0
+real cond (2403, 40)
+datasets/73/T6B73120401.wav
+oversize 32
+Teorically 2102.0
+real cond (2102, 40)
+datasets/73/T6B73120402.wav
+oversize 48
+Teorically 3935.0
+real cond (3935, 40)
+datasets/73/T6B73120403.wav
+oversize 16
+Teorically 3561.0
+real cond (3561, 40)
+datasets/73/T6B73120404.wav
+oversize 16
+Teorically 2617.0
+real cond (2617, 40)
+datasets/73/T6B73120405.wav
+oversize 64
+Teorically 3813.0
+real cond (3813, 40)
+datasets/73/T6B73120406.wav
+oversize 16
+Teorically 3885.0
+real cond (3885, 40)
+datasets/73/T6B73120407.wav
+oversize 0
+Teorically 4298.0
+real cond (4298, 40)
+datasets/73/T6B73120408.wav
+oversize 0
+Teorically 3386.0
+real cond (3386, 40)
+datasets/73/T6B73120409.wav
+oversize 64
+Teorically 3989.0
+real cond (3989, 40)
+datasets/73/T6B73120410.wav
+oversize 0
+Teorically 4540.0
+real cond (4540, 40)
+datasets/73/T6B73120411.wav
+oversize 64
+Teorically 4359.0
+real cond (4359, 40)
+datasets/73/T6B73120412.wav
+oversize 16
+Teorically 3539.0
+real cond (3539, 40)
+datasets/73/T6B73120413.wav
+oversize 48
+Teorically 3837.0
+real cond (3837, 40)
+datasets/73/T6B73120414.wav
+oversize 16
+Teorically 4193.0
+real cond (4193, 40)
+datasets/73/T6B73120415.wav
+oversize 32
+Teorically 3680.0
+real cond (3680, 40)
+datasets/73/T6B73120416.wav
+oversize 16
+Teorically 5689.0
+real cond (5689, 40)
+datasets/73/T6B73120417.wav
+oversize 0
+Teorically 3692.0
+real cond (3692, 40)
+datasets/73/T6B73120418.wav
+oversize 0
+Teorically 4970.0
+real cond (4970, 40)
+datasets/73/T6B73120419.wav
+oversize 48
+Teorically 5861.0
+real cond (5861, 40)
+datasets/73/T6B73120420.wav
+oversize 16
+Teorically 4161.0
+real cond (4161, 40)
+datasets/73/T6B73120421.wav
+oversize 64
+Teorically 4751.0
+real cond (4751, 40)
+datasets/73/T6B73120422.wav
+oversize 16
+Teorically 3913.0
+real cond (3913, 40)
+datasets/73/T6B73120423.wav
+oversize 0
+Teorically 2746.0
+real cond (2746, 40)
+datasets/73/T6B73120424.wav
+oversize 16
+Teorically 4041.0
+real cond (4041, 40)
+datasets/73/T6B73120425.wav
+oversize 48
+Teorically 2861.0
+real cond (2861, 40)
+datasets/73/T6B73120426.wav
+oversize 0
+Teorically 6582.0
+real cond (6582, 40)
+datasets/73/T6B73120427.wav
+oversize 16
+Teorically 2667.0
+real cond (2667, 40)
+datasets/73/T6B73120428.wav
+oversize 0
+Teorically 2430.0
+real cond (2430, 40)
+datasets/73/T6B73120429.wav
+oversize 32
+Teorically 2384.0
+real cond (2384, 40)
+datasets/73/T6B73120430.wav
+oversize 32
+Teorically 3340.0
+real cond (3340, 40)
+datasets/73/T6B73120431.wav
+oversize 64
+Teorically 2987.0
+real cond (2987, 40)
+datasets/73/T6B73120432.wav
+oversize 0
+Teorically 3114.0
+real cond (3114, 40)
+datasets/73/T6B73120433.wav
+oversize 0
+Teorically 5260.0
+real cond (5260, 40)
+datasets/73/T6B73120434.wav
+oversize 48
+Teorically 2931.0
+real cond (2931, 40)
+datasets/73/T6B73120435.wav
+oversize 48
+Teorically 4591.0
+real cond (4591, 40)
+datasets/73/T6B73120436.wav
+oversize 32
+Teorically 2622.0
+real cond (2622, 40)
+datasets/73/T6B73120437.wav
+oversize 48
+Teorically 2083.0
+real cond (2083, 40)
+datasets/73/T6B73120438.wav
+oversize 16
+Teorically 6145.0
+real cond (6145, 40)
+datasets/73/T6B73120439.wav
+oversize 32
+Teorically 10338.0
+real cond (10338, 40)
+datasets/73/T6B73120440.wav
+oversize 0
+Teorically 3922.0
+real cond (3922, 40)
+datasets/73/T6B73120441.wav
+oversize 0
+Teorically 4050.0
+real cond (4050, 40)
+datasets/73/T6B73120442.wav
+oversize 32
+Teorically 4662.0
+real cond (4662, 40)
+datasets/73/T6B73120443.wav
+oversize 16
+Teorically 6537.0
+real cond (6537, 40)
+datasets/73/T6B73120444.wav
+oversize 64
+Teorically 4487.0
+real cond (4487, 40)
+datasets/73/T6B73120445.wav
+oversize 16
+Teorically 3855.0
+real cond (3855, 40)
+datasets/73/T6B73120446.wav
+oversize 0
+Teorically 2914.0
+real cond (2914, 40)
+datasets/73/T6B73120447.wav
+oversize 64
+Teorically 4479.0
+real cond (4479, 40)
+datasets/73/T6B73120448.wav
+oversize 32
+Teorically 3158.0
+real cond (3158, 40)
+datasets/73/T6B73120449.wav
+oversize 0
+Teorically 1322.0
+real cond (1322, 40)
+datasets/73/T6B73120450.wav
+oversize 64
+Teorically 1747.0
+real cond (1747, 40)
+datasets/73/T6B73120451.wav
+oversize 64
+Teorically 1537.0
+real cond (1537, 40)
+datasets/73/T6B73120452.wav
+oversize 0
+Teorically 5574.0
+real cond (5574, 40)
+datasets/73/T6B73120453.wav
+oversize 32
+Teorically 2568.0
+real cond (2568, 40)
+datasets/73/T6B73120454.wav
+oversize 16
+Teorically 3797.0
+real cond (3797, 40)
+datasets/73/T6B73120455.wav
+oversize 48
+Teorically 2135.0
+real cond (2135, 40)
+datasets/73/T6B73120456.wav
+oversize 32
+Teorically 5224.0
+real cond (5224, 40)
+datasets/73/T6B73120457.wav
+oversize 32
+Teorically 2502.0
+real cond (2502, 40)
+datasets/73/T6B73120458.wav
+oversize 0
+Teorically 3894.0
+real cond (3894, 40)
+datasets/73/T6B73120459.wav
+oversize 64
+Teorically 4741.0
+real cond (4741, 40)
+datasets/73/T6B73120460.wav
+oversize 64
+Teorically 2335.0
+real cond (2335, 40)
+datasets/73/T6B73120461.wav
+oversize 48
+Teorically 2335.0
+real cond (2335, 40)
+datasets/73/T6B73120462.wav
+oversize 0
+Teorically 9850.0
+real cond (9850, 40)
+datasets/73/T6B73120463.wav
+oversize 16
+Teorically 1985.0
+real cond (1985, 40)
+datasets/73/T6B73120464.wav
+oversize 48
+Teorically 2639.0
+real cond (2639, 40)
+datasets/73/T6B73120465.wav
+oversize 32
+Teorically 2638.0
+real cond (2638, 40)
+datasets/73/T6B73120466.wav
+oversize 0
+Teorically 6552.0
+real cond (6552, 40)
+datasets/73/T6B73120467.wav
+oversize 16
+Teorically 2385.0
+real cond (2385, 40)
+datasets/73/T6B73120468.wav
+oversize 48
+Teorically 2315.0
+real cond (2315, 40)
+datasets/73/T6B73120469.wav
+oversize 16
+Teorically 2635.0
+real cond (2635, 40)
+datasets/73/T6B73120470.wav
+oversize 48
+Teorically 2603.0
+real cond (2603, 40)
+datasets/73/T6B73120471.wav
+oversize 32
+Teorically 4232.0
+real cond (4232, 40)
+datasets/73/T6B73120472.wav
+oversize 32
+Teorically 5494.0
+real cond (5494, 40)
+datasets/73/T6B73120473.wav
+oversize 16
+Teorically 3201.0
+real cond (3201, 40)
+datasets/73/T6B73120474.wav
+oversize 16
+Teorically 5349.0
+real cond (5349, 40)
+datasets/73/T6B73120475.wav
+oversize 32
+Teorically 3324.0
+real cond (3324, 40)
+datasets/73/T6B73120476.wav
+oversize 64
+Teorically 5807.0
+real cond (5807, 40)
+datasets/73/T6B73120477.wav
+oversize 0
+Teorically 2772.0
+real cond (2772, 40)
+datasets/73/T6B73120478.wav
+oversize 64
+Teorically 7959.0
+real cond (7959, 40)
+datasets/73/T6B73120479.wav
+oversize 32
+Teorically 1830.0
+real cond (1830, 40)
+datasets/73/T6B73120480.wav
+oversize 0
+Teorically 5514.0
+real cond (5514, 40)
+datasets/73/T6B73120481.wav
+oversize 64
+Teorically 1227.0
+real cond (1227, 40)
+datasets/73/T6B73120482.wav
+oversize 48
+Teorically 2539.0
+real cond (2539, 40)
+datasets/73/T6B73120483.wav
+oversize 0
+Teorically 4134.0
+real cond (4134, 40)
+datasets/73/T6B73120484.wav
+oversize 48
+Teorically 7309.0
+real cond (7309, 40)
+datasets/73/T6B73120485.wav
+oversize 0
+Teorically 4336.0
+real cond (4336, 40)
+datasets/73/T6B73120486.wav
+oversize 16
+Teorically 5277.0
+real cond (5277, 40)
+datasets/73/T6B73120487.wav
+oversize 32
+Teorically 7184.0
+real cond (7184, 40)
+datasets/73/T6B73120488.wav
+oversize 32
+Teorically 5474.0
+real cond (5474, 40)
+datasets/73/T6B73120489.wav
+oversize 48
+Teorically 2931.0
+real cond (2931, 40)
+datasets/73/T6B73120490.wav
+oversize 64
+Teorically 3253.0
+real cond (3253, 40)
+datasets/73/T6B73120491.wav
+oversize 48
+Teorically 2023.0
+real cond (2023, 40)
+datasets/73/T6B73120492.wav
+oversize 64
+Teorically 2045.0
+real cond (2045, 40)
+datasets/73/T6B73120493.wav
+oversize 16
+Teorically 2089.0
+real cond (2089, 40)
+datasets/73/T6B73120494.wav
+oversize 48
+Teorically 2649.0
+real cond (2649, 40)
+datasets/73/T6B73120495.wav
+oversize 16
+Teorically 2857.0
+real cond (2857, 40)
+datasets/73/T6B73120496.wav
+oversize 64
+Teorically 2117.0
+real cond (2117, 40)
+datasets/73/T6B73120497.wav
+oversize 16
+Teorically 4909.0
+real cond (4909, 40)
+datasets/73/T6B73120498.wav
+oversize 0
+Teorically 5044.0
+real cond (5044, 40)
+datasets/73/T6B73120499.wav
+oversize 0
+Teorically 5734.0
+real cond (5734, 40)
+datasets/73/T6B73120500.wav
+oversize 64
+Teorically 2379.0
+real cond (2379, 40)
+datasets/73/T6B73120501.wav
+oversize 0
+Teorically 1896.0
+real cond (1896, 40)
+datasets/73/T6B73120502.wav
+oversize 32
+Teorically 3566.0
+real cond (3566, 40)
+datasets/73/T6B73120503.wav
+oversize 32
+Teorically 4530.0
+real cond (4530, 40)
+datasets/73/T6B73120504.wav
+oversize 32
+Teorically 2132.0
+real cond (2132, 40)
+datasets/73/T6B73120505.wav
+oversize 48
+Teorically 1613.0
+real cond (1613, 40)
+datasets/73/T6B73120506.wav
+oversize 64
+Teorically 1591.0
+real cond (1591, 40)
+datasets/73/T6B73120507.wav
+oversize 64
+Teorically 4151.0
+real cond (4151, 40)
+datasets/73/T6B73120508.wav
+oversize 16
+Teorically 3625.0
+real cond (3625, 40)
+datasets/73/T6B73120509.wav
+oversize 48
+Teorically 4799.0
+real cond (4799, 40)
+datasets/73/T6B73120510.wav
+oversize 64
+Teorically 4659.0
+real cond (4659, 40)
+datasets/73/T6B73120511.wav
+oversize 32
+Teorically 1856.0
+real cond (1856, 40)
+datasets/73/T6B73120512.wav
+oversize 48
+Teorically 4067.0
+real cond (4067, 40)
+datasets/73/T6B73120513.wav
+oversize 0
+Teorically 5258.0
+real cond (5258, 40)
+datasets/73/T6B73120514.wav
+oversize 0
+Teorically 3438.0
+real cond (3438, 40)
+datasets/73/T6B73120515.wav
+oversize 48
+Teorically 3467.0
+real cond (3467, 40)
+datasets/73/T6B73120516.wav
+oversize 0
+Teorically 3422.0
+real cond (3422, 40)
+datasets/73/T6B73120517.wav
+oversize 0
+Teorically 2946.0
+real cond (2946, 40)
+datasets/73/T6B73120518.wav
+oversize 32
+Teorically 5808.0
+real cond (5808, 40)
+datasets/73/T6B73120519.wav
+oversize 16
+Teorically 6361.0
+real cond (6361, 40)
+datasets/73/T6B73120520.wav
+oversize 16
+Teorically 2361.0
+real cond (2361, 40)
+datasets/73/T6B73120521.wav
+oversize 0
+Teorically 8322.0
+real cond (8322, 40)
+datasets/73/T6B73120522.wav
+oversize 16
+Teorically 3827.0
+real cond (3827, 40)
+datasets/73/T6B73120523.wav
+oversize 32
+Teorically 1806.0
+real cond (1806, 40)
+datasets/73/T6B73120524.wav
+oversize 16
+Teorically 2413.0
+real cond (2413, 40)
+datasets/73/T6B73120525.wav
+oversize 0
+Teorically 2412.0
+real cond (2412, 40)
+datasets/73/T6B73120526.wav
+oversize 48
+Teorically 3057.0
+real cond (3057, 40)
+datasets/73/T6B73120527.wav
+oversize 48
+Teorically 2479.0
+real cond (2479, 40)
+datasets/73/T6B73120528.wav
+oversize 0
+Teorically 3100.0
+real cond (3100, 40)
+datasets/73/T6B73120529.wav
+oversize 0
+Teorically 5126.0
+real cond (5126, 40)
+datasets/73/T6B73120530.wav
+oversize 48
+Teorically 1965.0
+real cond (1965, 40)
+datasets/73/T6B73120531.wav
+oversize 16
+Teorically 5751.0
+real cond (5751, 40)
+datasets/73/T6B73120532.wav
+oversize 16
+Teorically 1353.0
+real cond (1353, 40)
+datasets/73/T6B73120533.wav
+oversize 48
+Teorically 1373.0
+real cond (1373, 40)
+datasets/73/T6B73120534.wav
+oversize 64
+Teorically 9909.0
+real cond (9909, 40)
+datasets/73/T6B73120535.wav
+oversize 16
+Teorically 8401.0
+real cond (8401, 40)
+datasets/73/T6B73120536.wav
+oversize 16
+Teorically 1981.0
+real cond (1981, 40)
+datasets/73/T6B73120537.wav
+oversize 64
+Teorically 2673.0
+real cond (2673, 40)
+datasets/73/T6B73120538.wav
+oversize 48
+Teorically 2613.0
+real cond (2613, 40)
+datasets/73/T6B73120539.wav
+oversize 64
+Teorically 6715.0
+real cond (6715, 40)
+datasets/73/T6B73120540.wav
+oversize 0
+Teorically 4602.0
+real cond (4602, 40)
+datasets/73/T6B73120541.wav
+oversize 16
+Teorically 3913.0
+real cond (3913, 40)
+datasets/73/T6B73120542.wav
+oversize 64
+Teorically 5547.0
+real cond (5547, 40)
+datasets/73/T6B73120543.wav
+oversize 48
+Teorically 4759.0
+real cond (4759, 40)
+datasets/73/T6B73120544.wav
+oversize 64
+Teorically 5965.0
+real cond (5965, 40)
+datasets/73/T6B73120545.wav
+oversize 16
+Teorically 9113.0
+real cond (9113, 40)
+datasets/73/T6B73120546.wav
+oversize 64
+Teorically 4923.0
+real cond (4923, 40)
+datasets/73/T6B73120547.wav
+oversize 48
+Teorically 3285.0
+real cond (3285, 40)
+datasets/73/T6B73120548.wav
+oversize 64
+Teorically 5745.0
+real cond (5745, 40)
+datasets/73/T6B73120549.wav
+oversize 32
+Teorically 2534.0
+real cond (2534, 40)
+datasets/73/T6B73120550.wav
+oversize 48
+Teorically 5495.0
+real cond (5495, 40)
+datasets/73/T6B73120551.wav
+oversize 16
+Teorically 5199.0
+real cond (5199, 40)
+datasets/73/T6B73120552.wav
+oversize 16
+Teorically 1199.0
+real cond (1199, 40)
+datasets/73/T6B73120553.wav
+oversize 64
+Teorically 3811.0
+real cond (3811, 40)
+datasets/73/T6B73120554.wav
+oversize 32
+Teorically 2842.0
+real cond (2842, 40)
+datasets/73/T6B73120555.wav
+oversize 0
+Teorically 6772.0
+real cond (6772, 40)
+datasets/73/T6B73120556.wav
+oversize 32
+Teorically 2460.0
+real cond (2460, 40)
+datasets/73/T6B73120557.wav
+oversize 48
+Teorically 2207.0
+real cond (2207, 40)
+datasets/73/T6B73120558.wav
+oversize 64
+Teorically 2179.0
+real cond (2179, 40)
+datasets/73/T6B73120559.wav
+oversize 16
+Teorically 6021.0
+real cond (6021, 40)
+datasets/73/T6B73120560.wav
+oversize 32
+Teorically 6438.0
+real cond (6438, 40)
+datasets/73/T6B73120561.wav
+oversize 0
+Teorically 1494.0
+real cond (1494, 40)
+datasets/73/T6B73120562.wav
+oversize 16
+Teorically 3189.0
+real cond (3189, 40)
+datasets/73/T6B73120563.wav
+oversize 32
+Teorically 4760.0
+real cond (4760, 40)
+datasets/73/T6B73120564.wav
+oversize 32
+Teorically 2030.0
+real cond (2030, 40)
+datasets/73/T6B73120565.wav
+oversize 16
+Teorically 4507.0
+real cond (4507, 40)
+datasets/73/T6B73120566.wav
+oversize 48
+Teorically 3417.0
+real cond (3417, 40)
+datasets/73/T6B73120567.wav
+oversize 16
+Teorically 1877.0
+real cond (1877, 40)
+datasets/73/T6B73120568.wav
+oversize 48
+Teorically 9575.0
+real cond (9575, 40)
+datasets/73/T6B73120569.wav
+oversize 16
+Teorically 3197.0
+real cond (3197, 40)
+datasets/73/T6B73120570.wav
+oversize 64
+Teorically 3439.0
+real cond (3439, 40)
+datasets/73/T6B73120571.wav
+oversize 48
+Teorically 2457.0
+real cond (2457, 40)
+datasets/73/T6B73120572.wav
+oversize 64
+Teorically 7451.0
+real cond (7451, 40)
+datasets/73/T6B73120573.wav
+oversize 0
+Teorically 1622.0
+real cond (1622, 40)
+datasets/73/T6B73120574.wav
+oversize 48
+Teorically 2579.0
+real cond (2579, 40)
+datasets/73/T6B73120575.wav
+oversize 0
+Teorically 1728.0
+real cond (1728, 40)
+datasets/73/T6B73120576.wav
+oversize 64
+Teorically 3147.0
+real cond (3147, 40)
+datasets/73/T6B73120577.wav
+oversize 16
+Teorically 2689.0
+real cond (2689, 40)
+datasets/73/T6B73120578.wav
+oversize 48
+Teorically 4813.0
+real cond (4813, 40)
+datasets/73/T6B73120579.wav
+oversize 48
+Teorically 2691.0
+real cond (2691, 40)
+datasets/73/T6B73120580.wav
+oversize 16
+Teorically 1457.0
+real cond (1457, 40)
+datasets/73/T6B73120581.wav
+oversize 0
+Teorically 7272.0
+real cond (7272, 40)
+datasets/73/T6B73120582.wav
+oversize 16
+Teorically 4005.0
+real cond (4005, 40)
+datasets/73/T6B73120583.wav
+oversize 64
+Teorically 4331.0
+real cond (4331, 40)
+datasets/73/T6B73120584.wav
+oversize 16
+Teorically 3835.0
+real cond (3835, 40)
+datasets/73/T6B73120585.wav
+oversize 16
+Teorically 2833.0
+real cond (2833, 40)
+datasets/73/T6B73120586.wav
+oversize 64
+Teorically 9205.0
+real cond (9205, 40)
+datasets/73/T6B73120587.wav
+oversize 64
+Teorically 2413.0
+real cond (2413, 40)
+datasets/73/T6B73120588.wav
+oversize 16
+Teorically 3821.0
+real cond (3821, 40)
+datasets/73/T6B73120589.wav
+oversize 32
+Teorically 2614.0
+real cond (2614, 40)
+datasets/73/T6B73120590.wav
+oversize 64
+Teorically 1615.0
+real cond (1615, 40)
+datasets/73/T6B73120591.wav
+oversize 32
+Teorically 2880.0
+real cond (2880, 40)
+datasets/73/T6B73120592.wav
+oversize 0
+Teorically 2468.0
+real cond (2468, 40)
+datasets/73/T6B73120593.wav
+oversize 48
+Teorically 2411.0
+real cond (2411, 40)
+datasets/73/T6B73120594.wav
+oversize 64
+Teorically 2347.0
+real cond (2347, 40)
+datasets/73/T6B73120595.wav
+oversize 32
+Teorically 1708.0
+real cond (1708, 40)
+datasets/73/T6B73120596.wav
+oversize 16
+Teorically 3029.0
+real cond (3029, 40)
+datasets/73/T6B73120597.wav
+oversize 16
+Teorically 4865.0
+real cond (4865, 40)
+datasets/73/T6B73120598.wav
+oversize 48
+Teorically 2043.0
+real cond (2043, 40)
+datasets/73/T6B73120599.wav
+oversize 64
+Teorically 3229.0
+real cond (3229, 40)
+datasets/73/T6B73120600.wav
+oversize 64
+Teorically 2827.0
+real cond (2827, 40)
+datasets/73/T6B73120601.wav
+oversize 48
+Teorically 2387.0
+real cond (2387, 40)
+datasets/73/T6B73120602.wav
+oversize 0
+Teorically 1810.0
+real cond (1810, 40)
+datasets/73/T6B73120603.wav
+oversize 0
+Teorically 2324.0
+real cond (2324, 40)
+datasets/73/T6B73120604.wav
+oversize 16
+Teorically 4625.0
+real cond (4625, 40)
+datasets/73/T6B73120605.wav
+oversize 64
+Teorically 2337.0
+real cond (2337, 40)
+datasets/73/T6B73120606.wav
+oversize 48
+Teorically 5315.0
+real cond (5315, 40)
+datasets/73/T6B73120607.wav
+oversize 48
+Teorically 4053.0
+real cond (4053, 40)
+datasets/73/T6B73120608.wav
+oversize 16
+Teorically 2161.0
+real cond (2161, 40)
+datasets/73/T6B73120609.wav
+oversize 64
+Teorically 2633.0
+real cond (2633, 40)
+datasets/73/T6B73120610.wav
+oversize 32
+Teorically 2627.0
+real cond (2627, 40)
+datasets/73/T6B73120611.wav
+oversize 32
+Teorically 2907.0
+real cond (2907, 40)
+datasets/73/T6B73120612.wav
+oversize 0
+Teorically 2104.0
+real cond (2104, 40)
+datasets/73/T6B73120613.wav
+oversize 64
+Teorically 2491.0
+real cond (2491, 40)
+datasets/73/T6B73120614.wav
+oversize 0
+Teorically 3136.0
+real cond (3136, 40)
+datasets/73/T6B73120615.wav
+oversize 64
+Teorically 3294.0
+real cond (3294, 40)
+datasets/73/T6B73120616.wav
+oversize 48
+Teorically 2525.0
+real cond (2525, 40)
+datasets/73/T6B73120617.wav
+oversize 64
+Teorically 1821.0
+real cond (1821, 40)
+datasets/73/T6B73120618.wav
+oversize 0
+Teorically 2980.0
+real cond (2980, 40)
+datasets/73/T6B73120619.wav
+oversize 0
+Teorically 2144.0
+real cond (2144, 40)
+datasets/73/T6B73120620.wav
+oversize 64
+Teorically 3689.0
+real cond (3689, 40)
+datasets/73/T6B73120621.wav
+oversize 32
+Teorically 6454.0
+real cond (6454, 40)
+datasets/73/T6B73120622.wav
+oversize 32
+Teorically 1686.0
+real cond (1686, 40)
+datasets/73/T6B73120623.wav
+oversize 32
+Teorically 5930.0
+real cond (5930, 40)
+datasets/73/T6B73120624.wav
+oversize 16
+Teorically 3971.0
+real cond (3971, 40)
+datasets/73/T6B73120625.wav
+oversize 48
+Teorically 1673.0
+real cond (1673, 40)
+datasets/73/T6B73120626.wav
+oversize 16
+Teorically 1907.0
+real cond (1907, 40)
+datasets/73/T6B73120627.wav
+oversize 16
+Teorically 2779.0
+real cond (2779, 40)
+datasets/73/T6B73120628.wav
+oversize 32
+Teorically 2114.0
+real cond (2114, 40)
+datasets/73/T6B73120629.wav
+oversize 0
+Teorically 1738.0
+real cond (1738, 40)
+datasets/73/T6B73120630.wav
+oversize 48
+Teorically 2101.0
+real cond (2101, 40)
+datasets/73/T6B73120631.wav
+oversize 64
+Teorically 2629.0
+real cond (2629, 40)
+datasets/73/T6B73120632.wav
+oversize 48
+Teorically 4057.0
+real cond (4057, 40)
+datasets/73/T6B73120633.wav
+oversize 64
+Teorically 4242.0
+real cond (4242, 40)
+datasets/73/T6B73120634.wav
+oversize 32
+Teorically 3410.0
+real cond (3410, 40)
+datasets/73/T6B73120635.wav
+oversize 0
+Teorically 3716.0
+real cond (3716, 40)
+datasets/73/T6B73120636.wav
+oversize 32
+Teorically 4350.0
+real cond (4350, 40)
+datasets/73/T6B73120637.wav
+oversize 0
+Teorically 6492.0
+real cond (6492, 40)
+datasets/73/T6B73120638.wav
+oversize 16
+Teorically 1739.0
+real cond (1739, 40)
+datasets/73/T6B73120639.wav
+oversize 32
+Teorically 1998.0
+real cond (1998, 40)
+datasets/73/T6B73120640.wav
+oversize 48
+Teorically 1885.0
+real cond (1885, 40)
+datasets/73/T6B73120641.wav
+oversize 0
+Teorically 1692.0
+real cond (1692, 40)
+datasets/73/T6B73120642.wav
+oversize 0
+Teorically 1674.0
+real cond (1674, 40)
+datasets/73/T6B73120643.wav
+oversize 0
+Teorically 3664.0
+real cond (3664, 40)
+datasets/73/T6B73120644.wav
+oversize 48
+Teorically 5401.0
+real cond (5401, 40)
+datasets/73/T6B73120645.wav
+oversize 16
+Teorically 3479.0
+real cond (3479, 40)
+datasets/73/T6B73120646.wav
+oversize 48
+Teorically 5465.0
+real cond (5465, 40)
+datasets/73/T6B73120647.wav
+oversize 0
+Teorically 1773.0
+real cond (1773, 40)
+datasets/73/T6B73120648.wav
+oversize 0
+Teorically 2532.0
+real cond (2532, 40)
+datasets/73/T6B73120649.wav
+oversize 64
+Teorically 3017.0
+real cond (3017, 40)
+datasets/73/T6B73120650.wav
+oversize 16
+Teorically 4771.0
+real cond (4771, 40)
+datasets/73/T6B73120651.wav
+oversize 48
+Teorically 2965.0
+real cond (2965, 40)
+datasets/73/T6B73120652.wav
+oversize 48
+Teorically 1613.0
+real cond (1613, 40)
+datasets/73/T6B73120653.wav
+oversize 32
+Teorically 2602.0
+real cond (2602, 40)
+datasets/73/T6B73120654.wav
+oversize 48
+Teorically 5685.0
+real cond (5685, 40)
+datasets/73/T6B73120655.wav
+oversize 64
+Teorically 8065.0
+real cond (8065, 40)
+datasets/73/T6B73120656.wav
+oversize 64
+Teorically 1125.0
+real cond (1125, 40)
+datasets/73/T6B73120657.wav
+oversize 32
+Teorically 6650.0
+real cond (6650, 40)
+datasets/73/T6B73120658.wav
+oversize 64
+Teorically 14005.0
+real cond (14005, 40)
+datasets/73/T6B73120659.wav
+oversize 48
+Teorically 5605.0
+real cond (5605, 40)
+datasets/73/T6B73120660.wav
+oversize 16
+Teorically 5575.0
+real cond (5575, 40)
+datasets/73/T6B73120661.wav
+oversize 16
+Teorically 1575.0
+real cond (1575, 40)
+datasets/73/T6B73120662.wav
+oversize 32
+Teorically 10306.0
+real cond (10306, 40)
+datasets/73/T6B73120663.wav
+oversize 0
+Teorically 6874.0
+real cond (6874, 40)
+datasets/73/T6B73120664.wav
+oversize 48
+Teorically 2083.0
+real cond (2083, 40)
+datasets/73/T6B73120665.wav
+oversize 16
+Teorically 8279.0
+real cond (8279, 40)
+datasets/73/T6B73120666.wav
+oversize 40
+Teorically 1704.0
+real cond (1704, 40)
+datasets/73/T6B73120667.wav
+oversize 16
+Teorically 5839.0
+real cond (5839, 40)
+datasets/73/T6B73120668.wav
+oversize 48
+Teorically 9845.0
+real cond (9845, 40)
+datasets/73/T6B73120669.wav
+oversize 48
+Teorically 10697.0
+real cond (10697, 40)
+datasets/73/T6B73120670.wav
+oversize 48
+Teorically 3809.0
+real cond (3809, 40)
+datasets/73/T6B73120671.wav
+oversize 0
+Teorically 4884.0
+real cond (4884, 40)
+datasets/73/T6B73120672.wav
+oversize 16
+Teorically 6451.0
+real cond (6451, 40)
+datasets/73/T6B73120673.wav
+oversize 48
+Teorically 3557.0
+real cond (3557, 40)
+datasets/73/T6B73120674.wav
+oversize 0
+Teorically 12016.0
+real cond (12016, 40)
+datasets/73/T6B73120675.wav
+oversize 0
+Teorically 3264.0
+real cond (3264, 40)
+datasets/73/T6B73120676.wav
+oversize 0
+Teorically 9872.0
+real cond (9872, 40)
+datasets/73/T6B73120677.wav
+oversize 0
+Teorically 4384.0
+real cond (4384, 40)
+datasets/73/T6B73120678.wav
+oversize 64
+Teorically 6805.0
+real cond (6805, 40)
+datasets/73/T6B73120679.wav
+oversize 48
+Teorically 8565.0
+real cond (8565, 40)
+datasets/73/T6B73120680.wav
+oversize 48
+Teorically 1641.0
+real cond (1641, 40)
+datasets/73/T6B73120681.wav
+oversize 64
+Teorically 5561.0
+real cond (5561, 40)
+datasets/73/T6B73120682.wav
+oversize 48
+Teorically 7961.0
+real cond (7961, 40)
+datasets/73/T6B73120683.wav
+oversize 64
+Teorically 7037.0
+real cond (7037, 40)
+datasets/73/T6B73120684.wav
+oversize 32
+Teorically 7714.0
+real cond (7714, 40)
+datasets/73/T6B73120685.wav
+oversize 32
+Teorically 12578.0
+real cond (12578, 40)
+datasets/73/T6B73120686.wav
+oversize 16
+Teorically 8199.0
+real cond (8199, 40)
+datasets/73/T6B73120687.wav
+oversize 64
+Teorically 7945.0
+real cond (7945, 40)
+datasets/73/T6B73120688.wav
+oversize 0
+Teorically 5420.0
+real cond (5420, 40)
+datasets/73/T6B73120689.wav
+oversize 64
+Teorically 9805.0
+real cond (9805, 40)
+datasets/73/T6B73120690.wav
+oversize 16
+Teorically 2851.0
+real cond (2851, 40)
+datasets/73/T6B73120691.wav
+oversize 64
+Teorically 13061.0
+real cond (13061, 40)
+datasets/73/T6B73120692.wav
+oversize 32
+Teorically 4013.0
+real cond (4013, 40)
+datasets/73/T6B73120693.wav
+oversize 0
+Teorically 7532.0
+real cond (7532, 40)
+datasets/73/T6B73120694.wav
+oversize 64
+Teorically 5145.0
+real cond (5145, 40)
+datasets/73/T6B73120695.wav
+oversize 0
+Teorically 7472.0
+real cond (7472, 40)
+datasets/73/T6B73120696.wav
+oversize 32
+Teorically 6694.0
+real cond (6694, 40)
+datasets/73/T6B73120697.wav
+oversize 64
+Teorically 9817.0
+real cond (9817, 40)
+datasets/73/T6B73120698.wav
+oversize 32
+Teorically 8258.0
+real cond (8258, 40)
+datasets/73/T6B73120699.wav
+oversize 16
+Teorically 5007.0
+real cond (5007, 40)
+datasets/73/T6B73200000.wav
+oversize 0
+Teorically 4342.0
+real cond (4342, 40)
+datasets/73/T6B73200001.wav
+oversize 32
+Teorically 4236.0
+real cond (4236, 40)
+datasets/73/T6B73200002.wav
+oversize 0
+Teorically 2234.0
+real cond (2234, 40)
+datasets/73/T6B73200003.wav
+oversize 64
+Teorically 1715.0
+real cond (1715, 40)
+datasets/73/T6B73200004.wav
+oversize 48
+Teorically 5123.0
+real cond (5123, 40)
+datasets/73/T6B73200005.wav
+oversize 48
+Teorically 1875.0
+real cond (1875, 40)
+datasets/73/T6B73200006.wav
+oversize 64
+Teorically 6311.0
+real cond (6311, 40)
+datasets/73/T6B73200007.wav
+oversize 16
+Teorically 5323.0
+real cond (5323, 40)
+datasets/73/T6B73200008.wav
+oversize 48
+Teorically 5011.0
+real cond (5011, 40)
+datasets/73/T6B73200009.wav
+oversize 48
+Teorically 2593.0
+real cond (2593, 40)
+datasets/73/T6B73200010.wav
+oversize 48
+Teorically 1875.0
+real cond (1875, 40)
+datasets/73/T6B73200011.wav
+oversize 64
+Teorically 4237.0
+real cond (4237, 40)
+datasets/73/T6B73200012.wav
+oversize 16
+Teorically 1993.0
+real cond (1993, 40)
+datasets/73/T6B73200013.wav
+oversize 16
+Teorically 6727.0
+real cond (6727, 40)
+datasets/73/T6B73200014.wav
+oversize 64
+Teorically 5333.0
+real cond (5333, 40)
+datasets/73/T6B73200015.wav
+oversize 64
+Teorically 2095.0
+real cond (2095, 40)
+datasets/73/T6B73200016.wav
+oversize 32
+Teorically 6914.0
+real cond (6914, 40)
+datasets/73/T6B73200017.wav
+oversize 64
+Teorically 2274.0
+real cond (2274, 40)
+datasets/73/T6B73200018.wav
+oversize 48
+Teorically 2105.0
+real cond (2105, 40)
+datasets/73/T6B73200019.wav
+oversize 0
+Teorically 2392.0
+real cond (2392, 40)
+datasets/73/T6B73200020.wav
+oversize 32
+Teorically 3802.0
+real cond (3802, 40)
+datasets/73/T6B73200021.wav
+oversize 32
+Teorically 4088.0
+real cond (4088, 40)
+datasets/73/T6B73200022.wav
+oversize 64
+Teorically 2613.0
+real cond (2613, 40)
+datasets/73/T6B73200023.wav
+oversize 32
+Teorically 4026.0
+real cond (4026, 40)
+datasets/73/T6B73200024.wav
+oversize 32
+Teorically 4459.0
+real cond (4459, 40)
+datasets/73/T6B73200025.wav
+oversize 64
+Teorically 545.0
+real cond (545, 40)
+datasets/73/T6B73200026.wav
+oversize 48
+Teorically 2337.0
+real cond (2337, 40)
+datasets/73/T6B73200027.wav
+oversize 32
+Teorically 1606.0
+real cond (1606, 40)
+datasets/73/T6B73200028.wav
+oversize 0
+Teorically 3875.0
+real cond (3875, 40)
+datasets/73/T6B73200029.wav
+oversize 16
+Teorically 1865.0
+real cond (1865, 40)
+datasets/73/T6B73200030.wav
+oversize 0
+Teorically 1190.0
+real cond (1190, 40)
+datasets/73/T6B73200031.wav
+oversize 0
+Teorically 4442.0
+real cond (4442, 40)
+datasets/73/T6B73200032.wav
+oversize 64
+Teorically 4427.0
+real cond (4427, 40)
+datasets/73/T6B73200033.wav
+oversize 64
+Teorically 3971.0
+real cond (3971, 40)
+datasets/73/T6B73200034.wav
+oversize 64
+Teorically 4907.0
+real cond (4907, 40)
+datasets/73/T6B73200035.wav
+oversize 32
+Teorically 5536.0
+real cond (5536, 40)
+datasets/73/T6B73200036.wav
+oversize 48
+Teorically 5231.0
+real cond (5231, 40)
+datasets/73/T6B73200037.wav
+oversize 64
+Teorically 4303.0
+real cond (4303, 40)
+datasets/73/T6B73200038.wav
+oversize 48
+Teorically 945.0
+real cond (945, 40)
+datasets/73/T6B73200039.wav
+oversize 48
+Teorically 2433.0
+real cond (2433, 40)
+datasets/73/T6B73200040.wav
+oversize 0
+Teorically 4086.0
+real cond (4086, 40)
+datasets/73/T6B73200041.wav
+oversize 64
+Teorically 4023.0
+real cond (4023, 40)
+datasets/73/T6B73200042.wav
+oversize 0
+Teorically 4358.0
+real cond (4358, 40)
+datasets/73/T6B73200043.wav
+oversize 16
+Teorically 3139.0
+real cond (3139, 40)
+datasets/73/T6B73200044.wav
+oversize 48
+Teorically 2079.0
+real cond (2079, 40)
+datasets/73/T6B73200045.wav
+oversize 32
+Teorically 2434.0
+real cond (2434, 40)
+datasets/73/T6B73200046.wav
+oversize 32
+Teorically 3176.0
+real cond (3176, 40)
+datasets/73/T6B73200047.wav
+oversize 0
+Teorically 3962.0
+real cond (3962, 40)
+datasets/73/T6B73200048.wav
+oversize 0
+Teorically 5486.0
+real cond (5486, 40)
+datasets/73/T6B73200049.wav
+oversize 0
+Teorically 2606.0
+real cond (2606, 40)
+datasets/73/T6B73200050.wav
+oversize 32
+Teorically 4488.0
+real cond (4488, 40)
+datasets/73/T6B73200051.wav
+oversize 32
+Teorically 4468.0
+real cond (4468, 40)
+datasets/73/T6B73200052.wav
+oversize 64
+Teorically 3397.0
+real cond (3397, 40)
+datasets/73/T6B73200053.wav
+oversize 32
+Teorically 2292.0
+real cond (2292, 40)
+datasets/73/T6B73200054.wav
+oversize 32
+Teorically 6078.0
+real cond (6078, 40)
+datasets/73/T6B73200055.wav
+oversize 64
+Teorically 2919.0
+real cond (2919, 40)
+datasets/73/T6B73200056.wav
+oversize 0
+Teorically 512.0
+real cond (512, 40)
+datasets/73/T6B73200057.wav
+oversize 16
+Teorically 2683.0
+real cond (2683, 40)
+datasets/73/T6B73200058.wav
+oversize 64
+Teorically 3375.0
+real cond (3375, 40)
+datasets/73/T6B73200059.wav
+oversize 32
+Teorically 812.0
+real cond (812, 40)
+datasets/73/T6B73200060.wav
+oversize 48
+Teorically 2199.0
+real cond (2199, 40)
+datasets/73/T6B73200061.wav
+oversize 64
+Teorically 1813.0
+real cond (1813, 40)
+datasets/73/T6B73200062.wav
+oversize 48
+Teorically 2093.0
+real cond (2093, 40)
+datasets/73/T6B73200063.wav
+oversize 64
+Teorically 5443.0
+real cond (5443, 40)
+datasets/73/T6B73200064.wav
+oversize 0
+Teorically 2970.0
+real cond (2970, 40)
+datasets/73/T6B73200065.wav
+oversize 0
+Teorically 4266.0
+real cond (4266, 40)
+datasets/73/T6B73200066.wav
+oversize 64
+Teorically 5149.0
+real cond (5149, 40)
+datasets/73/T6B73200067.wav
+oversize 16
+Teorically 3833.0
+real cond (3833, 40)
+datasets/73/T6B73200068.wav
+oversize 16
+Teorically 4837.0
+real cond (4837, 40)
+datasets/73/T6B73200069.wav
+oversize 16
+Teorically 3311.0
+real cond (3311, 40)
+datasets/73/T6B73200070.wav
+oversize 16
+Teorically 3535.0
+real cond (3535, 40)
+datasets/73/T6B73200071.wav
+oversize 48
+Teorically 2865.0
+real cond (2865, 40)
+datasets/73/T6B73200072.wav
+oversize 64
+Teorically 2045.0
+real cond (2045, 40)
+datasets/73/T6B73200073.wav
+oversize 64
+Teorically 2345.0
+real cond (2345, 40)
+datasets/73/T6B73200074.wav
+oversize 64
+Teorically 3773.0
+real cond (3773, 40)
+datasets/73/T6B73200075.wav
+oversize 64
+Teorically 7043.0
+real cond (7043, 40)
+datasets/73/T6B73200076.wav
+oversize 48
+Teorically 2123.0
+real cond (2123, 40)
+datasets/73/T6B73200077.wav
+oversize 64
+Teorically 4977.0
+real cond (4977, 40)
+datasets/73/T6B73200078.wav
+oversize 32
+Teorically 4740.0
+real cond (4740, 40)
+datasets/73/T6B73200079.wav
+oversize 16
+Teorically 1873.0
+real cond (1873, 40)
+datasets/73/T6B73200080.wav
+oversize 64
+Teorically 6767.0
+real cond (6767, 40)
+datasets/73/T6B73200081.wav
+oversize 0
+Teorically 4314.0
+real cond (4314, 40)
+datasets/73/T6B73200082.wav
+oversize 0
+Teorically 5016.0
+real cond (5016, 40)
+datasets/73/T6B73200083.wav
+oversize 48
+Teorically 1879.0
+real cond (1879, 40)
+datasets/73/T6B73200084.wav
+oversize 48
+Teorically 4171.0
+real cond (4171, 40)
+datasets/73/T6B73200085.wav
+oversize 48
+Teorically 2011.0
+real cond (2011, 40)
+datasets/73/T6B73200086.wav
+oversize 48
+Teorically 2191.0
+real cond (2191, 40)
+datasets/73/T6B73200087.wav
+oversize 16
+Teorically 4599.0
+real cond (4599, 40)
+datasets/73/T6B73200088.wav
+oversize 48
+Teorically 4095.0
+real cond (4095, 40)
+datasets/73/T6B73200089.wav
+oversize 64
+Teorically 2691.0
+real cond (2691, 40)
+datasets/73/T6B73200090.wav
+oversize 32
+Teorically 4546.0
+real cond (4546, 40)
+datasets/73/T6B73200091.wav
+oversize 16
+Teorically 4419.0
+real cond (4419, 40)
+datasets/73/T6B73200092.wav
+oversize 48
+Teorically 1875.0
+real cond (1875, 40)
+datasets/73/T6B73200093.wav
+oversize 16
+Teorically 547.0
+real cond (547, 40)
+datasets/73/T6B73200094.wav
+oversize 32
+Teorically 6280.0
+real cond (6280, 40)
+datasets/73/T6B73200095.wav
+oversize 0
+Teorically 4826.0
+real cond (4826, 40)
+datasets/73/T6B73200096.wav
+oversize 64
+Teorically 4579.0
+real cond (4579, 40)
+datasets/73/T6B73200097.wav
+oversize 64
+Teorically 1965.0
+real cond (1965, 40)
+datasets/73/T6B73200098.wav
+oversize 48
+Teorically 2465.0
+real cond (2465, 40)
+datasets/73/T6B73200099.wav
+oversize 0
+Teorically 4874.0
+real cond (4874, 40)
+datasets/73/T6B73200100.wav
+oversize 48
+Teorically 2157.0
+real cond (2157, 40)
+datasets/73/T6B73200101.wav
+oversize 48
+Teorically 4209.0
+real cond (4209, 40)
+datasets/73/T6B73200102.wav
+oversize 64
+Teorically 5529.0
+real cond (5529, 40)
+datasets/73/T6B73200103.wav
+oversize 0
+Teorically 5094.0
+real cond (5094, 40)
+datasets/73/T6B73200104.wav
+oversize 48
+Teorically 5539.0
+real cond (5539, 40)
+datasets/73/T6B73200105.wav
+oversize 64
+Teorically 5509.0
+real cond (5509, 40)
+datasets/73/T6B73200106.wav
+oversize 64
+Teorically 2551.0
+real cond (2551, 40)
+datasets/73/T6B73200107.wav
+oversize 32
+Teorically 4560.0
+real cond (4560, 40)
+datasets/73/T6B73200108.wav
+oversize 0
+Teorically 4378.0
+real cond (4378, 40)
+datasets/73/T6B73200109.wav
+oversize 64
+Teorically 3683.0
+real cond (3683, 40)
+datasets/73/T6B73200110.wav
+oversize 32
+Teorically 2612.0
+real cond (2612, 40)
+datasets/73/T6B73200111.wav
+oversize 0
+Teorically 772.0
+real cond (772, 40)
+datasets/73/T6B73200112.wav
+oversize 0
+Teorically 4122.0
+real cond (4122, 40)
+datasets/73/T6B73200113.wav
+oversize 32
+Teorically 1908.0
+real cond (1908, 40)
+datasets/73/T6B73200114.wav
+oversize 0
+Teorically 5750.0
+real cond (5750, 40)
+datasets/73/T6B73200115.wav
+oversize 48
+Teorically 3867.0
+real cond (3867, 40)
+datasets/73/T6B73200116.wav
+oversize 48
+Teorically 6495.0
+real cond (6495, 40)
+datasets/73/T6B73200117.wav
+oversize 16
+Teorically 5523.0
+real cond (5523, 40)
+datasets/73/T6B73200118.wav
+oversize 48
+Teorically 2445.0
+real cond (2445, 40)
+datasets/73/T6B73200119.wav
+oversize 0
+Teorically 5874.0
+real cond (5874, 40)
+datasets/73/T6B73200120.wav
+oversize 0
+Teorically 2454.0
+real cond (2454, 40)
+datasets/73/T6B73200121.wav
+oversize 64
+Teorically 5499.0
+real cond (5499, 40)
+datasets/73/T6B73200122.wav
+oversize 16
+Teorically 4493.0
+real cond (4493, 40)
+datasets/73/T6B73200123.wav
+oversize 48
+Teorically 4505.0
+real cond (4505, 40)
+datasets/73/T6B73200124.wav
+oversize 16
+Teorically 1835.0
+real cond (1835, 40)
+datasets/73/T6B73200125.wav
+oversize 0
+Teorically 4782.0
+real cond (4782, 40)
+datasets/73/T6B73200126.wav
+oversize 32
+Teorically 4420.0
+real cond (4420, 40)
+datasets/73/T6B73200127.wav
+oversize 64
+Teorically 615.0
+real cond (615, 40)
+datasets/73/T6B73200128.wav
+oversize 32
+Teorically 5684.0
+real cond (5684, 40)
+datasets/73/T6B73200129.wav
+oversize 0
+Teorically 2100.0
+real cond (2100, 40)
+datasets/73/T6B73200130.wav
+oversize 0
+Teorically 4522.0
+real cond (4522, 40)
+datasets/73/T6B73200131.wav
+oversize 32
+Teorically 4844.0
+real cond (4844, 40)
+datasets/73/T6B73200132.wav
+oversize 16
+Teorically 1631.0
+real cond (1631, 40)
+datasets/73/T6B73200133.wav
+oversize 0
+Teorically 5606.0
+real cond (5606, 40)
+datasets/73/T6B73200134.wav
+oversize 64
+Teorically 3247.0
+real cond (3247, 40)
+datasets/73/T6B73200135.wav
+oversize 48
+Teorically 4339.0
+real cond (4339, 40)
+datasets/73/T6B73200136.wav
+oversize 64
+Teorically 5229.0
+real cond (5229, 40)
+datasets/73/T6B73200137.wav
+oversize 64
+Teorically 4167.0
+real cond (4167, 40)
+datasets/73/T6B73200138.wav
+oversize 64
+Teorically 3177.0
+real cond (3177, 40)
+datasets/73/T6B73200139.wav
+oversize 0
+Teorically 6672.0
+real cond (6672, 40)
+datasets/73/T6B73200140.wav
+oversize 0
+Teorically 3630.0
+real cond (3630, 40)
+datasets/73/T6B73200141.wav
+oversize 16
+Teorically 4189.0
+real cond (4189, 40)
+datasets/73/T6B73200142.wav
+oversize 16
+Teorically 2785.0
+real cond (2785, 40)
+datasets/73/T6B73200143.wav
+oversize 64
+Teorically 941.0
+real cond (941, 40)
+datasets/73/T6B73200144.wav
+oversize 16
+Teorically 4555.0
+real cond (4555, 40)
+datasets/73/T6B73200145.wav
+oversize 64
+Teorically 3199.0
+real cond (3199, 40)
+datasets/73/T6B73200146.wav
+oversize 64
+Teorically 2191.0
+real cond (2191, 40)
+datasets/73/T6B73200147.wav
+oversize 48
+Teorically 4895.0
+real cond (4895, 40)
+datasets/73/T6B73200148.wav
+oversize 32
+Teorically 2234.0
+real cond (2234, 40)
+datasets/73/T6B73200149.wav
+oversize 16
+Teorically 2427.0
+real cond (2427, 40)
+datasets/73/T6B73200150.wav
+oversize 48
+Teorically 307.0
+real cond (307, 40)
+datasets/73/T6B73200151.wav
+oversize 16
+Teorically 4775.0
+real cond (4775, 40)
+datasets/73/T6B73200152.wav
+oversize 0
+Teorically 4878.0
+real cond (4878, 40)
+datasets/73/T6B73200153.wav
+oversize 0
+Teorically 6858.0
+real cond (6858, 40)
+datasets/73/T6B73200154.wav
+oversize 16
+Teorically 1997.0
+real cond (1997, 40)
+datasets/73/T6B73200155.wav
+oversize 64
+Teorically 5113.0
+real cond (5113, 40)
+datasets/73/T6B73200156.wav
+oversize 0
+Teorically 3716.0
+real cond (3716, 40)
+datasets/73/T6B73200157.wav
+oversize 48
+Teorically 3543.0
+real cond (3543, 40)
+datasets/73/T6B73200158.wav
+oversize 48
+Teorically 5455.0
+real cond (5455, 40)
+datasets/73/T6B73200159.wav
+oversize 32
+Teorically 4440.0
+real cond (4440, 40)
+datasets/73/T6B73200160.wav
+oversize 16
+Teorically 5885.0
+real cond (5885, 40)
+datasets/73/T6B73200161.wav
+oversize 16
+Teorically 5689.0
+real cond (5689, 40)
+datasets/73/T6B73200162.wav
+oversize 0
+Teorically 2962.0
+real cond (2962, 40)
+datasets/73/T6B73200163.wav
+oversize 16
+Teorically 5395.0
+real cond (5395, 40)
+datasets/73/T6B73200165.wav
+oversize 32
+Teorically 4684.0
+real cond (4684, 40)
+datasets/73/T6B73200166.wav
+oversize 0
+Teorically 1140.0
+real cond (1140, 40)
+datasets/73/T6B73200167.wav
+oversize 64
+Teorically 3571.0
+real cond (3571, 40)
+datasets/73/T6B73200168.wav
+oversize 48
+Teorically 5461.0
+real cond (5461, 40)
+datasets/73/T6B73200169.wav
+oversize 32
+Teorically 4152.0
+real cond (4152, 40)
+datasets/73/T6B73200170.wav
+oversize 0
+Teorically 2412.0
+real cond (2412, 40)
+datasets/73/T6B73200171.wav
+oversize 0
+Teorically 5352.0
+real cond (5352, 40)
+datasets/73/T6B73200172.wav
+oversize 32
+Teorically 2496.0
+real cond (2496, 40)
+datasets/73/T6B73200173.wav
+oversize 48
+Teorically 7881.0
+real cond (7881, 40)
+datasets/73/T6B73200174.wav
+oversize 64
+Teorically 3167.0
+real cond (3167, 40)
+datasets/73/T6B73200175.wav
+oversize 32
+Teorically 5940.0
+real cond (5940, 40)
+datasets/73/T6B73200178.wav
+oversize 32
+Teorically 4150.0
+real cond (4150, 40)
+datasets/73/T6B73200180.wav
+oversize 48
+Teorically 3747.0
+real cond (3747, 40)
+datasets/73/T6B73200181.wav
+oversize 64
+Teorically 3609.0
+real cond (3609, 40)
+datasets/73/T6B73200182.wav
+oversize 32
+Teorically 3266.0
+real cond (3266, 40)
+datasets/73/T6B73200183.wav
+oversize 0
+Teorically 5136.0
+real cond (5136, 40)
+datasets/73/T6B73200184.wav
+oversize 16
+Teorically 3451.0
+real cond (3451, 40)
+datasets/73/T6B73200185.wav
+oversize 0
+Teorically 4870.0
+real cond (4870, 40)
+datasets/73/T6B73200186.wav
+oversize 64
+Teorically 5079.0
+real cond (5079, 40)
+datasets/73/T6B73200187.wav
+oversize 32
+Teorically 6556.0
+real cond (6556, 40)
+datasets/73/T6B73200189.wav
+oversize 64
+Teorically 5407.0
+real cond (5407, 40)
+datasets/73/T6B73200190.wav
+oversize 32
+Teorically 5094.0
+real cond (5094, 40)
+datasets/73/T6B73200191.wav
+oversize 16
+Teorically 4813.0
+real cond (4813, 40)
+datasets/73/T6B73200192.wav
+oversize 16
+Teorically 5565.0
+real cond (5565, 40)
+datasets/73/T6B73200193.wav
+oversize 64
+Teorically 2147.0
+real cond (2147, 40)
+datasets/73/T6B73200194.wav
+oversize 64
+Teorically 4407.0
+real cond (4407, 40)
+datasets/73/T6B73200195.wav
+oversize 64
+Teorically 2425.0
+real cond (2425, 40)
+datasets/73/T6B73200196.wav
+oversize 64
+Teorically 2791.0
+real cond (2791, 40)
+datasets/73/T6B73200197.wav
+oversize 0
+Teorically 4826.0
+real cond (4826, 40)
+datasets/73/T6B73200198.wav
+oversize 32
+Teorically 5838.0
+real cond (5838, 40)
+datasets/73/T6B73200199.wav
+oversize 48
+Teorically 5071.0
+real cond (5071, 40)
+datasets/73/T6B73200200.wav
+oversize 64
+Teorically 3331.0
+real cond (3331, 40)
+datasets/73/T6B73200202.wav
+oversize 16
+Teorically 3929.0
+real cond (3929, 40)
+datasets/73/T6B73200203.wav
+oversize 16
+Teorically 4005.0
+real cond (4005, 40)
+datasets/73/T6B73200204.wav
+oversize 32
+Teorically 5446.0
+real cond (5446, 40)
+datasets/73/T6B73200205.wav
+oversize 16
+Teorically 4897.0
+real cond (4897, 40)
+datasets/73/T6B73200206.wav
+oversize 48
+Teorically 3817.0
+real cond (3826, 40)
+error____________________________________
+datasets/73/T6B73200207.wav
+oversize 48
+Teorically 549.0
+real cond (549, 40)
+datasets/73/T6B73200208.wav
+oversize 64
+Teorically 3735.0
+real cond (3735, 40)
+datasets/73/T6B73200209.wav
+oversize 0
+Teorically 3604.0
+real cond (3604, 40)
+datasets/73/T6B73200210.wav
+oversize 48
+Teorically 4567.0
+real cond (4567, 40)
+datasets/73/T6B73200211.wav
+oversize 48
+Teorically 5095.0
+real cond (5095, 40)
+datasets/73/T6B73200212.wav
+oversize 64
+Teorically 6171.0
+real cond (6171, 40)
+datasets/73/T6B73200213.wav
+oversize 0
+Teorically 3844.0
+real cond (3844, 40)
+datasets/73/T6B73200214.wav
+oversize 0
+Teorically 5206.0
+real cond (5206, 40)
+datasets/73/T6B73200215.wav
+oversize 0
+Teorically 4444.0
+real cond (4444, 40)
+datasets/73/T6B73200216.wav
+oversize 64
+Teorically 3671.0
+real cond (3671, 40)
+datasets/73/T6B73200217.wav
+oversize 48
+Teorically 4161.0
+real cond (4161, 40)
+datasets/73/T6B73200218.wav
+oversize 32
+Teorically 476.0
+real cond (476, 40)
+datasets/73/T6B73200219.wav
+oversize 32
+Teorically 3872.0
+real cond (3872, 40)
+datasets/73/T6B73200220.wav
+oversize 16
+Teorically 4449.0
+real cond (4449, 40)
+datasets/73/T6B73200221.wav
+oversize 64
+Teorically 3943.0
+real cond (3943, 40)
+datasets/73/T6B73200222.wav
+oversize 48
+Teorically 5541.0
+real cond (5541, 40)
+datasets/73/T6B73200223.wav
+oversize 32
+Teorically 4312.0
+real cond (4312, 40)
+datasets/73/T6B73200224.wav
+oversize 32
+Teorically 1864.0
+real cond (1864, 40)
+datasets/73/T6B73200225.wav
+oversize 48
+Teorically 4931.0
+real cond (4931, 40)
+datasets/73/T6B73200226.wav
+oversize 64
+Teorically 2341.0
+real cond (2341, 40)
+datasets/73/T6B73200227.wav
+oversize 64
+Teorically 4603.0
+real cond (4603, 40)
+datasets/73/T6B73200228.wav
+oversize 32
+Teorically 1736.0
+real cond (1736, 40)
+datasets/73/T6B73200229.wav
+oversize 16
+Teorically 3813.0
+real cond (3813, 40)
+datasets/73/T6B73200230.wav
+oversize 32
+Teorically 4612.0
+real cond (4612, 40)
+datasets/73/T6B73200231.wav
+oversize 16
+Teorically 4769.0
+real cond (4769, 40)
+datasets/73/T6B73200232.wav
+oversize 64
+Teorically 5629.0
+real cond (5629, 40)
+datasets/73/T6B73200233.wav
+oversize 0
+Teorically 6330.0
+real cond (6330, 40)
+datasets/73/T6B73200234.wav
+oversize 32
+Teorically 2272.0
+real cond (2272, 40)
+datasets/73/T6B73200235.wav
+oversize 32
+Teorically 2942.0
+real cond (2942, 40)
+datasets/73/T6B73200236.wav
+oversize 48
+Teorically 1585.0
+real cond (1585, 40)
+datasets/73/T6B73200237.wav
+oversize 64
+Teorically 4651.0
+real cond (4651, 40)
+datasets/73/T6B73200238.wav
+oversize 0
+Teorically 5040.0
+real cond (5040, 40)
+datasets/73/T6B73200239.wav
+oversize 32
+Teorically 4064.0
+real cond (4064, 40)
+datasets/73/T6B73200240.wav
+oversize 0
+Teorically 2358.0
+real cond (2358, 40)
+datasets/73/T6B73200241.wav
+oversize 48
+Teorically 4431.0
+real cond (4431, 40)
+datasets/73/T6B73200242.wav
+oversize 48
+Teorically 1833.0
+real cond (1833, 40)
+datasets/73/T6B73200243.wav
+oversize 64
+Teorically 5027.0
+real cond (5027, 40)
+datasets/73/T6B73200244.wav
+oversize 32
+Teorically 5096.0
+real cond (5096, 40)
+datasets/73/T6B73200245.wav
+oversize 64
+Teorically 4709.0
+real cond (4709, 40)
+datasets/73/T6B73200246.wav
+oversize 64
+Teorically 5189.0
+real cond (5189, 40)
+datasets/73/T6B73200247.wav
+oversize 16
+Teorically 3883.0
+real cond (3883, 40)
+datasets/73/T6B73200248.wav
+oversize 0
+Teorically 4514.0
+real cond (4514, 40)
+datasets/73/T6B73200249.wav
+oversize 0
+Teorically 3556.0
+real cond (3556, 40)
+datasets/73/T6B73200250.wav
+oversize 0
+Teorically 5674.0
+real cond (5674, 40)
+datasets/73/T6B73200251.wav
+oversize 32
+Teorically 5116.0
+real cond (5116, 40)
+datasets/73/T6B73200252.wav
+oversize 32
+Teorically 4196.0
+real cond (4196, 40)
+datasets/73/T6B73200253.wav
+oversize 16
+Teorically 1861.0
+real cond (1861, 40)
+total dades 348577440
+num samples 3840
+total samples 348577440
+total conditioning 4300800
+cond len 80
+dades tallades (344064000,)
+cond shape (4300800, 43)
+dades shape (128, 2688000)
+Mean cc 0.49421082879
+Mean f0 0.511489180466
+Mean fv 0.513181028584
+Var cc 0.0397796048225
+Var f0 0.0237762703727
+Var fv 0.0262170548111

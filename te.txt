@@ -1,0 +1,359 @@
+
+Create dataset  ------------------------------------------------------------
+2017-11-16 19:30:07.125417
+
+total signal_samples: 221 
+seq_len: 9 
+overlap: 3 
+Complete seq: 24 
+batch_size: 5 
+
+Num. samples: 20
+Cut from:  221  signal_samples to  195
+Total Signal_Samples:  195
+   => batch_size= 5  x (nsamples/batch = 4  x seqlen = 9  + overlap = 3 )
+n cond =  60
+from  [-100 -100] to [-159 -159]
+data shape (raw vector): (195,)
+cond shape (raw 2d matrix): (60, 2)
+data shape: (5, 39)
+cond shape (5, 12, 2)
+
+Ellapsed time:  0.00045596249401569366 s.
+Dataset created ------------------------------------------------------------ 
+
+Size dataset: 20
+data test (array([[-113, -113],
+       [-114, -114],
+       [-115, -115]]), array([39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]), array([42, 43, 44, 45, 46, 47, 48, 49, 50]))
+END LOADING DATA ****************************************
+Show 3rd seq in batch during dataloader iteration
+ ------------------------------------------------------------
+Epoch= 0  Iteration= 1
+Data 
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+[torch.LongTensor of size 11]
+
+Target 
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+[torch.LongTensor of size 9]
+
+Cond
+0: 
+-125
+-125
+[torch.LongTensor of size 2]
+;1: 
+-126
+-126
+[torch.LongTensor of size 2]
+;2: 
+-127
+-127
+[torch.LongTensor of size 2]
+;
+
+Epoch= 0  Iteration= 2
+Data 
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+[torch.LongTensor of size 11]
+
+Target 
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+[torch.LongTensor of size 9]
+
+Cond
+0: 
+-128
+-128
+[torch.LongTensor of size 2]
+;1: 
+-129
+-129
+[torch.LongTensor of size 2]
+;2: 
+-130
+-130
+[torch.LongTensor of size 2]
+;
+
+Epoch= 0  Iteration= 3
+Data 
+  96
+  97
+  98
+  99
+ 100
+ 101
+ 102
+ 103
+ 104
+ 105
+ 106
+[torch.LongTensor of size 11]
+
+Target 
+  99
+ 100
+ 101
+ 102
+ 103
+ 104
+ 105
+ 106
+ 107
+[torch.LongTensor of size 9]
+
+Cond
+0: 
+-131
+-131
+[torch.LongTensor of size 2]
+;1: 
+-132
+-132
+[torch.LongTensor of size 2]
+;2: 
+-133
+-133
+[torch.LongTensor of size 2]
+;
+
+Epoch= 0  Iteration= 4
+Data 
+ 105
+ 106
+ 107
+ 108
+ 109
+ 110
+ 111
+ 112
+ 113
+ 114
+ 115
+[torch.LongTensor of size 11]
+
+Target 
+ 108
+ 109
+ 110
+ 111
+ 112
+ 113
+ 114
+ 115
+ 116
+[torch.LongTensor of size 9]
+
+Cond
+0: 
+-134
+-134
+[torch.LongTensor of size 2]
+;1: 
+-135
+-135
+[torch.LongTensor of size 2]
+;
+
+Epoch= 1  Iteration= 5
+Data 
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+[torch.LongTensor of size 11]
+
+Target 
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+[torch.LongTensor of size 9]
+
+Cond
+0: 
+-125
+-125
+[torch.LongTensor of size 2]
+;1: 
+-126
+-126
+[torch.LongTensor of size 2]
+;2: 
+-127
+-127
+[torch.LongTensor of size 2]
+;
+
+Epoch= 1  Iteration= 6
+Data 
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+[torch.LongTensor of size 11]
+
+Target 
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+[torch.LongTensor of size 9]
+
+Cond
+0: 
+-128
+-128
+[torch.LongTensor of size 2]
+;1: 
+-129
+-129
+[torch.LongTensor of size 2]
+;2: 
+-130
+-130
+[torch.LongTensor of size 2]
+;
+
+Epoch= 1  Iteration= 7
+Data 
+  96
+  97
+  98
+  99
+ 100
+ 101
+ 102
+ 103
+ 104
+ 105
+ 106
+[torch.LongTensor of size 11]
+
+Target 
+  99
+ 100
+ 101
+ 102
+ 103
+ 104
+ 105
+ 106
+ 107
+[torch.LongTensor of size 9]
+
+Cond
+0: 
+-131
+-131
+[torch.LongTensor of size 2]
+;1: 
+-132
+-132
+[torch.LongTensor of size 2]
+;2: 
+-133
+-133
+[torch.LongTensor of size 2]
+;
+
+Epoch= 1  Iteration= 8
+Data 
+ 105
+ 106
+ 107
+ 108
+ 109
+ 110
+ 111
+ 112
+ 113
+ 114
+ 115
+[torch.LongTensor of size 11]
+
+Target 
+ 108
+ 109
+ 110
+ 111
+ 112
+ 113
+ 114
+ 115
+ 116
+[torch.LongTensor of size 9]
+
+Cond
+0: 
+-134
+-134
+[torch.LongTensor of size 2]
+;1: 
+-135
+-135
+[torch.LongTensor of size 2]
+;
+
