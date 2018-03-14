@@ -24,9 +24,9 @@ echo "Array index: ${SLURM_ARRAY_TASK_ID}"
 
 
 
-WAV_DIRECTORY=/veu4/antonio/db/silent/
-AHO_DIRECTORY=/veu4/antonio/db/silent/
-LIST_FILE=/veu4/antonio/db/silent/wav.list
+WAV_DIRECTORY=/veu/tfgveu7/project/tcstar/wav
+AHO_DIRECTORY=/veu/tfgveu7/project/tcstar/cond
+LIST_FILE=/veu/tfgveu7/project/tcstar/wav.list
 
 AHOCODER=ahocoder
 AHODECODER=ahodecoder
@@ -58,7 +58,3 @@ exit 0
 echo "MSG $MSG $SLURM_ARRAY_TASK_ID"
 echo '----------'
 exit
-
-
-
-
