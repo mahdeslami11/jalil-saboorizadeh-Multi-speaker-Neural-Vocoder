@@ -20,7 +20,7 @@ for file in files:
 # Randomly take audio files from each of the speakers until minimum duration is reached
 open('wav.list', 'w').close()           # Clear file before appending
 generalFile = open(path + 'wav.list', "a")
-partitions = {'train': 0.6, 'validation': 0.2, 'test': 0.2}
+partitions = {'train': 0.8, 'validation': 0.1, 'test': 0.1}
 for part in partitions:
     open('wav_' + part + '.list', 'w').close()           # Clear file before appending
     outFile = open(path + 'wav_' + part + '.list', "a")
