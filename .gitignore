@@ -1,2 +1,4 @@
 venv/
 .idea/
+log_dir/
+results/
