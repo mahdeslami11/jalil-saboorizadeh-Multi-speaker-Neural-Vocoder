@@ -42,7 +42,7 @@ default_params = {
     'batch_size': 128,
     'val_frac': 0.1,
     'test_frac': 0.1,
-    'qrnn' : False,
+    'qrnn': False,
     
 
     # training parameters
