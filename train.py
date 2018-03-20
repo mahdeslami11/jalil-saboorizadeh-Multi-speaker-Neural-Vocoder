@@ -37,8 +37,8 @@ default_params = {
     'learn_h0': True,
     'ulaw': True,
     'q_levels': 256,
-    'weight_norm': True,
-    'seq_len': 1024,
+    'weight_norm' : False,
+    'seq_len': 1040,
     'batch_size': 128,
     'val_frac': 0.1,
     'test_frac': 0.1,
@@ -49,7 +49,6 @@ default_params = {
     'keep_old_checkpoints': False,
     'datasets_path': 'datasets',
     'cond_path': 'datasets',
-
     'results_path': 'results',
     'condset': '73',
     'epoch_limit': 1000,
@@ -175,12 +174,13 @@ def make_data_loader(overlap_len, params):
            # max_cond=None
            # min_cond=None
 
-        dataset = FolderDataset(path, cond_path, overlap_len, params['q_levels'], params['ulaw'], params['seq_len'], params['batch_size'], split_from, split_to, max_cond, min_cond)
+        dataset = FolderDataset(path, cond_path, overlap_len, params['q_levels'], params['ulaw'],
+                                params['seq_len'], params['batch_size'], split_from, split_to, max_cond, min_cond)
         
         
         (max_cond, min_cond)= dataset.cond_range()
-        return (DataLoader(dataset, batch_size=params['batch_size'], shuffle=False, drop_last=True, num_workers=4), max_cond, min_cond)
-
+        return (DataLoader(dataset, batch_size=params['batch_size'], shuffle=False, drop_last=True, num_workers=2),
+                max_cond, min_cond)
     return data_loader
 
 

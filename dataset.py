@@ -1,4 +1,3 @@
-
 import utils
 
 import torch
@@ -19,7 +18,8 @@ from interpolate import interpolation, linear_interpolation
 class FolderDataset(Dataset):
 # 'seq_len': 1024
 
-    def __init__(self, path, cond_path, overlap_len, q_levels, ulaw, seq_len, batch_size, ratio_min=0, ratio_max=1, max_cond=None, min_cond=None):
+    def __init__(self, path, cond_path, overlap_len, q_levels, ulaw, seq_len, batch_size,
+                 ratio_min=0, ratio_max=1, max_cond=None, min_cond=None):
         super().__init__()
         self.overlap_len = overlap_len
         self.q_levels = q_levels
@@ -34,7 +34,14 @@ class FolderDataset(Dataset):
         self.cond = []
         #arreclar aquest cond borrar la primera
         self.cond = np.empty(shape=[0,43])
-        self.cond_len = 80 
+        self.cond_len = 80
+        self.condseq_len = seq_len // self.cond_len
+
+        if self.seq_len % self.cond_len != 0:
+            print('ERROR: seq_len ({0}) needs to be multiple of cond_len ({1})'.format(
+                self.seq_len, self.cond_len))
+            quit()
+        
         self.max_cond=max_cond
         self.min_cond=min_cond
         
@@ -50,38 +57,20 @@ class FolderDataset(Dataset):
             file_f0 = natsorted(glob.glob(os.path.join(cond_path, '*.lf0')))
             file_fv = natsorted(glob.glob(os.path.join(cond_path, '*.gv')))
 
-            num_files = len(file_names)		# Georgina's v.: self.file_names instead of file_names
-
-            if len(file_ceps) != num_files:
-                print('ERROR: NumCeps({0} != NumWavs{1}'.format(len(file_ceps),num_files))
-
-
-
-            self.file_names = file_names[
-                int(ratio_min * len(file_names)) : int(ratio_max * len(file_names))
-                ]
-            self.file_ceps = file_ceps[
-                int(ratio_min * len(file_ceps)) : int(ratio_max * len(file_ceps))
-                ]
-            self.file_f0 = file_f0[
-                int(ratio_min * len(file_f0)) : int(ratio_max * len(file_f0))
-                ]
-            self.file_fv  = file_fv [
-                int(ratio_min * len(file_fv )) : int(ratio_max * len(file_fv ))
-                ]
-
-
-
+            self.file_names = file_names[int(ratio_min * len(file_names)) : int(ratio_max * len(file_names))]
+            self.file_ceps  = file_ceps [int(ratio_min * len(file_ceps))  : int(ratio_max * len(file_ceps))]
+            self.file_f0    = file_f0   [int(ratio_min * len(file_f0))    : int(ratio_max * len(file_f0))]
+            self.file_fv    = file_fv   [int(ratio_min * len(file_fv )) : int(ratio_max * len(file_fv ))]
             
+            num_files = len(self.file_names)
             print(num_files)
-            for i in range(len(self.file_names)):		# Georgina's version: range(num_files)
-                print(self.file_names[i])
+            for i in range(num_files):
+                print('File {0}/{1}: {2}'.format(i,num_files,self.file_names[i]))
                 (d, _) = load(file_names[i], sr=None, mono=True)
                 num_samples = d.shape[0]
                # print ('num samples', num_samples)
-                print('Load cepstrum {0}:{1}'.format(i,file_ceps[i]))
                 c = np.loadtxt(file_ceps[i])
-                c= c.reshape(-1, 40)
+                c = c.reshape(-1, 40)
                 #print('c', c.shape)
                 (num_ceps, _) = c.shape
                # print('num ceps', num_ceps)
@@ -99,57 +88,29 @@ class FolderDataset(Dataset):
                 #print('num fv', num_fv)
 
                 if nosync:
-                    oversize = num_samples%80
-                    print('oversize', oversize)
+                    oversize = num_samples % 80
+                    # print('Num Samples: {0}; oversize: {1}'.format(num_samples,oversize))
                     if oversize >= 60:
                          zeros = 80 - oversize
                          d = np.append(d, np.zeros(zeros))
-                         #print('c shape over', c.shape)
-                         #print('samples', d.shape)
-                         #print('oversize >60')
-                    if oversize <= 60 and oversize != 0:
+                    elif oversize != 0:
                         d = d[:-oversize]
                         c = c[:-1][:]
                         f0 = f0[:-1]
                         fv = fv[:-1]
                         uv = uv[:-1]
-                   # if oversize != 0:
-                    #    d = d[:-oversize]
-                     #   c = c[:-1][:]
-                      #  f0 = f0[:-1]
-                       # fv = fv[:-1]
-                        #uv = uv[:-1]
-                    print('Teoretically', d.shape[0]/80)
-                    print('real cond', c.shape)
+                        
                     if (d.shape[0]/80) !=( c.shape[0]):
-                        print ('ERROR in file: {0}: shape={1}'.format(file_ceps[i], d.shape[0]), '_'*50)
-
-
-                        #c = c[:-1][:]
-                        #f0 = f0[:-1]
-                        #fv = fv[:-1]
-                        #uv = uv[:-1]
-                        #print('Teorically edited', d.shape[0]/80)
-                        #print('real cond edited', c.shape)
-
-                    #if (d.shape[0]/80) !=( c.shape[0]):
-                      #  print('error')
-                       # break
-
-
-
-
-
-
-                       # print('samples', d.shape)
-                       # print('c shape no over', c.shape)
-                       # print('f0', f0.shape)
-                       # print('oversize <60')
+                        print ('error in file {0}: d.shape[0]/80={1} != c.shape[0]={2} ------'.format(
+                            file_names[i], d.shape[0]/80, c.shape[0]))
+                        continue
                 else:
                     truncate = num_ceps*80
                     d = d[:truncate]
+                    
                 if not ulaw:
                     d = self.quantize(torch.from_numpy(d), self.q_levels).numpy()
+
                 condi = np.concatenate((c, f0), axis=1)
                 condi = np.concatenate((condi, fv), axis=1)
                 condi = np.concatenate((condi, uv), axis=1)
@@ -159,41 +120,70 @@ class FolderDataset(Dataset):
                 #print('data shape', self.data.shape)
                 self.cond = np.concatenate((self.cond, condi), axis=0)
                # print('cond', self.cond.shape)
-            total_samples=self.data.shape[0]
-            total_cond=self.cond.shape[0]
-            dim_cond=self.cond.shape[1]
-            print ('total dades', total_samples)
+               
+            total_samples = self.data.shape[0]
+            total_cond    = self.cond.shape[0]
+            dim_cond      = self.cond.shape[1]
+            print ('Total audio samples:', total_samples)
+            
             complete_seq= total_samples//(self.seq_len+self.overlap_len)
-           # print('\ntotal samples:', total_samples,
-                 # '\nseq_len:', self.seq_len,
-                 # '\nlon_seq:', self.seq_len + self.overlap_len,
-                 # '\nComplete', complete_seq,
-                 # '\nbatch_size:', self.batch_size,
-                 # '\n')
-            
-            lon_seq=self.seq_len+self.overlap_len
-            self.num_samples = self.batch_size*(total_samples//(self.batch_size*lon_seq*self.cond_len))
-            
-            print('num samples', self.num_samples)
-            #print(self.cond_len)
-            num_conditioning=(self.seq_len + self.overlap_len)/self.cond_len
-            self.total_samples = self.num_samples * (self.seq_len+self.overlap_len) * self.cond_len
-            print('total samples', total_samples)
-            total_conditioning = self.total_samples//self.cond_len
-            print('total conditioning', total_conditioning)
-            print('cond len', self.cond_len)
-            #print('conditioning', self.cond.shape)
-            self.data = self.data[:self.total_samples]
-            print('dades tallades', self.data.shape)
-            self.cond = self.cond[:total_conditioning]
-            print('cond shape', self.cond.shape)
-            self.data = self.data[:self.total_samples].reshape(self.batch_size, -1)
-            print('dades shape', self.data.shape)
+            print('\ntotal samples:', total_samples,
+                  '\nseq_len:', self.seq_len,
+                  '\nlon_seq:', self.seq_len + self.overlap_len,
+                  '\nComplete', complete_seq,
+                  '\nbatch_size:', self.batch_size,
+                  '\n')
+
+
+            versionGeorgina = False
+            if versionGeorgina:
+                lon_seq=self.seq_len+self.overlap_len
+                self.num_samples = self.batch_size*(total_samples//(self.batch_size*lon_seq*self.cond_len))            
+                print('num samples', self.num_samples)
+                #print(self.cond_len)
+                num_conditioning=(self.seq_len + self.overlap_len)/self.cond_len
+                self.total_samples = self.num_samples * (self.seq_len+self.overlap_len) * self.cond_len
+                print('total samples', total_samples)
+                total_conditioning = self.total_samples//self.cond_len
+                print('total conditioning', total_conditioning)
+                print('cond len', self.cond_len)
+                #print('conditioning', self.cond.shape)
+                self.data = self.data[:self.total_samples]
+                print('dades tallades', self.data.shape)
+                self.cond = self.cond[:total_conditioning]
+                print('cond shape', self.cond.shape)
+                self.data = self.data[:self.total_samples].reshape(self.batch_size, -1)
+                print('dades shape', self.data.shape)
+            else: #toni
+                lon_seq=self.seq_len+self.overlap_len
+                audio_samples_without_overlap = total_samples - self.batch_size * self.overlap_len                
+                num_complete_batches = audio_samples_without_overlap // (self.batch_size * self.seq_len)
+                self.num_samples =  self.batch_size * num_complete_batches 
+                self.total_samples = self.num_samples * self.seq_len + self.batch_size * self.overlap_len
+                self.data = self.data[:self.total_samples]
+                self.data = self.data[:self.total_samples].reshape(self.batch_size, -1)
+
+                total_conditioning1 = self.total_samples//self.cond_len
+                total_conditioning =  self.num_samples * self.condseq_len +  self.batch_size
+
+                print('Total Conditioning: {0} o {1}'.format(total_conditioning1, total_conditioning))
+                self.cond = self.cond[:total_conditioning]
+
+
+                print('num samples',        self.num_samples)
+                print('total samples',      total_samples)
+                print('total conditioning', total_conditioning)
+                print('cond len',           self.cond_len)
+                print('cond shape',         self.cond.shape)
+                print('dades shape',        self.data.shape)
+
+
+
             if self.max_cond is None:
                 self.max_cond=np.amax(self.cond, axis=0)
                 self.min_cond=np.amin(self.cond, axis=0) 
             self.cond = (self.cond-self.min_cond)/(self.max_cond-self.min_cond)
-            evalpar=False	# Georgina's v. was True to output shapes
+            evalpar=False
             if evalpar:
                 print('shape', self.cond.shape)
                 cc=self.cond[:,0:39]
@@ -279,14 +269,17 @@ class FolderDataset(Dataset):
             fromcond  =  nbatch * cond_in_seq + 1
         else:
             reset =False
-            fromcond  =  nbatch * cond_in_seq + 2
+            #fromcond  =  nbatch * cond_in_seq + 2
+            fromcond  =  nbatch * cond_in_seq + 1
             
         if verbose: 
             print('batch', nbatch)
             print('sample in batch', sample_in_batch)
             print('from cond', fromcond)
             print('to cond', tocond)
-        tocond    = fromcond + cond_in_seq 
+        #tocond    = fromcond + cond_in_seq 
+        tocond    = fromcond + self.condseq_len
+        
         # data = self.quantize(torch.from_numpy(self.data[sample_in_batch][nbatch][fromseq:toseq-1]), self.q_levels)
         if self.ulaw:
             data = self.quantize(torch.from_numpy(self.data[sample_in_batch][fromseq:toseq-1]), self.q_levels)
@@ -305,7 +298,7 @@ class FolderDataset(Dataset):
 
     def __len__(self):
         #return (self.total_samples)//(self.seq_len)  
-        return (self.total_samples)//(self.seq_len) 
+        return self.num_samples
 
     def cond_range(self):
         return (self.max_cond, self.min_cond)
