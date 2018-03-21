@@ -47,7 +47,7 @@ class FolderDataset(Dataset):   # 'seq_len': 1024
 
             for i in range(num_files):
                 # Load WAV
-                print(self.file_names[i] + '.wav')
+                print(file_names[i] + '.wav')
                 (d, _) = load(path + file_names[i] + '.wav', sr=None, mono=True)
                 num_samples = d.shape[0]
 
