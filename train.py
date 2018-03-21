@@ -1,4 +1,3 @@
-
 from model import SampleRNN, Predictor
 from optim import gradient_clipping
 from nn import sequence_nll_loss_bits
@@ -27,7 +26,6 @@ import argparse
 
 import random
 import numpy as np
-
 
 
 default_params = {
