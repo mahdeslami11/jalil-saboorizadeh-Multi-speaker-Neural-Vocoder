@@ -43,6 +43,20 @@ class FolderDataset(Dataset):   # 'seq_len': 1024
 
             file_names = open(datasets_path + 'wav_train.list', 'r').read().splitlines()
 
+            # Search for unique speakers in list
+            spk = set()
+            for file in file_names:
+                current_spk = file[0:2]
+                if current_spk not in spk:
+                    spk.add(current_spk)
+
+            # Build one-hot encoding vector for speakers
+            index = dict((s, i) for i, s in enumerate(spk))
+            for key, value in index.items():
+                one_hot = [0 for _ in range(len(index.items()))]
+                one_hot[value] = 1
+                index[key] = one_hot
+
             num_files = len(file_names)
 
             for i in range(num_files):
@@ -51,25 +65,28 @@ class FolderDataset(Dataset):   # 'seq_len': 1024
                 (d, _) = load(path + file_names[i] + '.wav', sr=None, mono=True)
                 num_samples = d.shape[0]
 
-                # Load CC conditioning
+                # Load CC conditioner
                 print('Load cepstrum {0}:{1}'.format(i, file_names[i]) + '.cc')
                 c = np.loadtxt(cond_path + file_names[i] + '.cc')
                 c = c.reshape(-1, 40)
                 (num_ceps, _) = c.shape
 
-                # Load LF0 conditioning
+                # Load LF0 conditioner
                 f0file = np.loadtxt(cond_path + file_names[i] + '.lf0')
                 # interp es la senyal interpolada, uv es el flag (UV) de mom el deixem
                 f0, uv = interpolation(f0file, -10000000000)
                 num_f0 = f0.shape[0]
                 f0 = f0.reshape((num_f0, 1))
 
-                # Load GV conditioning
+                # Load FV conditioner
                 fvfile = np.loadtxt(cond_path + file_names[i] + '.gv')
                 fv, uv = interpolation(fvfile, 1e3)
                 num_fv = fv.shape[0]
                 uv = uv.reshape((num_fv, 1))
                 fv = fv.reshape((num_fv, 1))
+
+                # Load speaker conditioner (one-hot encoding)
+                speaker = index[file_names[i][0:2]]
 
                 if nosync:
                     oversize = num_samples % 80
@@ -116,14 +133,18 @@ class FolderDataset(Dataset):   # 'seq_len': 1024
                     d = d[:truncate]
                 if not ulaw:
                     d = self.quantize(torch.from_numpy(d), self.q_levels).numpy()
-                condi = np.concatenate((c, f0), axis=1)
-                condi = np.concatenate((condi, fv), axis=1)
-                condi = np.concatenate((condi, uv), axis=1)
-                # print('shape', condi.shape)
+
+                # Concatenate all conditioners
+                cond = np.concatenate((c, f0), axis=1)
+                cond = np.concatenate((cond, fv), axis=1)
+                cond = np.concatenate((cond, uv), axis=1)
+                cond = np.concatenate((cond, speaker), axis=1)
+
+                # print('shape', cond.shape)
                 # self.data = np.append(self.data, self.quantize(torch.from_numpy(d), self.q_levels))
                 self.data = np.append(self.data, d)
                 # print('data shape', self.data.shape)
-                self.cond = np.concatenate((self.cond, condi), axis=0)
+                self.cond = np.concatenate((self.cond, cond), axis=0)
                 # print('cond', self.cond.shape)
             total_samples = self.data.shape[0]
             total_cond = self.cond.shape[0]
@@ -184,15 +205,14 @@ class FolderDataset(Dataset):   # 'seq_len': 1024
                 #np.save('f0norm', f00)
                 quit()
 
-
-
-           # print('cons shape', self.cond.shape)
-           # print('data shape:', self.data.shape)
-            #self.cond = self.cond.reshape(self.batch_size, -1, (self.seq_len + self.overlap_len)//self.cond_len, dim_cond)
+            # print('cons shape', self.cond.shape)
+            # print('data shape:', self.data.shape)
+            # self.cond = self.cond.reshape(self.batch_size, -1,
+                # (self.seq_len + self.overlap_len)//self.cond_len, dim_cond)
             self.cond = self.cond[:total_conditioning].reshape(self.batch_size, -1, dim_cond)
 
-           # print('cond', self.max_cond)
-           # print('min', self.min_cond)
+            # print('cond', self.max_cond)
+            # print('min', self.min_cond)
             print('cond reshape', self.cond.shape)
             print('total index', (self.total_samples)//(self.seq_len)) 
             npynamecond= 'conditioning'+'_'+str(ratio_min)+'_'+str(ratio_max)+'.npy'
@@ -212,21 +232,19 @@ class FolderDataset(Dataset):   # 'seq_len': 1024
             self.data=np.load(npynamedata)
             self.max_cond=np.load('max.npy')
             self.min_cond=np.load('min.npy')
-        print('Dataset created','-'*60,'\n')
-
-
+        print('Dataset created', '-'*60, '\n')
 
     def __getitem__(self, index):
         verbose=False
         nbatch, sample_in_batch = divmod(index, self.batch_size)
         # print('sample in batch', sample_in_batch)
         # print('nbatch', nbatch)
-        begseq  = nbatch * self.seq_len + self.overlap_len
+        begseq = nbatch * self.seq_len + self.overlap_len
         fromseq = begseq - self.overlap_len
-        toseq   = begseq + self.seq_len
-        #quantdata = self.quantize(torch.from_numpy(self.data[sample_in_batch][fromseq:toseq]), self.q_levels)
-        #data = quantdata[:-1]
-        #target = quantdata[self.overlap_len:]
+        toseq = begseq + self.seq_len
+        # quantdata = self.quantize(torch.from_numpy(self.data[sample_in_batch][fromseq:toseq]), self.q_levels)
+        # data = quantdata[:-1]
+        # target = quantdata[self.overlap_len:]
         # print('begseq', begseq)
         # print( 'fromseq' , fromseq ) 
         if not self.ulaw:
@@ -235,14 +253,14 @@ class FolderDataset(Dataset):   # 'seq_len': 1024
         cond_batch=self.cond.shape[1]
         # print('cond in batch', cond_batch)
         cond_in_seq= (self.seq_len)//self.cond_len
-        #print('cond in seq', cond_in_seq)
+        # print('cond in seq', cond_in_seq)
         # print( 'toseq' , toseq ) 
         if nbatch == 0:
             reset = True
-            fromcond  =  nbatch * cond_in_seq + 1
+            fromcond = nbatch * cond_in_seq + 1
         else:
             reset =False
-            fromcond  =  nbatch * cond_in_seq + 2
+            fromcond = nbatch * cond_in_seq + 2
             
         if verbose: 
             print('batch', nbatch)
