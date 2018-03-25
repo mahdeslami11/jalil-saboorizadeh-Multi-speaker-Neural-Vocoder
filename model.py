@@ -6,28 +6,26 @@ from torch.nn import functional as F
 from torch.nn import init
 from torch.autograd import Variable
 from torch.nn.utils import weight_norm
-#from torchqrnn import QRNN
+# from torchqrnn import QRNN
 
 import numpy as np
 
+verbose = False
 
-verbose = 0
 
 class SampleRNN(torch.nn.Module):
 
-    def __init__(self, frame_sizes, n_rnn, dim, learn_h0, q_levels, ulaw, weight_norm = False, qrnn=False):
+    def __init__(self, frame_sizes, n_rnn, dim, learn_h0, q_levels, ulaw, weight_norm, cond_dim, spk_dim, qrnn=False):
         super().__init__()
 
         self.dim = dim
         self.q_levels = q_levels
         self.ulaw = ulaw
-        cond_dim=43
 
         if ulaw:
             self.dequantize = utils.udequantize
         else:
             self.dequantize = utils.linear_dequantize
-
 
         ns_frame_samples = map(int, np.cumprod(frame_sizes))
 
@@ -40,11 +38,12 @@ class SampleRNN(torch.nn.Module):
         # I think frame sizes are in fact the upsampling ratio
         # Lower interp tier: 16 ==> 16 samples (1 ms)
         # Higher inter tier:  4 ==> 4*16 = 64 samples (4 ms)
+
         IsConds = [False]*len(frame_sizes)
         IsConds[-1] = True
         self.frame_level_rnns = torch.nn.ModuleList([
             FrameLevelRNN(
-                frame_size, n_frame_samples, n_rnn, dim, learn_h0, IsCond, cond_dim, weight_norm, qrnn 
+                frame_size, n_frame_samples, n_rnn, dim, learn_h0, IsCond, cond_dim, spk_dim, weight_norm, qrnn
             )
             for (frame_size, n_frame_samples, IsCond) in zip(
                 frame_sizes, ns_frame_samples, IsConds
@@ -62,13 +61,13 @@ class SampleRNN(torch.nn.Module):
 class FrameLevelRNN(torch.nn.Module):
 
     def __init__(self, frame_size, n_frame_samples, n_rnn, dim,
-                 learn_h0, IsCond, cond_dim, wnorm, qrnn):
+                 learn_h0, IsCond, cond_dim, spk_dim, wnorm, qrnn):
         super().__init__()
 
         self.frame_size = frame_size
         self.n_frame_samples = n_frame_samples
         self.dim = dim
-        self.cond_dim=cond_dim
+        self.cond_dim = cond_dim
         self.weight_norm = wnorm
         self.qrnn = qrnn
 
@@ -84,15 +83,37 @@ class FrameLevelRNN(torch.nn.Module):
             kernel_size=1
         )
         if IsCond:
+            # Acoustic conditioners expansion
             self.cond_expand = torch.nn.Conv1d(
                 in_channels=cond_dim,
                 out_channels=dim,
                 kernel_size=1
             )
+
+            # Initialize 1D-Convolution (Fully-connected Layer) for acoustic conditioners
             init.kaiming_uniform(self.cond_expand.weight)
             init.constant(self.cond_expand.bias, 0)
+
+            # Speaker embedding
+            self.spk_embedding = torch.nn.Embedding(
+                self.spk_dim,
+                self.spk_dim
+            )
+            # Speaker embedding expansion
+            self.spk_expand = torch.nn.Conv1d(
+                in_channels=spk_dim,
+                out_channels=dim,
+                kernel_size=1
+            )
+
+            # Initialize 1D-Convolution (Fully-connected Layer) for acoustic conditioners
+            init.kaiming_uniform(self.spk_expand.weight)
+            init.constant(self.spk_expand.bias, 0)
+
+            # Apply weight normalization if chosen
             if self.weight_norm:
                 self.cond_expand = weight_norm(self.cond_expand, name='weight')
+                self.spk_expand = weight_norm(self.spk_expand, name='weight')
 
         else:
             self.cond_expand = None
@@ -103,19 +124,18 @@ class FrameLevelRNN(torch.nn.Module):
             self.input_expand = weight_norm(self.input_expand, name='weight')
 
         if self.qrnn:
-             self.rnn = torch.nn.GRU(
+            self.rnn = torch.nn.GRU(
                 input_size=dim,
                 hidden_size=dim,
                 num_layers=n_rnn,
                 batch_first=True
             )
 
-           # self.rnn = QRNN(
-           #     input_size=dim,
-           #     hidden_size=dim,
-           #     num_layers=n_rnn,
-                
-           # )
+            # self.rnn = QRNN(
+            # input_size=dim,
+            # hidden_size=dim,
+            # num_layers=n_rnn,
+            # )
    
         else:    
             self.rnn = torch.nn.GRU(
@@ -152,27 +172,35 @@ class FrameLevelRNN(torch.nn.Module):
 
     def forward(self, prev_samples, upper_tier_conditioning, hidden, cond):
         (batch_size, _, _) = prev_samples.size()
-# The first called
-# forward rnn     frame_size:  4  n_frame_samples:  64    prev_samples: torch.Size([128, 16, 64]) 	input: torch.Size([128, 16, 512])
-# output before upsampling torch.Size([128, 16, 512]) 	hidden torch.Size([2, 128, 512]) 	output torch.Size([128, 64, 512])
-# (=> 16 frames, 64 input samples/frame)
+        # The first called
+        # forward rnn     frame_size:  4  n_frame_samples:  64    prev_samples: torch.Size([128, 16, 64])
+        # input: torch.Size([128, 16, 512])
+        # output before upsampling torch.Size([128, 16, 512]) 	hidden torch.Size([2, 128, 512])
+        # output torch.Size([128, 64, 512])
+        # (=> 16 frames, 64 input samples/frame)
 
-# The second called (64 x 16 = 1024)
-# forward rnn 	frame_size:  16 	n_frame_samples:  16 	prev_samples: torch.Size([128, 64, 16]) 	input: torch.Size([128, 64, 512])
-# output before upsampling torch.Size([128, 64, 512]) 	hidden torch.Size([2, 128, 512]) 	output torch.Size([128, 1024, 512])
-# (=> 64 frames, 16 input samples/frame)
-        
-        #print('dades in model frame rnn', prev_samples.permute(0,2,1))
+        # The second called (64 x 16 = 1024)
+        # forward rnn 	frame_size:  16 	n_frame_samples:  16 	prev_samples: torch.Size([128, 64, 16])
+        # input: torch.Size([128, 64, 512])
+        # output before upsampling torch.Size([128, 64, 512]) 	hidden torch.Size([2, 128, 512])
+        # output torch.Size([128, 1024, 512])
+        # (=> 64 frames, 16 input samples/frame)
+
         input = self.input_expand(
           prev_samples.permute(0, 2, 1)
         ).permute(0, 2, 1)
         if upper_tier_conditioning is not None:
             input += upper_tier_conditioning
         else:
-           # print('cond in model frame rnn', cond.permute(0,2,1).float())
-            #cond = Variable(cond).cuda()
             cond = self.cond_expand(cond.permute(0, 2, 1).float()).permute(0, 2, 1)           
             input += cond
+
+            # TODO: Call forward with speakers
+            spk_embed = self.spk_embedding(
+                spk.contiguous().view(-1)
+            ).view(
+                batch_size, -1, self.q_levels
+            )
 
         reset = hidden is None
 
@@ -182,23 +210,25 @@ class FrameLevelRNN(torch.nn.Module):
                             .expand(n_rnn, batch_size, self.dim) \
                             .contiguous()
 
-
         # The first called
-        # forward rnn     frame_size:  4  n_frame_samples:  64    prev_samples: torch.Size([128, 16, 64]) 	input: torch.Size([128, 16, 512])
-        # output before upsampling torch.Size([128, 16, 512]) 	hidden torch.Size([2, 128, 512]) 	output torch.Size([128, 64, 512])
+        # forward rnn     frame_size:  4  n_frame_samples:  64    prev_samples: torch.Size([128, 16, 64])
+        # input: torch.Size([128, 16, 512])
+        # output before upsampling torch.Size([128, 16, 512]) 	hidden torch.Size([2, 128, 512])
+        # output torch.Size([128, 64, 512])
         # (=> 16 frames, 64 input samples/frame)
 
         # The second called (64 x 16 = 1024)
-        # forward rnn 	frame_size:  16 	n_frame_samples:  16 	prev_samples: torch.Size([128, 64, 16]) 	input: torch.Size([128, 64, 512])
-        # output before upsampling torch.Size([128, 64, 512]) 	hidden torch.Size([2, 128, 512]) 	output torch.Size([128, 1024, 512])
+        # forward rnn 	frame_size:  16 	n_frame_samples:  16 	prev_samples: torch.Size([128, 64, 16])
+        # input: torch.Size([128, 64, 512])
+        # output before upsampling torch.Size([128, 64, 512]) 	hidden torch.Size([2, 128, 512])
+        # output torch.Size([128, 1024, 512])
         # (=> 64 frames, 16 input samples/frame)
-
 
         (output, hidden) = self.rnn(input, hidden)
         if self.qrnn:
-            output=output.permute(1,0,2)
-            hidden = hidden.permute(1,0,2)
-        output1=output
+            output = output.permute(1, 0, 2)
+            hidden = hidden.permute(1, 0, 2)
+        output1 = output
         output = self.upsampling(
             output.permute(0, 2, 1)
         ).permute(0, 2, 1)
@@ -213,9 +243,7 @@ class FrameLevelRNN(torch.nn.Module):
                   '\thidden', hidden.size(),
                   '\toutput', output.size())
 
-
-
-        return (output, hidden)
+        return output, hidden
 
 
 class SampleLevelMLP(torch.nn.Module):
@@ -256,7 +284,7 @@ class SampleLevelMLP(torch.nn.Module):
         init.constant(self.output.bias, 0)
 
         if self.weight_norm:
-            self.input  = weight_norm(self.input,  'weight')
+            self.input = weight_norm(self.input,  'weight')
             self.hidden = weight_norm(self.hidden, 'weight')
             self.output = weight_norm(self.output, 'weight')
 
@@ -316,10 +344,9 @@ class Predictor(Runner, torch.nn.Module):
         # input_seq: 128 x 1087; reset: boolean
 
         (batch_size, _) = input_sequences.size()
-        #print('model input', imput.size())
+        # print('model input', imput.size())
         (batch_size, numcond, cond_dim) = cond.size()
-        #print('model cond', cond.size())
-
+        # print('model cond', cond.size())
 
         # predictor rnn 0 -79
         # predictor rnn prev_samples torch.Size([128, 1040])
@@ -330,12 +357,10 @@ class Predictor(Runner, torch.nn.Module):
         # predictor rnn uppertier_cond torch.Size([128, 52, 1024])
         # predictor rnn prev_samples view torch.Size([128, 52, 20])
 
-
         upper_tier_conditioning = None
         for rnn in reversed(self.model.frame_level_rnns):
             from_index = self.model.lookback - rnn.n_frame_samples
             to_index = -rnn.n_frame_samples + 1
-            #print('cond in model', cond)
             if verbose & 2:
                 print('predictor rnn', from_index, to_index)
 
@@ -348,6 +373,9 @@ class Predictor(Runner, torch.nn.Module):
                 cond = cond[:, :, :]
                 cond = cond.contiguous().view(
                     batch_size, -1, cond_dim
+                )
+                spk = spk.contiguous().view(
+                    batch_size, -1, spk_dim
                 )
 
             if verbose & 2:
@@ -366,15 +394,14 @@ class Predictor(Runner, torch.nn.Module):
                     rnn, prev_samples, upper_tier_conditioning, cond
                 )
             else:
-                
-                cond=None
+                cond = None
                 upper_tier_conditioning = self.run_rnn(
                     rnn, prev_samples, upper_tier_conditioning, cond
                 )
 
         bottom_frame_size = self.model.frame_level_rnns[0].frame_size
         mlp_input_sequences = input_sequences \
-            [:, self.model.lookback - bottom_frame_size :]
+        [:, self.model.lookback - bottom_frame_size:]
 
         if verbose & 2:
             print('predictor mlp', self.model.lookback-bottom_frame_size)
@@ -446,7 +473,7 @@ class Generator(Runner):
                         self.model.frame_level_rnns[tier_index + 1].frame_size
                     upper_tier_conditioning = \
                         frame_level_outputs[tier_index + 1][:, frame_index, :] \
-                                           .unsqueeze(1)
+                        .unsqueeze(1)
                 
                 if self.cuda:
                     cond = Variable(cond).cuda()

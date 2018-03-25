@@ -41,13 +41,17 @@ default_params = {
     'val_frac': 0.1,
     'test_frac': 0.1,
     'qrnn': False,
+    'cond_dim': 43,     # Conditioners of size 43 = 40 MFCC + 1 LF0 + 1FV + 1 U/V
+    'cond_len': 80,
+    'spk_dim': 6,
 
     # training parameters
     'keep_old_checkpoints': False,
     'datasets_path': 'datasets',
     'cond_path': 'datasets',
     'results_path': 'results',
-    'condset': '73',
+    'dataset': 'wav/',
+    'condset': 'cond/',
     'epoch_limit': 1000,
     'resume': True,
     'sample_rate': 16000,
@@ -116,7 +120,7 @@ def load_last_checkpoint(checkpoints_path):
         )
         epoch = int(match.group(1))
         iteration = int(match.group(2))
-        return (torch.load(checkpoint_path), epoch, iteration)
+        return torch.load(checkpoint_path), epoch, iteration
     else:
         return None
 
@@ -161,7 +165,7 @@ def load_model(checkpoint_path):
     else:
         epoch, iteration = (0,0)
                                                                 
-    return (torch.load(checkpoint_path), epoch, iteration)
+    return torch.load(checkpoint_path), epoch, iteration
 
 
 def make_data_loader(overlap_len, params):
@@ -170,17 +174,12 @@ def make_data_loader(overlap_len, params):
     print('cond path', cond_path)
 
     def data_loader(split_from, split_to, max_cond, min_cond):
-        #if 'max_cond' in kwargs:
-           # max_cond=kwargs['max_cond']
-           # min_cond=kwargs['min_cond']
-        #else:
-           # max_cond=None
-           # min_cond=None
+        dataset = FolderDataset(params['datasets_path'], path, cond_path, overlap_len, params['q_levels'],
+                                params['ulaw'], params['seq_len'], params['batch_size'], params['cond_dim'],
+                                params['cond_len'], max_cond, min_cond)
 
-        dataset = FolderDataset(params['datasets_path'], path, cond_path, overlap_len, params['q_levels'], params['ulaw'],
-                                params['seq_len'], params['batch_size'], max_cond, min_cond)
+        (max_cond, min_cond) = dataset.cond_range()
 
-        (max_cond, min_cond)= dataset.cond_range()
         return (DataLoader(dataset, batch_size=params['batch_size'], shuffle=False, drop_last=True, num_workers=2),
                 max_cond, min_cond)
     return data_loader
@@ -189,7 +188,7 @@ def make_data_loader(overlap_len, params):
 def main(exp, frame_sizes, dataset, **params):
     scheduler = True
     use_cuda = torch.cuda.is_available()
-    print('Start samplernn')
+    print('Start Sample-RNN')
     params = dict(
         default_params,
         exp=exp, frame_sizes=frame_sizes, dataset=dataset,
@@ -210,10 +209,12 @@ def main(exp, frame_sizes, dataset, **params):
         q_levels=params['q_levels'],
         ulaw=params['ulaw'],
         weight_norm=params['weight_norm'],
+        cond_dim=params['cond_dim'],
+        spk_dim=params['spk_dim'],
         qrnn=params['qrnn']
     )
     if use_cuda:
-        model=model.cuda()
+        model = model.cuda()
         predictor = Predictor(model).cuda()
     else:
         predictor = Predictor(model)
@@ -230,14 +231,15 @@ def main(exp, frame_sizes, dataset, **params):
         print(state_dict)
         predictor.load_state_dict(state_dict)
     print('predictor', predictor)
-    for name,param in predictor.named_parameters():
+    for name, param in predictor.named_parameters():
         print(name, param.size())
 
-    # optimizer = gradient_clipping(torch.optim.Rprop(predictor.parameters(), lr=0.001, etas=(0.5, 1.2), step_sizes=(1e-06, 50)))
+    # optimizer = gradient_clipping(torch.optim.Rprop(predictor.parameters(), lr=0.001, etas=(0.5, 1.2),
+    # step_sizes=(1e-06, 50)))
     
     optimizer = torch.optim.Adam(predictor.parameters())
     if params['scheduler']:
-        scheduler = MultiStepLR(optimizer, milestones=[15,35], gamma=0.1)
+        scheduler = MultiStepLR(optimizer, milestones=[15, 35], gamma=0.1)
     optimizer = gradient_clipping(optimizer)
     print('Saving results in path', results_path)
     print('Read data')

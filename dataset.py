@@ -12,8 +12,8 @@ from interpolate import interpolation
 
 class FolderDataset(Dataset):
 
-    def __init__(self, datasets_path, path, cond_path, overlap_len, q_levels, ulaw, seq_len, batch_size,
-                 max_cond=None, min_cond=None):
+    def __init__(self, datasets_path, path, cond_path, overlap_len, q_levels, ulaw, seq_len, batch_size, cond_dim,
+                 cond_len, max_cond=None, min_cond=None):
         super().__init__()
 
         # Define class variables from initialization parameters
@@ -33,10 +33,10 @@ class FolderDataset(Dataset):
         self.data = []
         self.global_spk = []
 
-        # Define numpy array for conditioners of size 44 = 40 MFCC + 1 LF0 + 1FV + 1 U/V
         # Conditioners are computed by Ahocoder every 80 audio samples (windows of 5ms at 16kHz sample rate)
-        self.cond = np.empty(shape=[0, 43])
-        self.cond_len = 80
+        self.cond_dim = cond_dim
+        self.cond_len = cond_len
+        self.cond = np.empty(shape=[0, self.cond_dim])
 
         # Define npy training dataset files
         npy_name_data = 'npy_datasets/train_data.npy'
