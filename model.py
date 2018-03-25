@@ -70,6 +70,7 @@ class FrameLevelRNN(torch.nn.Module):
         self.n_frame_samples = n_frame_samples
         self.dim = dim
         self.cond_dim = cond_dim
+        self.spk_dim = spk_dim
         self.weight_norm = wnorm
         self.qrnn = qrnn
 
