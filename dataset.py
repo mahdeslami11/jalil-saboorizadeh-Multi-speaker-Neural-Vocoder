@@ -48,11 +48,12 @@ class FolderDataset(Dataset):
         create_dataset = len(files) != len([f for f in files if os.path.isfile(f)])
 
         nosync = True
-        print('Extracting wav from: ', path)
-        print('Extracting conditioning from: ', cond_path)
-        print('\nCreate dataset ', '-'*60)
 
         if create_dataset:
+            print('Create dataset ', '-' * 60, '\n')
+            print('Extracting wav from: ', path)
+            print('Extracting conditioning from: ', cond_path)
+
             # Get file names from train list
             file_names = open(datasets_path + 'wav_train.list', 'r').read().splitlines()
 
@@ -208,13 +209,15 @@ class FolderDataset(Dataset):
             np.save(npy_name_cond, self.cond)
             np.save(npy_name_spk, self.global_spk)
 
+            print('Dataset created', '-' * 60, '\n')
+
         else:
             # Load previously created training dataset
             self.data = np.load(npy_name_data)
             self.cond = np.load(npy_name_cond)
             self.global_spk = np.load(npy_name_spk)
 
-        print('Dataset created', '-'*60, '\n')
+            print('Dataset loaded', '-' * 60, '\n')
 
     def __getitem__(self, index):
         verbose = False
