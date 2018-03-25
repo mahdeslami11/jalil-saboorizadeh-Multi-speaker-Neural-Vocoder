@@ -38,8 +38,6 @@ default_params = {
     'weight_norm': False,
     'seq_len': 1040,
     'batch_size': 128,
-    'val_frac': 0.1,
-    'test_frac': 0.1,
     'qrnn': False,
     'cond_dim': 43,     # Conditioners of size 43 = 40 MFCC + 1 LF0 + 1FV + 1 U/V
     'cond_len': 80,
@@ -64,7 +62,7 @@ default_params = {
 }
 tag_params = [
     'exp', 'frame_sizes', 'n_rnn', 'dim', 'learn_h0', 'ulaw', 'q_levels', 'seq_len',
-    'batch_size', 'dataset', 'condset', 'val_frac', 'test_frac', 'seed', 'weight_norm', 'qrnn', 'scheduler'
+    'batch_size', 'dataset', 'condset', 'seed', 'weight_norm', 'qrnn', 'scheduler'
     ]
 
 
@@ -245,8 +243,6 @@ def main(exp, frame_sizes, dataset, **params):
     print('Read data')
     data_loader = make_data_loader(model.lookback, params)
     print('Done!')
-    test_split = 1 - params['test_frac']
-    val_split = test_split - params['val_frac']
     datafull = data_loader('train', None, None)
     datas = datafull[0]
     max_cond = datafull[1]
@@ -402,14 +398,6 @@ if __name__ == '__main__':
     )
     parser.add_argument('--batch_size', type=int, help='batch size')
     parser.add_argument(
-        '--val_frac', type=float,
-        help='fraction of data to go into the validation set'
-    )
-    parser.add_argument(
-        '--test_frac', type=float,
-        help='fraction of data to go into the test set'
-    )
-    parser.add_argument(
         '--keep_old_checkpoints', type=parse_bool,
         help='whether to keep checkpoints from past epochs'
     )
@@ -451,20 +439,20 @@ if __name__ == '__main__':
     
     )
     parser.add_argument(
-        '--weight_norm', type = parse_bool,
-        help ='Apply weight normalitzation to linear layers'
+        '--weight_norm', type=parse_bool,
+        help ='Apply weight normalization to linear layers'
     )
     parser.add_argument(
-        '--qrnn', type = parse_bool,
-        help ='Use QRNN insted of RNN'
+        '--qrnn', type=parse_bool,
+        help ='Use QRNN instead of RNN'
     )
     parser.add_argument(
         '--model',
         help='model (including path) to re train'
     )
     parser.add_argument(
-        '--scheduler', type = parse_bool,
-        help ='Use a variable learning rate'
+        '--scheduler', type=parse_bool,
+        help='Use a variable learning rate'
     )
     parser.set_defaults(**default_params)
 

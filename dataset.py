@@ -157,26 +157,42 @@ class FolderDataset(Dataset):
 
             print('Number of samples (1 audio file): ', self.num_samples)
             self.total_samples = self.num_samples * (self.seq_len+self.overlap_len) * self.cond_len
-            print('total samples', total_samples)
             total_conditioning = self.total_samples//self.cond_len
-            print('total conditioning', total_conditioning)
-            print('cond len', self.cond_len)
-            # print('conditioning', self.cond.shape)
             self.data = self.data[:self.total_samples]
-            print('dades tallades', self.data.shape)
             self.cond = self.cond[:total_conditioning]
-            print('cond shape', self.cond.shape)
             self.data = self.data[:self.total_samples].reshape(self.batch_size, -1)
-            print('dades shape', self.data.shape)
 
-            # Normalize conditioners
-            if self.max_cond is None:
-                self.max_cond = np.amax(self.cond, axis=0)
-                self.min_cond = np.amin(self.cond, axis=0)
-            self.cond = (self.cond-self.min_cond)/(self.max_cond-self.min_cond)
+            # Normalize conditioners with absolute maximum and minimum of all the partitions
+            if self.max_cond is None and partition == 'test':
+                print('Normalizing conditioners')
+                npy_name_cond_train = 'npy_datasets/train_conditioners.npy'
+                npy_name_cond_val = 'npy_datasets/validation_conditioners.npy'
+                cond_train = np.load(npy_name_cond_train)
+                cond_val = np.load(npy_name_cond_val)
 
-            evalpar = False     # Georgina's v. was True to output shapes
-            if evalpar:
+                # Compute maximum and minimum for each partition
+                max_cond_train = np.amax(cond_train, axi=0)
+                max_cond_val = np.amax(cond_val, axi=0)
+                max_cond_test = np.amax(self.cond, axi=0)
+                min_cond_train = np.amin(cond_train, axi=0)
+                min_cond_val = np.amin(cond_val, axi=0)
+                min_cond_test = np.amin(self.cond, axi=0)
+
+                # Compute overall extrema
+                self.max_cond = np.maximum(max_cond_train, max_cond_val, max_cond_test)
+                self.min_cond = np.minimum(min_cond_train, min_cond_val, min_cond_test)
+
+                # Normalize conditioners of all partitions
+                cond_train = (cond_train - self.min_cond) / (self.max_cond - self.min_cond)
+                cond_val = (cond_val - self.min_cond) / (self.max_cond - self.min_cond)
+                self.cond = (self.cond-self.min_cond)/(self.max_cond-self.min_cond)
+
+                # Save train and validation partitions
+                np.save(npy_name_cond_train, cond_train)
+                np.save(npy_name_cond_val, cond_val)
+
+            eval_par = False
+            if eval_par:
                 print('shape', self.cond.shape)
                 cc = self.cond[:, 0:39]
                 fvv = self.cond[:, 41]
@@ -269,7 +285,4 @@ class FolderDataset(Dataset):
 
     def cond_range(self):
         # Compute conditioners range if not done
-        if self.max_cond is None:
-            self.max_cond = np.amax(self.cond, axis=0)
-            self.min_cond = np.amin(self.cond, axis=0)
         return self.max_cond, self.min_cond
