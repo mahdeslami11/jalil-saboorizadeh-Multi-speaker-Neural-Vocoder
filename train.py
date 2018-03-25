@@ -128,7 +128,6 @@ def tee_stdout(log_path):
     stdout = sys.stdout
 
     class Tee:
-
         def write(self, string):
             log_file.write(string)
             stdout.write(string)
@@ -161,7 +160,7 @@ def load_model(checkpoint_path):
         epoch = int(match.group(1))
         iteration = int(match.group(2))
     else:
-        epoch, iteration = (0,0)
+        epoch, iteration = (0, 0)
                                                                 
     return torch.load(checkpoint_path), epoch, iteration
 
@@ -171,15 +170,12 @@ def make_data_loader(overlap_len, params):
     cond_path = os.path.join(params['cond_path'], params['condset'])
     print('cond path', cond_path)
 
-    def data_loader(partition, max_cond, min_cond):
+    def data_loader(partition):
         dataset = FolderDataset(params['datasets_path'], path, cond_path, overlap_len, params['q_levels'],
                                 params['ulaw'], params['seq_len'], params['batch_size'], params['cond_dim'],
-                                params['cond_len'], partition, max_cond, min_cond)
+                                params['cond_len'], partition)
 
-        (max_cond, min_cond) = dataset.cond_range()
-
-        return (DataLoader(dataset, batch_size=params['batch_size'], shuffle=False, drop_last=True, num_workers=2),
-                max_cond, min_cond)
+        return DataLoader(dataset, batch_size=params['batch_size'], shuffle=False, drop_last=True, num_workers=2)
     return data_loader
 
 
@@ -220,10 +216,10 @@ def main(exp, frame_sizes, dataset, **params):
     print('Done!')
     fname = params['model']
     if fname is not None:
-        print('pre train whith', fname)
+        print('pre train with', fname)
         model_data = load_model(fname)
         if model_data is None:
-            sys.exit('ERROR: Model not found in', fname)        
+            sys.exit('ERROR: Model not found in' + str(fname))
         (state_dict, epoch_index, iteration) = model_data
         print('OK: Read model', fname, '(epoch:', epoch_index, ')')
         print(state_dict)
@@ -243,23 +239,16 @@ def main(exp, frame_sizes, dataset, **params):
     print('Read data')
     data_loader = make_data_loader(model.lookback, params)
     print('Done!')
-    datafull = data_loader('train', None, None)
-    datas = datafull[0]
-    max_cond = datafull[1]
-    min_cond = datafull[2]
+    data_model = data_loader('train')
 
     show_dataset = False
     if show_dataset:
-        for i, full in enumerate(datas):
+        for i, full in enumerate(data_model):
             print('dataloader---------------------------------------')
             print('batch', i)
-            #print('max', max_cond)
-            #print('min', min_cond)
             (data, reset, target, cond) = full           
             print('Data', data.size())
             print('Target', target.size())
-            #print('Cond', cond.size())
-            #print('reset', reset)
 
     if not params['scheduler']:    
         scheduler = None
@@ -268,7 +257,7 @@ def main(exp, frame_sizes, dataset, **params):
     else:
         cuda = False
     trainer = Trainer(
-        predictor, sequence_nll_loss_bits, optimizer,  datas, cuda, scheduler
+        predictor, sequence_nll_loss_bits, optimizer,  data_model, cuda, scheduler
 
     )
 
@@ -284,26 +273,14 @@ def main(exp, frame_sizes, dataset, **params):
         smoothing=params['loss_smoothing']
     ))
     trainer.register_plugin(ValidationPlugin(
-        data_loader('validation', max_cond, min_cond)[0],
-        data_loader('test', max_cond, min_cond)[0]
+        data_loader('validation')[0],
+        data_loader('test')[0]
     ))
     trainer.register_plugin(AbsoluteTimeMonitor())
     trainer.register_plugin(SaverPlugin(
         checkpoints_path, params['keep_old_checkpoints']
     ))
-    #
-    #Generate=False
-    #if Generate:
-    #datas=data_loader(test_split, 1, max_cond, min_cond)[0]
 
-       # for i, full in enumerate(datas):
-       #     print('Generating---------------------------------------')
-       #     print('batch', i)
-       #     (data, reset, target, cond) = full    
-       #     trainer.register_plugin(GeneratorPlugin(
-       #         os.path.join(results_path, 'samples'), params['n_samples'],
-       #         params['sample_length'], params['sample_rate'], cond
-       #     ))
     trainer.register_plugin(
         Logger([
             'training_loss',
