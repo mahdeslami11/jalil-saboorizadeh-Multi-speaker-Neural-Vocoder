@@ -3,3 +3,4 @@ venv/
 log_dir/
 results/
 trials/
+__pycache__/
