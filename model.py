@@ -37,7 +37,6 @@ class SampleRNN(torch.nn.Module):
         # frame sizes: [16, 4]
         # ns frame samples: [16, 64]
 
-
         # I think frame sizes are in fact the upsampling ratio
         # Lower interp tier: 16 ==> 16 samples (1 ms)
         # Higher inter tier:  4 ==> 4*16 = 64 samples (4 ms)

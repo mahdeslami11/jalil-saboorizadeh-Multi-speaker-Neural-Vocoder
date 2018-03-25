@@ -35,13 +35,12 @@ default_params = {
     'learn_h0': True,
     'ulaw': True,
     'q_levels': 256,
-    'weight_norm' : False,
+    'weight_norm': False,
     'seq_len': 1040,
     'batch_size': 128,
     'val_frac': 0.1,
     'test_frac': 0.1,
     'qrnn': False,
-    
 
     # training parameters
     'keep_old_checkpoints': False,
@@ -64,6 +63,7 @@ tag_params = [
     'batch_size', 'dataset', 'condset', 'val_frac', 'test_frac', 'seed', 'weight_norm', 'qrnn', 'scheduler'
     ]
 
+
 def make_tag(params):
     def to_string(value):
         if isinstance(value, bool):
@@ -78,6 +78,7 @@ def make_tag(params):
         for key in tag_params
         if key not in default_params or params[key] != default_params[key]
     )
+
 
 def setup_results_dir(params):
     def ensure_dir_exists(path):
@@ -100,6 +101,7 @@ def setup_results_dir(params):
 
     return results_path
 
+
 def load_last_checkpoint(checkpoints_path):
     checkpoints_pattern = os.path.join(
         checkpoints_path, SaverPlugin.last_pattern.format('*', '*')
@@ -118,6 +120,7 @@ def load_last_checkpoint(checkpoints_path):
     else:
         return None
 
+
 def tee_stdout(log_path):
     log_file = open(log_path, 'a', 1)
     stdout = sys.stdout
@@ -134,6 +137,7 @@ def tee_stdout(log_path):
 
     sys.stdout = Tee()
 
+
 def init_random_seed(seed, cuda):
     print('seed', seed)
     random.seed(seed)
@@ -141,6 +145,7 @@ def init_random_seed(seed, cuda):
     torch.manual_seed(seed)
     if cuda:
         torch.cuda.manual_seed(seed)
+
 
 def load_model(checkpoint_path):
     model_pattern = '.*ep{}-it{}'
@@ -151,7 +156,7 @@ def load_model(checkpoint_path):
         checkpoint_name
     )
     if match:
-        epoch     = int(match.group(1))
+        epoch = int(match.group(1))
         iteration = int(match.group(2))
     else:
         epoch, iteration = (0,0)
@@ -174,8 +179,7 @@ def make_data_loader(overlap_len, params):
 
         dataset = FolderDataset(params['datasets_path'], path, cond_path, overlap_len, params['q_levels'], params['ulaw'],
                                 params['seq_len'], params['batch_size'], max_cond, min_cond)
-        
-        
+
         (max_cond, min_cond)= dataset.cond_range()
         return (DataLoader(dataset, batch_size=params['batch_size'], shuffle=False, drop_last=True, num_workers=2),
                 max_cond, min_cond)
@@ -183,8 +187,8 @@ def make_data_loader(overlap_len, params):
 
 
 def main(exp, frame_sizes, dataset, **params):
-    scheduler=True
-    use_cuda=torch.cuda.is_available()
+    scheduler = True
+    use_cuda = torch.cuda.is_available()
     print('Start samplernn')
     params = dict(
         default_params,
@@ -205,15 +209,14 @@ def main(exp, frame_sizes, dataset, **params):
         learn_h0=params['learn_h0'],
         q_levels=params['q_levels'],
         ulaw=params['ulaw'],
-        weight_norm = params['weight_norm'],
-        qrnn = params['qrnn']
+        weight_norm=params['weight_norm'],
+        qrnn=params['qrnn']
     )
     if use_cuda:
         model=model.cuda()
         predictor = Predictor(model).cuda()
     else:
         predictor = Predictor(model)
-
 
     print('Done!')
     fname = params['model']
@@ -230,7 +233,7 @@ def main(exp, frame_sizes, dataset, **params):
     for name,param in predictor.named_parameters():
         print(name, param.size())
 
-    #optimizer = gradient_clipping(torch.optim.Rprop(predictor.parameters(), lr=0.001, etas=(0.5, 1.2), step_sizes=(1e-06, 50))) 
+    # optimizer = gradient_clipping(torch.optim.Rprop(predictor.parameters(), lr=0.001, etas=(0.5, 1.2), step_sizes=(1e-06, 50)))
     
     optimizer = torch.optim.Adam(predictor.parameters())
     if params['scheduler']:
