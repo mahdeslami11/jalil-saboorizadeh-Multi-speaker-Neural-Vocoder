@@ -13,7 +13,7 @@ from interpolate import interpolation
 class FolderDataset(Dataset):
 
     def __init__(self, datasets_path, path, cond_path, overlap_len, q_levels, ulaw, seq_len, batch_size, cond_dim,
-                 cond_len, max_cond=None, min_cond=None):
+                 cond_len, partition, max_cond=None, min_cond=None):
         super().__init__()
 
         # Define class variables from initialization parameters
@@ -39,9 +39,9 @@ class FolderDataset(Dataset):
         self.cond = np.empty(shape=[0, self.cond_dim])
 
         # Define npy training dataset files
-        npy_name_data = 'npy_datasets/train_data.npy'
-        npy_name_cond = 'npy_datasets/train_conditioners.npy'
-        npy_name_spk = 'npy_datasets/train_speakers.npy'
+        npy_name_data = 'npy_datasets/' + partition + '_data.npy'
+        npy_name_cond = 'npy_datasets/' + partition + '_conditioners.npy'
+        npy_name_spk = 'npy_datasets/' + partition + '_speakers.npy'
 
         # Check if dataset has to be created
         files = [npy_name_data, npy_name_cond, npy_name_spk]
@@ -50,12 +50,13 @@ class FolderDataset(Dataset):
         nosync = True
 
         if create_dataset:
-            print('Create dataset ', '-' * 60, '\n')
+            print('Create' + partition + 'dataset ', '-' * 60, '\n')
             print('Extracting wav from: ', path)
             print('Extracting conditioning from: ', cond_path)
+            print('List of files is: wav_' + partition + '.list')
 
             # Get file names from train list
-            file_names = open(datasets_path + 'wav_train.list', 'r').read().splitlines()
+            file_names = open(datasets_path + 'wav_' + partition + '.list', 'r').read().splitlines()
 
             # Search for unique speakers in list and sort them
             spk = list()
@@ -74,9 +75,6 @@ class FolderDataset(Dataset):
 
                 # Load CC conditioner
                 c = np.loadtxt(cond_path + file + '.cc')
-                if c.shape[1] != 40:
-                    print('Error in cc conditioner dimension')
-                    quit()
                 c = c.reshape(-1, c.shape[1])
                 (num_ceps, _) = c.shape
 
@@ -153,10 +151,10 @@ class FolderDataset(Dataset):
             total_samples = self.data.shape[0]
             dim_cond = self.cond.shape[1]
             print('Total samples: ', total_samples)
-            
+
             lon_seq = self.seq_len+self.overlap_len
             self.num_samples = self.batch_size*(total_samples//(self.batch_size*lon_seq*self.cond_len))
-            
+
             print('Number of samples (1 audio file): ', self.num_samples)
             self.total_samples = self.num_samples * (self.seq_len+self.overlap_len) * self.cond_len
             print('total samples', total_samples)
@@ -209,7 +207,7 @@ class FolderDataset(Dataset):
             np.save(npy_name_cond, self.cond)
             np.save(npy_name_spk, self.global_spk)
 
-            print('Dataset created', '-' * 60, '\n')
+            print('Dataset created for' + partition + 'partition', '-' * 60, '\n')
 
         else:
             # Load previously created training dataset
@@ -217,7 +215,7 @@ class FolderDataset(Dataset):
             self.cond = np.load(npy_name_cond)
             self.global_spk = np.load(npy_name_spk)
 
-            print('Dataset loaded', '-' * 60, '\n')
+            print('Dataset loaded for' + partition + 'partition', '-' * 60, '\n')
 
     def __getitem__(self, index):
         verbose = False

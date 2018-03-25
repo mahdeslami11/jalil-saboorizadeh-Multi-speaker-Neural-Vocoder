@@ -195,7 +195,7 @@ class FrameLevelRNN(torch.nn.Module):
         if upper_tier_conditioning is not None:
             input_rnn += upper_tier_conditioning
         else:
-            cond = self.cond_expand(cond.permute(0, 2, 1).float()).permute(0, 2, 1)           
+            cond = self.cond_expand(cond.permute(0, 2, 1).float()).permute(0, 2, 1)
             input_rnn += cond
 
             spk_embed = self.spk_embedding(spk)
@@ -392,7 +392,6 @@ class Predictor(Runner, torch.nn.Module):
             if verbose & 2:
                 print('predictor rnn prev_samples view', prev_samples.size())
             if upper_tier_conditioning is None:
-            
                 upper_tier_conditioning = self.run_rnn(
                     rnn, prev_samples, upper_tier_conditioning, cond
                 )
@@ -476,7 +475,7 @@ class Generator(Runner):
                     upper_tier_conditioning = \
                         frame_level_outputs[tier_index + 1][:, frame_index, :] \
                         .unsqueeze(1)
-                
+
                 if self.cuda:
                     cond = Variable(cond).cuda()
                 frame_level_outputs[tier_index] = self.run_rnn(
