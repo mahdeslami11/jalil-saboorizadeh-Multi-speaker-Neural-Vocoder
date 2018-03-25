@@ -157,7 +157,6 @@ class FolderDataset(Dataset):
             self.num_samples = self.batch_size*(total_samples//(self.batch_size*lon_seq*self.cond_len))
             
             print('Number of samples (1 audio file): ', self.num_samples)
-            num_conditioning = (self.seq_len + self.overlap_len)/self.cond_len
             self.total_samples = self.num_samples * (self.seq_len+self.overlap_len) * self.cond_len
             print('total samples', total_samples)
             total_conditioning = self.total_samples//self.cond_len
@@ -197,12 +196,6 @@ class FolderDataset(Dataset):
                 print('Var cc', varcc)
                 print('Var f0', varf0)
                 print('Var fv', varfv)
-                # cc=cc.reshape(-1)
-                fvv = fvv.reshape(-1)
-                f00 = f00.reshape(-1)
-                np.save('ccnormshape', cc)
-                # np.save('fvnorm', fvv)
-                # np.save('f0norm', f00)
                 quit()
 
             self.cond = self.cond[:total_conditioning].reshape(self.batch_size, -1, dim_cond)
