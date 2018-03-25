@@ -21,8 +21,8 @@ class SampleRNN(torch.nn.Module):
         self.dim = dim
         self.q_levels = q_levels
         self.ulaw = ulaw
-	self.cond_dim = cond_dim
-	self.spk_dim = spk_dim
+        self.cond_dim = cond_dim
+        self.spk_dim = spk_dim
 
         if ulaw:
             self.dequantize = utils.udequantize
