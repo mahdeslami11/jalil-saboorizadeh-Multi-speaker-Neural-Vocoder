@@ -273,8 +273,8 @@ def main(exp, frame_sizes, dataset, **params):
         smoothing=params['loss_smoothing']
     ))
     trainer.register_plugin(ValidationPlugin(
-        data_loader('validation')[0],
-        data_loader('test')[0]
+        data_loader('validation'),
+        data_loader('test')
     ))
     trainer.register_plugin(AbsoluteTimeMonitor())
     trainer.register_plugin(SaverPlugin(
