@@ -9,6 +9,8 @@ import os
 import numpy as np
 from interpolate import interpolation
 
+from conditioners import cond_max_min
+
 
 class FolderDataset(Dataset):
 
@@ -29,11 +31,9 @@ class FolderDataset(Dataset):
         self.max_cond = max_cond
         self.min_cond = min_cond
 
-        # Define sets of data and speaker IDs
+        # Define sets of data, conditioners and speaker IDs
         self.data = []
         self.global_spk = []
-
-        # Conditioners are computed by Ahocoder every 80 audio samples (windows of 5ms at 16kHz sample rate)
         self.cond_dim = cond_dim
         self.cond_len = cond_len
         self.cond = np.empty(shape=[0, self.cond_dim])
@@ -59,7 +59,7 @@ class FolderDataset(Dataset):
             print('Extracting conditioning from: ', cond_path)
             print('List of files is: wav_' + partition + '.list')
 
-            # Get file names from train list
+            # Get file names from partition's list list
             file_names = open(datasets_path + 'wav_' + partition + '.list', 'r').read().splitlines()
 
             # Search for unique speakers in list and sort them
@@ -166,42 +166,22 @@ class FolderDataset(Dataset):
             self.cond = self.cond[:total_conditioning]
             self.data = self.data[:self.total_samples].reshape(self.batch_size, -1)
 
-            self.cond = self.cond[:total_conditioning].reshape(self.batch_size, -1, dim_cond)
-            print('cond reshape', self.cond.shape)
-            print('total index', self.total_samples // self.seq_len)
-
             # Normalize conditioners with absolute maximum and minimum of all the partitions
-            if self.max_cond is None and partition == 'test':
-                print('Normalizing conditioners')
-                npy_name_cond_train = 'npy_datasets/train_conditioners.npy'
-                npy_name_cond_val = 'npy_datasets/validation_conditioners.npy'
-                cond_train = np.load(npy_name_cond_train)
-                cond_val = np.load(npy_name_cond_val)
+            if self.max_cond is None or self.min_cond is None:
+                files = [npy_name_max_cond, npy_name_min_cond]
+                if len(files) != len([f for f in files if os.path.isfile(f)]):
+                    # Compute maximum and minimum of de-normalized conditioners
+                    cond_max_min(datasets_path, cond_path, cond_dim, npy_name_max_cond, npy_name_min_cond)
+                # Load maximum and minimum of de-normalized conditioners
+                self.max_cond = np.load(npy_name_max_cond)
+                self.min_cond = np.load(npy_name_min_cond)
 
-                # Compute maximum and minimum for each partition
-                max_cond_train = np.amax(cond_train, axis=0)
-                max_cond_val = np.amax(cond_val, axis=0)
-                max_cond_test = np.amax(self.cond, axis=0)
-                min_cond_train = np.amin(cond_train, axis=0)
-                min_cond_val = np.amin(cond_val, axis=0)
-                min_cond_test = np.amin(self.cond, axis=0)
+            self.cond = (self.cond - self.min_cond) / (self.max_cond - self.min_cond)
 
-                # Compute overall extrema
-                self.max_cond = np.maximum(max_cond_train, max_cond_val, max_cond_test)
-                self.min_cond = np.minimum(min_cond_train, min_cond_val, min_cond_test)
-
-                # Normalize conditioners of all partitions
-                cond_train = (cond_train - self.min_cond) / (self.max_cond - self.min_cond)
-                cond_val = (cond_val - self.min_cond) / (self.max_cond - self.min_cond)
-                self.cond = (self.cond-self.min_cond)/(self.max_cond-self.min_cond)
-
-                # Save train and validation partitions
-                np.save(npy_name_cond_train, cond_train)
-                np.save(npy_name_cond_val, cond_val)
-
-                # Save maximum and minimum conditioners to replicate normalization when generating
-                np.save(npy_name_max_cond, self.max_cond)
-                np.save(npy_name_min_cond, self.min_cond)
+            # Save partition's dataset
+            np.save(npy_name_data, self.data)
+            np.save(npy_name_cond, self.cond)
+            np.save(npy_name_spk, self.global_spk)
 
             eval_par = False
             if eval_par:
@@ -224,6 +204,10 @@ class FolderDataset(Dataset):
                 print('Var f0', varf0)
                 print('Var fv', varfv)
                 quit()
+
+            self.cond = self.cond[:total_conditioning].reshape(self.batch_size, -1, dim_cond)
+            print('cond reshape', self.cond.shape)
+            print('total index', self.total_samples // self.seq_len)
 
             # Save training dataset
             np.save(npy_name_data, self.data)
@@ -293,7 +277,3 @@ class FolderDataset(Dataset):
 
     def __len__(self):
         return self.total_samples//self.seq_len
-
-    def cond_range(self):
-        # Compute conditioners range if not done
-        return self.max_cond, self.min_cond

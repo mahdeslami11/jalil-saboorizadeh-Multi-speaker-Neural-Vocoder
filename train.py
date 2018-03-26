@@ -40,7 +40,7 @@ default_params = {
     'batch_size': 128,
     'qrnn': False,
     'cond_dim': 43,     # Conditioners of size 43 = 40 MFCC + 1 LF0 + 1FV + 1 U/V
-    'cond_len': 80,
+    'cond_len': 80,     # Conditioners are computed by Ahocoder every 80 audio samples (windows of 5ms at 16kHz)
     'spk_dim': 6,
 
     # training parameters
