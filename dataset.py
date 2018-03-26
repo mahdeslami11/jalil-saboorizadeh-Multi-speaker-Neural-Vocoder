@@ -43,6 +43,10 @@ class FolderDataset(Dataset):
         npy_name_cond = 'npy_datasets/' + partition + '_conditioners.npy'
         npy_name_spk = 'npy_datasets/' + partition + '_speakers.npy'
 
+        # Define npy maximum and minimum de-normalized conditioners
+        npy_name_max_cond = 'npy_datasets/max_cond.npy'
+        npy_name_min_cond = 'npy_datasets/min_cond.npy'
+
         # Check if dataset has to be created
         files = [npy_name_data, npy_name_cond, npy_name_spk]
         create_dataset = len(files) != len([f for f in files if os.path.isfile(f)])
@@ -50,7 +54,7 @@ class FolderDataset(Dataset):
         nosync = True
 
         if create_dataset:
-            print('Create' + partition + 'dataset ', '-' * 60, '\n')
+            print('Create ' + partition + ' dataset', '-' * 60, '\n')
             print('Extracting wav from: ', path)
             print('Extracting conditioning from: ', cond_path)
             print('List of files is: wav_' + partition + '.list')
@@ -171,12 +175,12 @@ class FolderDataset(Dataset):
                 cond_val = np.load(npy_name_cond_val)
 
                 # Compute maximum and minimum for each partition
-                max_cond_train = np.amax(cond_train, axi=0)
-                max_cond_val = np.amax(cond_val, axi=0)
-                max_cond_test = np.amax(self.cond, axi=0)
-                min_cond_train = np.amin(cond_train, axi=0)
-                min_cond_val = np.amin(cond_val, axi=0)
-                min_cond_test = np.amin(self.cond, axi=0)
+                max_cond_train = np.amax(cond_train, axis=0)
+                max_cond_val = np.amax(cond_val, axis=0)
+                max_cond_test = np.amax(self.cond, axis=0)
+                min_cond_train = np.amin(cond_train, axis=0)
+                min_cond_val = np.amin(cond_val, axis=0)
+                min_cond_test = np.amin(self.cond, axis=0)
 
                 # Compute overall extrema
                 self.max_cond = np.maximum(max_cond_train, max_cond_val, max_cond_test)
@@ -190,6 +194,10 @@ class FolderDataset(Dataset):
                 # Save train and validation partitions
                 np.save(npy_name_cond_train, cond_train)
                 np.save(npy_name_cond_val, cond_val)
+
+                # Save maximum and minimum conditioners to replicate normalization when generating
+                np.save(npy_name_max_cond, self.max_cond)
+                np.save(npy_name_min_cond, self.min_cond)
 
             eval_par = False
             if eval_par:
@@ -223,7 +231,7 @@ class FolderDataset(Dataset):
             np.save(npy_name_cond, self.cond)
             np.save(npy_name_spk, self.global_spk)
 
-            print('Dataset created for' + partition + 'partition', '-' * 60, '\n')
+            print('Dataset created for ' + partition + ' partition', '-' * 60, '\n')
 
         else:
             # Load previously created training dataset
@@ -231,7 +239,11 @@ class FolderDataset(Dataset):
             self.cond = np.load(npy_name_cond)
             self.global_spk = np.load(npy_name_spk)
 
-            print('Dataset loaded for' + partition + 'partition', '-' * 60, '\n')
+            # Load maximum and minimum of de-normalized conditioners
+            self.max_cond = np.load(npy_name_max_cond)
+            self.min_cond = np.load(npy_name_min_cond)
+
+            print('Dataset loaded for ' + partition + ' partition', '-' * 60, '\n')
 
     def __getitem__(self, index):
         verbose = False
