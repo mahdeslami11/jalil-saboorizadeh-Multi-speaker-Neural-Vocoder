@@ -48,6 +48,7 @@ default_params = {
     'cond_path': './datasets/73'
 }
 
+
 def init_random_seed(seed, cuda):
     print('Seed:', seed)
     random.seed(seed)
@@ -55,6 +56,7 @@ def init_random_seed(seed, cuda):
     torch.manual_seed(seed)
     if cuda:
         torch.cuda.manual_seed(seed)
+
 
 def ensure_dir_exists(path):
     if not os.path.exists(path):
@@ -70,12 +72,12 @@ def load_model(checkpoint_path):
         checkpoint_name
     )
     if match:
-        epoch     = int(match.group(1))
+        epoch = int(match.group(1))
         iteration = int(match.group(2))
     else:
-        epoch, iteration = (0,0)
+        epoch, iteration = (0, 0)
         
-    return (torch.load(checkpoint_path), epoch, iteration)
+    return torch.load(checkpoint_path), epoch, iteration
 
 
 class RunGenerator:
@@ -86,14 +88,13 @@ class RunGenerator:
         self.cuda = cuda
         self.epoch = epoch
         self.cond = cond
-        g=str(g)
+        g = str(g)
 
         m = re.search('/exp:(.+?)/checkpoints', checkpoints_path)
         if m:
                 found = m.group(1)
         self.pattern = 'BD_'+bd+'_model_'+found +'gen-ep{}-g'+g+'.wav'
         print('Generating file', self.pattern)
-
 
     def __call__(self, n_samples, sample_length, cond):
         print('Generate', n_samples, 'of length', sample_length)
@@ -232,7 +233,6 @@ def main(frame_sizes, **params):
         generator(params['n_samples'],
                 params['sample_length'], cond)
 
-    
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(

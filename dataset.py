@@ -166,6 +166,10 @@ class FolderDataset(Dataset):
             self.cond = self.cond[:total_conditioning]
             self.data = self.data[:self.total_samples].reshape(self.batch_size, -1)
 
+            self.cond = self.cond[:total_conditioning].reshape(self.batch_size, -1, dim_cond)
+            print('cond reshape', self.cond.shape)
+            print('total index', self.total_samples // self.seq_len)
+
             # Normalize conditioners with absolute maximum and minimum of all the partitions
             if self.max_cond is None and partition == 'test':
                 print('Normalizing conditioners')
@@ -220,11 +224,6 @@ class FolderDataset(Dataset):
                 print('Var f0', varf0)
                 print('Var fv', varfv)
                 quit()
-
-            self.cond = self.cond[:total_conditioning].reshape(self.batch_size, -1, dim_cond)
-
-            print('cond reshape', self.cond.shape)
-            print('total index', self.total_samples//self.seq_len)
 
             # Save training dataset
             np.save(npy_name_data, self.data)

@@ -48,6 +48,7 @@ default_params = {
     'cond_path': './datasets/73'
 }
 
+
 def init_random_seed(seed, cuda):
     print('Seed:', seed)
     random.seed(seed)
@@ -55,6 +56,7 @@ def init_random_seed(seed, cuda):
     torch.manual_seed(seed)
     if cuda:
         torch.cuda.manual_seed(seed)
+
 
 def ensure_dir_exists(path):
     if not os.path.exists(path):
@@ -70,12 +72,12 @@ def load_model(checkpoint_path):
         checkpoint_name
     )
     if match:
-        epoch     = int(match.group(1))
+        epoch = int(match.group(1))
         iteration = int(match.group(2))
     else:
-        epoch, iteration = (0,0)
+        epoch, iteration = (0, 0)
         
-    return (torch.load(checkpoint_path), epoch, iteration)
+    return torch.load(checkpoint_path), epoch, iteration
 
 
 class RunGenerator:
@@ -88,7 +90,6 @@ class RunGenerator:
         self.pattern = 'gensyn-ep{}-g{}.wav'
         self.cond = cond
         
-
     def __call__(self, n_samples, sample_length, cond):
         print('Generate', n_samples, 'of length', sample_length)
         samples = self.generate(n_samples, sample_length, cond).cpu().numpy()
@@ -186,10 +187,9 @@ def main(frame_sizes, **params):
     if model_data is None:
         sys.exit('ERROR: Model not found in', fname)        
     (state_dict, epoch_index, iteration) = model_data
-    print('OK: Read model', fname, '(epoch:',epoch_index, ')')
+    print('OK: Read model', fname, '(epoch:', epoch_index, ')')
     print(state_dict)
     predictor.load_state_dict(state_dict)
-    
 
     generator = RunGenerator(model, 
                              os.path.join(output_path, 'samples'),
@@ -201,7 +201,6 @@ def main(frame_sizes, **params):
     generator(params['n_samples'],
               params['sample_length'], cond)
 
-    
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
