@@ -178,38 +178,11 @@ class FolderDataset(Dataset):
 
             self.cond = (self.cond - self.min_cond) / (self.max_cond - self.min_cond)
 
-            # Save partition's dataset
-            np.save(npy_name_data, self.data)
-            np.save(npy_name_cond, self.cond)
-            np.save(npy_name_spk, self.global_spk)
-
-            eval_par = False
-            if eval_par:
-                print('shape', self.cond.shape)
-                cc = self.cond[:, 0:39]
-                fvv = self.cond[:, 41]
-                f00 = self.cond[:, 40]
-
-                print('shape cc', cc.shape)
-                medcc = cc.mean()
-                medf0 = f00.mean()
-                medfv = fvv.mean()
-                print('Mean cc', medcc)
-                print('Mean f0', medf0)
-                print('Mean fv', medfv)
-                varcc = np.var(cc)
-                varfv = np.var(fvv)
-                varf0 = np.var(f00)
-                print('Var cc', varcc)
-                print('Var f0', varf0)
-                print('Var fv', varfv)
-                quit()
-
             self.cond = self.cond[:total_conditioning].reshape(self.batch_size, -1, dim_cond)
             print('cond reshape', self.cond.shape)
             print('total index', self.total_samples // self.seq_len)
 
-            # Save training dataset
+            # Save partition's dataset
             np.save(npy_name_data, self.data)
             np.save(npy_name_cond, self.cond)
             np.save(npy_name_spk, self.global_spk)
