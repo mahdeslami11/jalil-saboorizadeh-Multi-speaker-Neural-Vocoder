@@ -375,11 +375,12 @@ class Predictor(Runner, torch.nn.Module):
                 cond = cond.contiguous().view(
                     batch_size, -1, cond_dim
                 )
-                print('cond_dim=', cond_dim)
+                print('cond_dim=', cond_dim, '\tcond=', cond)
+                print('spk_dim=', spk_dim, '\tspk=', spk)
+
                 spk = spk.contiguous().view(
                     batch_size, -1, spk_dim
                 )
-                print('spk_dim=', spk_dim)
 
             if verbose & 2:
                 print('predictor rnn prev_samples', prev_samples.size())
