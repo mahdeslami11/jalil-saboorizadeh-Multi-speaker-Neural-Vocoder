@@ -47,6 +47,9 @@ class FolderDataset(Dataset):
         npy_name_max_cond = 'npy_datasets/max_cond.npy'
         npy_name_min_cond = 'npy_datasets/min_cond.npy'
 
+        # Define npy length of training dataset
+        npy_name_length = 'npy_datasets/train_length.npy'
+
         # Check if dataset has to be created
         files = [npy_name_data, npy_name_cond, npy_name_spk]
         create_dataset = len(files) != len([f for f in files if os.path.isfile(f)])
@@ -166,6 +169,10 @@ class FolderDataset(Dataset):
             self.cond = self.cond[:total_conditioning]
             self.data = self.data[:self.total_samples].reshape(self.batch_size, -1)
 
+            if partition == 'train':
+                self.length = self.total_samples // self.seq_len
+                np.save(npy_name_length, self.length)
+
             # Normalize conditioners with absolute maximum and minimum of all the partitions
             if self.max_cond is None or self.min_cond is None:
                 files = [npy_name_max_cond, npy_name_min_cond]
@@ -198,6 +205,9 @@ class FolderDataset(Dataset):
             # Load maximum and minimum of de-normalized conditioners
             self.max_cond = np.load(npy_name_max_cond)
             self.min_cond = np.load(npy_name_min_cond)
+
+            # Load length for train partition
+            self.length = np.load(npy_name_length)
 
             print('Dataset loaded for ' + partition + ' partition', '-' * 60, '\n')
 
@@ -249,4 +259,4 @@ class FolderDataset(Dataset):
         return data, reset, target, cond, spk
 
     def __len__(self):
-        return self.total_samples//self.seq_len
+        return self.length
