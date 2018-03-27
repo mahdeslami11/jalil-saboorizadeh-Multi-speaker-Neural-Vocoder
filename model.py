@@ -347,9 +347,7 @@ class Predictor(Runner, torch.nn.Module):
         # print('model input', imput.size())
         (batch_size, numcond, cond_dim) = cond.size()
         # print('model cond', cond.size())
-        print('Speaker size:', spk.size(), 'expected: (batch, spk_dim)')
-        quit()
-        (_, spk_dim) = spk.size()
+        spk_dim = spk.size()
 
         # predictor rnn 0 -79
         # predictor rnn prev_samples torch.Size([128, 1040])
