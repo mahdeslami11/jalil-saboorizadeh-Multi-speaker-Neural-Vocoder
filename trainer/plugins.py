@@ -53,13 +53,15 @@ class ValidationPlugin(Plugin):
         for data in dataset:
             inputs = data[0]
             reset = data[1]
-            batch_target=data[2]
-            batch_cond=data[3]
+            batch_target = data[2]
+            batch_cond = data[3]
+            batch_spk = data[4]
+
             if reset[0] == 1:
-                reset=True
+                reset = True
             else:
-                reset=False
-            batch_inputs=(inputs, reset)                                        
+                reset = False
+            batch_inputs = (inputs, reset)
             batch_size = batch_target.size()[0]
 
             def wrap(input):
@@ -72,16 +74,17 @@ class ValidationPlugin(Plugin):
 
             batch_target = Variable(batch_target, volatile=True)
             batch_cond = Variable(batch_cond, volatile=True)
+            batch_spk = Variable(batch_spk, volatile=True)
 
             if self.trainer.cuda:
                 batch_target = batch_target.cuda()
                 batch_cond = batch_cond.cuda()
+                batch_spk = batch_spk.cuda()
 
-            batch_output = self.trainer.model(*batch_inputs, batch_cond)
+            batch_output = self.trainer.model(*batch_inputs, batch_cond, batch_spk)
             loss = self.trainer.criterion(batch_output, batch_target)  
             print('loss evaluate', loss)
             loss_sum += loss .data[0] * batch_size
-            
 
             n_examples += batch_size
 

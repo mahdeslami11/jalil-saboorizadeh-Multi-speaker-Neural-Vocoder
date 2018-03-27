@@ -10,7 +10,7 @@ def cond_max_min(datasets_path, cond_path, cond_dim, npy_name_max_cond, npy_name
     file_names = open(datasets_path + 'wav.list', 'r').read().splitlines()
     # Load each of the files from the list. Note that extension has to be added
     for file in file_names:
-        print('Analyzing file' + file)
+        print('Analyzing file ' + file)
         # Load CC conditioner
         c = np.loadtxt(cond_path + file + '.cc')
         c = c.reshape(-1, c.shape[1])

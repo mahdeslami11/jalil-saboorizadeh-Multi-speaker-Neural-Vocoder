@@ -1,7 +1,8 @@
 import torch
 import numpy as np
-from   torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader
 import utils
+
 
 class myDataset(Dataset):
 

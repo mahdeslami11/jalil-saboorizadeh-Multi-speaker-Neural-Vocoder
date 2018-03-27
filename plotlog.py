@@ -9,6 +9,7 @@ import sys
 show_pp = True
 show_pp = False
 
+
 def PP(x, compute_pp=False):
     if compute_pp:
         return np.exp2(x)
@@ -49,7 +50,7 @@ def plotfigure(fname):
     n = 0
     for line in f:
         if iterpat.search(line):
-            n +=1
+            n += 1
 
         m = trainpat.search(line);
         if m:
@@ -68,10 +69,9 @@ def plotfigure(fname):
             idxte[nte] = n
             datte[nte] = float(m.group(1))
             nte += 1
-        
-    
-    nepochs  = len(datva)
-    niters   = len(dattr)
+
+    nepochs = len(datva)
+    niters = len(dattr)
     it_per_e = niters//nepochs
 
     print('epochs=', len(datva), len(datte))
@@ -101,10 +101,8 @@ def plotfigure(fname):
         plt.legend(['train NLL', 'valid NLL', ' test NLL'])
     
     plt.title('({2}) epochs={0}; iterations/epoch={1}'.format(len(datte),
-                                                                  len(dattr)//len(datte),
-                                                                  fname,))
+                                                              len(dattr)//len(datte), fname,))
     plt.savefig(fname + '.png')
-
 
 
 if len(sys.argv) == 1:
@@ -116,5 +114,3 @@ else:
 for fname in fnames:
     plotfigure(fname)
 plt.show()
-
-    

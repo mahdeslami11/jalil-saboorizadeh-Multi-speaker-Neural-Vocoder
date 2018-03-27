@@ -63,17 +63,17 @@ class Trainer(object):
                 enumerate(self.dataset, self.iterations + 1):
             inputs = data[0]
             reset = data[1]
-            if reset[0] == 1:
-                reset=True
-            else:
-                reset=False
-
-            batch_inputs=(inputs, reset)
-            batch_cond = data[3]
-
             batch_target = data[2]
+            if reset[0] == 1:
+                reset = True
+            else:
+                reset = False
+            batch_inputs = (inputs, reset)
+            batch_cond = data[3]
+            batch_spk = data[4]
+
             self.call_plugins(
-                'batch', self.iterations, batch_inputs, batch_target, batch_cond
+                'batch', self.iterations, batch_inputs, batch_target, batch_cond, batch_spk
             )
 
             def wrap(input):
@@ -86,15 +86,17 @@ class Trainer(object):
 
             batch_target = Variable(batch_target)
             batch_cond = Variable(batch_cond)
+            batch_spk = Variable(batch_spk)
 
             if self.cuda:
                 batch_target = batch_target.cuda()
                 batch_cond = batch_cond.cuda()
+                batch_spk = batch_spk.cuda()
                 
             plugin_data = [None, None]
 
             def closure():
-                batch_output = self.model(*batch_inputs, batch_cond)
+                batch_output = self.model(*batch_inputs, batch_cond, batch_spk)
 
                 loss = self.criterion(batch_output, batch_target)
                 loss.backward()
