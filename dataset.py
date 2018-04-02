@@ -251,12 +251,11 @@ class FolderDataset(Dataset):
 
         # Get the speaker ID
         spk = self.global_spk[sample_in_batch]
-        spk = torch.cuda.FloatTensor(np)
 
         if verbose:
             print('data size: ', data.size())
             print('conditioner size: ', cond.size())
-            print('speaker size: ', spk.size())
+            print('current speaker: ', spk)
 
         return data, reset, target, cond, spk
 
