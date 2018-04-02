@@ -251,7 +251,7 @@ class FolderDataset(Dataset):
 
         # Get the speaker ID
         spk = self.global_spk[sample_in_batch]
-        spk = torch.from_numpy(spk)
+        spk = torch.cuda.FloatTensor(np)
 
         if verbose:
             print('data size: ', data.size())
