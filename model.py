@@ -375,8 +375,8 @@ class Predictor(Runner, torch.nn.Module):
                 cond = cond.contiguous().view(
                     batch_size, -1, cond_dim
                 )
-                print('cond_dim=', cond_dim)
-                print('spk_dim=', spk_dim)
+                print('cond_dim =', cond_dim)
+                print('spk_dim =', spk_dim)
 
                 spk = spk.contiguous().view(
                     batch_size, -1, spk_dim
@@ -385,7 +385,7 @@ class Predictor(Runner, torch.nn.Module):
             if verbose & 2:
                 print('predictor rnn prev_samples', prev_samples.size())
                 if upper_tier_conditioning is not None:
-                    print('predictor rnn uppertier_cond', upper_tier_conditioning.size())
+                    print('predictor rnn upper tier cond', upper_tier_conditioning.size())
 
             prev_samples = prev_samples.contiguous().view(
                 batch_size, -1, rnn.n_frame_samples

@@ -251,11 +251,12 @@ class FolderDataset(Dataset):
 
         # Get the speaker ID
         spk = self.global_spk[sample_in_batch]
+        spk = torch.from_numpy(spk)
 
         if verbose:
-            print('data get item ', data.size())
-            print('cnd shape getitem', cond.size())
-            print('current speaker', spk)
+            print('data size: ', data.size())
+            print('conditioner size: ', cond.size())
+            print('speaker size: ', spk)
 
         return data, reset, target, cond, spk
 
