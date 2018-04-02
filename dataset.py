@@ -256,7 +256,7 @@ class FolderDataset(Dataset):
         if verbose:
             print('data size: ', data.size())
             print('conditioner size: ', cond.size())
-            print('speaker size: ', spk)
+            print('speaker size: ', spk.size())
 
         return data, reset, target, cond, spk
 
