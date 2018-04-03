@@ -367,7 +367,7 @@ class Predictor(Runner, torch.nn.Module):
         for rnn in reversed(self.model.frame_level_rnns):
             from_index = self.model.lookback - rnn.n_frame_samples
             to_index = -rnn.n_frame_samples + 1
-            if verbose & 2:
+            if verbose:
                 print('predictor rnn', from_index, to_index)
 
             # prev_samples = 2 * utils.linear_dequantize(
@@ -380,14 +380,16 @@ class Predictor(Runner, torch.nn.Module):
                 cond = cond.contiguous().view(
                     batch_size, -1, cond_dim
                 )
-                print('cond_dim =', cond_dim)
+                print('conditioner size =', cond.size())
                 print('spk_dim =', spk_dim)
 
                 spk = spk.contiguous().view(
-                    batch_size, -1, spk_dim
+                    batch_size
                 )
+                print('Exiting main program')
+                quit()
 
-            if verbose & 2:
+            if verbose:
                 print('predictor rnn prev_samples', prev_samples.size())
                 if upper_tier_conditioning is not None:
                     print('predictor rnn upper tier cond', upper_tier_conditioning.size())
@@ -395,7 +397,7 @@ class Predictor(Runner, torch.nn.Module):
             prev_samples = prev_samples.contiguous().view(
                 batch_size, -1, rnn.n_frame_samples
             )
-            if verbose & 2:
+            if verbose:
                 print('predictor rnn prev_samples view', prev_samples.size())
             if upper_tier_conditioning is None:
                 upper_tier_conditioning = self.run_rnn(
@@ -408,10 +410,9 @@ class Predictor(Runner, torch.nn.Module):
                 )
 
         bottom_frame_size = self.model.frame_level_rnns[0].frame_size
-        mlp_input_sequences = input_sequences \
-        [:, self.model.lookback - bottom_frame_size:]
+        mlp_input_sequences = input_sequences[:, self.model.lookback - bottom_frame_size:]
 
-        if verbose & 2:
+        if verbose:
             print('predictor mlp', self.model.lookback-bottom_frame_size)
             print('predictor mlp inputseq', mlp_input_sequences.size())
             print('predictor mlp uppertier_cond', upper_tier_conditioning.size(), '\n')
@@ -444,8 +445,7 @@ class Generator(Runner):
         print('seq len', seq_len)
         print('model lookback', self.model.lookback)
         bottom_frame_size = self.model.frame_level_rnns[0].n_frame_samples
-        sequences = torch.LongTensor(n_seqs, self.model.lookback + seq_len) \
-                         .fill_(utils.q_zero(self.model.q_levels))
+        sequences = torch.LongTensor(n_seqs, self.model.lookback + seq_len).fill_(utils.q_zero(self.model.q_levels))
         frame_level_outputs = [None for _ in self.model.frame_level_rnns]
 
         for i in range(self.model.lookback, self.model.lookback + seq_len):
