@@ -250,12 +250,12 @@ class FolderDataset(Dataset):
         cond = torch.from_numpy(self.cond[sample_in_batch][from_cond:to_cond])
 
         # Get the speaker ID
-        spk = torch.ByteTensor(int(self.global_spk[sample_in_batch]))
+        spk = torch.from_numpy(np.array([self.global_spk[sample_in_batch]]))
 
         if verbose:
             print('data size: ', data.size(), 'with sequence length: ', self.seq_len, 'and overlap: ', self.overlap_len)
             print('conditioner size: ', cond.size())
-            print('current speaker: ', spk)
+            print('speaker size: ', spk.size())
 
         return data, reset, target, cond, spk
 
