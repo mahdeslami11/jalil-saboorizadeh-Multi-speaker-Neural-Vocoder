@@ -197,10 +197,10 @@ class FrameLevelRNN(torch.nn.Module):
         else:
             cond = self.cond_expand(cond.permute(0, 2, 1).float()).permute(0, 2, 1)
             input_rnn += cond
-
-            spk_embed = self.spk_embedding(spk)
             if verbose:
                 print('Compute speaker embedding for spk', spk, 'of size: ', spk.size())
+            spk_embed = self.spk_embedding(spk)
+            if verbose:
                 print('Embedding has size: ', spk_embed.size())
             spk = self.spk_expand(spk_embed.permute(0, 2, 1).float()).permute(0, 2, 1)
             if verbose:
