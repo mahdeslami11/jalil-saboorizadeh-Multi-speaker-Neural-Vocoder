@@ -198,8 +198,8 @@ class FrameLevelRNN(torch.nn.Module):
             cond = self.cond_expand(cond.permute(0, 2, 1).float()).permute(0, 2, 1)
             input_rnn += cond
             if verbose:
-                print('Compute speaker embedding for spk', spk, 'of size: ', spk.size())
-            spk_embed = self.spk_embedding(spk)
+                print('Compute speaker embedding for spk of size: ', spk.size())
+            spk_embed = self.spk_embedding(spk.long())
             if verbose:
                 print('Embedding has size: ', spk_embed.size())
             spk = self.spk_expand(spk_embed.permute(0, 2, 1).float()).permute(0, 2, 1)
@@ -441,7 +441,7 @@ class Generator(Runner):
         condtot = cond
         seq_len = num_cond*self.model.lookback
         print('seq len', seq_len)
-        print('model lookback', self.model.lookback)
+        print('model look-back', self.model.lookback)
         bottom_frame_size = self.model.frame_level_rnns[0].n_frame_samples
         sequences = torch.LongTensor(n_seqs, self.model.lookback + seq_len).fill_(utils.q_zero(self.model.q_levels))
         frame_level_outputs = [None for _ in self.model.frame_level_rnns]
