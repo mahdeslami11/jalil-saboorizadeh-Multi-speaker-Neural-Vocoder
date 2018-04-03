@@ -326,11 +326,11 @@ class Runner:
     def run_rnn(self, rnn, prev_samples, upper_tier_conditioning, cond, spk):
         if cond is None:
             (output, new_hidden) = rnn(
-                prev_samples, upper_tier_conditioning, self.hidden_states[rnn], cond
+                prev_samples, upper_tier_conditioning, self.hidden_states[rnn], cond, spk
             )
         else:
             (output, new_hidden) = rnn(
-                prev_samples, upper_tier_conditioning, self.hidden_states[rnn], cond
+                prev_samples, upper_tier_conditioning, self.hidden_states[rnn], cond, spk
             )
 
         self.hidden_states[rnn] = new_hidden.detach()
