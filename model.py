@@ -323,7 +323,7 @@ class Runner:
     def reset_hidden_states(self):
         self.hidden_states = {rnn: None for rnn in self.model.frame_level_rnns}
 
-    def run_rnn(self, rnn, prev_samples, upper_tier_conditioning, cond):
+    def run_rnn(self, rnn, prev_samples, upper_tier_conditioning, cond, spk):
         if cond is None:
             (output, new_hidden) = rnn(
                 prev_samples, upper_tier_conditioning, self.hidden_states[rnn], cond
@@ -379,14 +379,14 @@ class Predictor(Runner, torch.nn.Module):
                 cond = cond.contiguous().view(
                     batch_size, -1, cond_dim
                 )
-                print('conditioner size =', cond.size())
-                print('spk size =', spk.size())
 
                 spk = spk.contiguous().view(
-                    batch_size, 1
+                    batch_size, -1
                 )
 
             if verbose:
+                print('conditioner size =', cond.size())
+                print('spk size =', spk.size())
                 print('predictor rnn prev_samples', prev_samples.size())
                 if upper_tier_conditioning is not None:
                     print('predictor rnn upper tier cond', upper_tier_conditioning.size())
@@ -398,12 +398,13 @@ class Predictor(Runner, torch.nn.Module):
                 print('predictor rnn prev_samples view', prev_samples.size())
             if upper_tier_conditioning is None:
                 upper_tier_conditioning = self.run_rnn(
-                    rnn, prev_samples, upper_tier_conditioning, cond
+                    rnn, prev_samples, upper_tier_conditioning, cond, spk
                 )
             else:
                 cond = None
+                spk = None
                 upper_tier_conditioning = self.run_rnn(
-                    rnn, prev_samples, upper_tier_conditioning, cond
+                    rnn, prev_samples, upper_tier_conditioning, cond, spk
                 )
 
         bottom_frame_size = self.model.frame_level_rnns[0].frame_size
@@ -429,7 +430,7 @@ class Generator(Runner):
         super().__init__(model)
         self.cuda = cuda
 
-    def __call__(self, n_seqs, seq_len, cond):
+    def __call__(self, n_seqs, seq_len, cond, spk):
         # generation doesn't work with CUDNN for some reason
 
         cuda_enabled = torch.backends.cudnn.enabled
