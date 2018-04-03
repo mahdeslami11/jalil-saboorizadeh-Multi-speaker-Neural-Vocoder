@@ -352,7 +352,6 @@ class Predictor(Runner, torch.nn.Module):
         # print('model input', imput.size())
         (batch_size, numcond, cond_dim) = cond.size()
         # print('model cond', cond.size())
-        spk_dim = spk.size()
 
         # predictor rnn 0 -79
         # predictor rnn prev_samples torch.Size([128, 1040])
@@ -368,7 +367,7 @@ class Predictor(Runner, torch.nn.Module):
             from_index = self.model.lookback - rnn.n_frame_samples
             to_index = -rnn.n_frame_samples + 1
             if verbose:
-                print('predictor rnn', from_index, to_index)
+                print('predictor rnn ', from_index, to_index)
 
             # prev_samples = 2 * utils.linear_dequantize(
             prev_samples = 2 * self.model.dequantize(
@@ -381,13 +380,11 @@ class Predictor(Runner, torch.nn.Module):
                     batch_size, -1, cond_dim
                 )
                 print('conditioner size =', cond.size())
-                print('spk_dim =', spk_dim)
+                print('spk size =', spk.size())
 
                 spk = spk.contiguous().view(
-                    batch_size
+                    batch_size, 1
                 )
-                print('Exiting main program')
-                quit()
 
             if verbose:
                 print('predictor rnn prev_samples', prev_samples.size())
