@@ -253,7 +253,7 @@ class FolderDataset(Dataset):
         spk = self.global_spk[sample_in_batch]
 
         if verbose:
-            print('data size: ', data.size())
+            print('data size: ', data.size(), 'with sequence length: ', self.seq_len)
             print('conditioner size: ', cond.size())
             print('current speaker: ', spk)
 

@@ -10,7 +10,7 @@ from torch.nn.utils import weight_norm
 
 import numpy as np
 
-verbose = False
+verbose = True
 
 
 class SampleRNN(torch.nn.Module):
@@ -199,7 +199,12 @@ class FrameLevelRNN(torch.nn.Module):
             input_rnn += cond
 
             spk_embed = self.spk_embedding(spk)
+            if verbose:
+                print('Compute speaker embedding for spk', spk, 'of size: ', spk.size())
+                print('Embedding has size: ', spk_embed.size())
             spk = self.spk_expand(spk_embed.permute(0, 2, 1).float()).permute(0, 2, 1)
+            if verbose:
+                print('After expansion, speaker has size: ', spk.size())
             input_rnn += spk
 
         reset = hidden is None
@@ -233,7 +238,7 @@ class FrameLevelRNN(torch.nn.Module):
             output.permute(0, 2, 1)
         ).permute(0, 2, 1)
 
-        if verbose & 1:
+        if verbose:
             print('forward rnn',
                   '\tframe_size: ', self.frame_size,
                   '\tn_frame_samples: ', self.n_frame_samples,
