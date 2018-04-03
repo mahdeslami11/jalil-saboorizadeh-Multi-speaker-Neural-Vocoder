@@ -212,7 +212,7 @@ class FolderDataset(Dataset):
             print('Dataset loaded for ' + partition + ' partition', '-' * 60, '\n')
 
     def __getitem__(self, index):
-        verbose = True
+        verbose = False
 
         # Compute which sample within n_batch has to be returned given an index
         n_batch, sample_in_batch = divmod(index, self.batch_size)
@@ -253,7 +253,7 @@ class FolderDataset(Dataset):
         spk = self.global_spk[sample_in_batch]
 
         if verbose:
-            print('data size: ', data.size(), 'with sequence length: ', self.seq_len)
+            print('data size: ', data.size(), 'with sequence length: ', self.seq_len, 'and overlap: ', self.overlap_len)
             print('conditioner size: ', cond.size())
             print('current speaker: ', spk)
 
