@@ -2,12 +2,11 @@ import numpy as np
 from interpolate import interpolation
 
 
-def cond_max_min(datasets_path, cond_path, cond_dim, npy_name_max_cond, npy_name_min_cond):
-    cond_glob = np.empty(shape=[0, cond_dim])
-
+def cond_max_min(datasets_path, cond_path, cond_glob, file, npy_name_max_cond, npy_name_min_cond):
     print('Computing conditioning extrema')
     # Get file names from wav list
     file_names = open(datasets_path + 'wav.list', 'r').read().splitlines()
+    file_names = file_names[(file_names.index(file) + 1):]
     # Load each of the files from the list. Note that extension has to be added
     for file in file_names:
         print('Analyzing file ' + file)

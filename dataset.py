@@ -178,7 +178,7 @@ class FolderDataset(Dataset):
                 files = [npy_name_max_cond, npy_name_min_cond]
                 if len(files) != len([f for f in files if os.path.isfile(f)]):
                     # Compute maximum and minimum of de-normalized conditioners
-                    cond_max_min(datasets_path, cond_path, cond_dim, npy_name_max_cond, npy_name_min_cond)
+                    cond_max_min(datasets_path, cond_path, self.cond, file, npy_name_max_cond, npy_name_min_cond)
                 # Load maximum and minimum of de-normalized conditioners
                 self.max_cond = np.load(npy_name_max_cond)
                 self.min_cond = np.load(npy_name_min_cond)

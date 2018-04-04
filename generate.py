@@ -2,16 +2,14 @@ from model import SampleRNN, Predictor, Generator
 
 import torch
 
-import os
-import sys
 import re
 import numpy as np
 import argparse
 from librosa.output import write_wav
 from natsort import natsorted
+from dataset import FolderDataset
+
 import os
-from os import listdir
-from os.path import join
 import glob
 from interpolate import interpolation, linear_interpolation
 
@@ -34,6 +32,7 @@ default_params = {
     'val_frac': 0.1,
     'test_frac': 0.1,
     'cond_dim': 43,
+    'spk_dim': 6,
     'weight_norm': True,
 
     # training parameters
@@ -93,98 +92,90 @@ class RunGenerator:
         m = re.search('/exp:(.+?)/checkpoints', checkpoints_path)
         if m:
                 found = m.group(1)
-        self.pattern = 'BD_'+bd+'_model_'+found +'gen-ep{}-g'+g+'.wav'
+        self.pattern = 'BD_' + bd + '_model_' + found + 'gen-ep{}-g' + g + '.wav'
         print('Generating file', self.pattern)
 
     def __call__(self, n_samples, sample_length, cond):
         print('Generate', n_samples, 'of length', sample_length)
         samples = self.generate(n_samples, sample_length, cond).cpu().numpy()
-        maxv =  np.iinfo(np.int16).max
+        maxv = np.iinfo(np.int16).max
         for i in range(n_samples):
             filename = os.path.join(self.samples_path, self.pattern.format(self.epoch, i))
             print(filename)
 
             write_wav(
                 filename,
-                (samples[i, :]  * maxv).astype(np.int16), sr=self.sample_rate
+                (samples[i, :] * maxv).astype(np.int16), sr=self.sample_rate
             )
 
 
 def main(frame_sizes, **params):
 
-
     use_cuda = torch.cuda.is_available()
-   
- 
+
     params = dict(
         default_params,
         frame_sizes=frame_sizes, 
         **params
     )
-    ratio_min=0.9
-    ratio_max=1
+    ratio_min = 0.9
+    ratio_max = 1
     file_ceps = natsorted(glob.glob(os.path.join(params['cond_path'], '*.cc')))
     file_f0 = natsorted(glob.glob(os.path.join(params['cond_path'], '*.lf0')))
     file_fv = natsorted(glob.glob(os.path.join(params['cond_path'], '*.gv')))
     file_uv = natsorted(glob.glob(os.path.join(params['cond_path'], '*.uv')))
 
     file_ceps = file_ceps[
-        int(ratio_min  * len(file_ceps)) : int(ratio_max  * len(file_ceps))
+        int(ratio_min * len(file_ceps)): int(ratio_max * len(file_ceps))
         ]
     file_f0 = file_f0[
-        int(ratio_min * len(file_f0)) : int(ratio_max * len(file_f0))
+        int(ratio_min * len(file_f0)): int(ratio_max * len(file_f0))
         ]
-    file_fv  = file_fv [
-        int(ratio_min * len(file_fv )) : int(ratio_max * len(file_fv ))
+    file_fv = file_fv[
+        int(ratio_min * len(file_fv)): int(ratio_max * len(file_fv))
         ]
-    file_uv  = file_uv [
-        int(ratio_min * len(file_uv )) : int(ratio_max * len(file_uv ))
+    file_uv = file_uv[
+        int(ratio_min * len(file_uv)): int(ratio_max * len(file_uv))
         ]
 
-    #i=np.array([-2, -8, -13, -15, -19])
-    i=np.array([-1, -2, -3, -4, -5])
-    #i=np.array([-19])
-    #i=[-2, -8, -13, -15, -20]
+    # i=np.array([-2, -8, -13, -15, -19])
+    i = np.array([-1, -2, -3, -4, -5])
+    # i=np.array([-19])
+    # i=[-2, -8, -13, -15, -20]
     print('Generating ', len(i))
-    cont=0
+    cont = 0
     
     for i in np.nditer(i):
-        cont=cont+1
-        #cont=5
-        print('Generating Audio' , i)
-        #i=i[j]
+        cont = cont+1
+        # cont=5
+        print('Generating Audio', i)
+        # i=i[j]
         print('Generating...', file_ceps[i])
         c = np.loadtxt(file_ceps[i])
         f0 = np.loadtxt(file_f0[i])
-        #interp es la senyal interpolada, uv es el flag (UV) de mom el deixem
-        #f0, uv = interpolation(f0file, -10000000000)
-        #print('f0 uv', uv)
-        #print('shape', uv.shape)
         num_f0 = f0.shape[0]
-        f0 = f0.reshape((num_f0,1))
+        f0 = f0.reshape((num_f0, 1))
         fv = np.loadtxt(file_fv[i])
-        #fv, uv = interpolation(fvfile, 1e3)
+        # fv, uv = interpolation(fvfile, 1e3)
         num_fv = fv.shape[0]
-        fv = fv.reshape((num_fv,1))
-        uv=np.loadtxt(file_uv[i])
-        uv = uv.reshape((num_fv,1))
+        fv = fv.reshape((num_fv, 1))
+        uv = np.loadtxt(file_uv[i])
+        uv = uv.reshape((num_fv, 1))
         print('fv uv', uv)
         cond = np.concatenate((c, f0), axis=1)
         cond = np.concatenate((cond, fv), axis=1)
         cond = np.concatenate((cond, uv), axis=1)
-        
-        
+
         print('shape cond', cond.shape)
-        #min_cond=np.load(params['cond_path']+'/min.npy')
-        #max_cond=np.load(params['cond_path']+'/max.npy')
-        #print('max cond', max_cond.shape)
-        #cond =  (cond-min_cond)/(max_cond-min_cond)
+        # min_cond=np.load(params['cond_path']+'/min.npy')
+        # max_cond=np.load(params['cond_path']+'/max.npy')
+        # print('max cond', max_cond.shape)
+        # cond =  (cond-min_cond)/(max_cond-min_cond)
         seed = params.get('seed')
         init_random_seed(seed, use_cuda)
         m = params['cond_path']
         bd = m[-1:]
-    
-    
+
         output_path = params['output_path']
         ensure_dir_exists(output_path)
         
@@ -196,9 +187,9 @@ def main(frame_sizes, **params):
             learn_h0=params['learn_h0'],
             q_levels=params['q_levels'],
             ulaw=params['ulaw'],
-            weight_norm = params['weight_norm']
-    
-    
+            weight_norm=params['weight_norm'],
+            cond_dim=params['cond_dim'],
+            spk_dim=params['spk_dim']
         )
         print(model)
         
@@ -207,31 +198,31 @@ def main(frame_sizes, **params):
             predictor = Predictor(model).cuda()
         else:
             predictor = Predictor(model)
-    
 
-        fname = params['model']
-        model_data = load_model(fname)
+        f_name = params['model']
+        model_data = load_model(f_name)
     
         if model_data is None:
-            sys.exit('ERROR: Model not found in', fname)        
+            print('ERROR: Model not found in', f_name)
+            quit()
         (state_dict, epoch_index, iteration) = model_data
-        print('OK: Read model', fname, '(epoch:',epoch_index, ')')
+        print('OK: Read model', f_name, '(epoch:', epoch_index, ')')
         print(state_dict)
         predictor.load_state_dict(state_dict)
-    
-    
-        generator = RunGenerator(model, 
-                                os.path.join(output_path, 'samples'),
-                                params['sample_rate'],
-                                use_cuda,
-                                epoch=epoch_index, 
-                                cond=cond,
-                                checkpoints_path=fname,
-                                bd=bd,
-                                g=cont)   
 
-        generator(params['n_samples'],
-                params['sample_length'], cond)
+        generator = RunGenerator(
+            model,
+            os.path.join(output_path, 'samples'),
+            params['sample_rate'],
+            use_cuda,
+            epoch=epoch_index,
+            cond=cond,
+            checkpoints_path=f_name,
+            bd=bd,
+            g=cont
+         )
+
+        generator(params['n_samples'], params['sample_length'], cond)
 
 
 if __name__ == '__main__':
@@ -310,10 +301,8 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--weight_norm', type=parse_bool,
-        help='Apply weight normalitzation'
+        help='Apply weight normalization'
     )
-
-    
 
     parser.set_defaults(**default_params)
 
