@@ -79,14 +79,14 @@ def load_model(checkpoint_path):
 
 
 class RunGenerator:
-    def __init__(self, model, samples_path, sample_rate, cuda, epoch, cond, spk, checkpoints_path, bd, g):
+    def __init__(self, model, samples_path, sample_rate, cuda, epoch, cond, speaker, checkpoints_path, bd, g):
         self.generate = Generator(model, cuda)
         self.samples_path = samples_path
         self.sample_rate = sample_rate
         self.cuda = cuda
         self.epoch = epoch
         self.cond = cond
-        self.spk = spk
+        self.speaker = speaker
 
         g = str(g)
 
@@ -96,9 +96,9 @@ class RunGenerator:
         self.pattern = 'BD_' + bd + '_model_' + found + 'gen-ep{}-g' + g + '.wav'
         print('Generating file', self.pattern)
 
-    def __call__(self, n_samples, sample_length, cond, spk):
+    def __call__(self, n_samples, sample_length, cond, speaker):
         print('Generate', n_samples, 'of length', sample_length)
-        samples = self.generate(n_samples, sample_length, cond, spk).cpu().numpy()
+        samples = self.generate(n_samples, sample_length, cond, speaker).cpu().numpy()
         maxv = np.iinfo(np.int16).max
         for i in range(n_samples):
             filename = os.path.join(self.samples_path, self.pattern.format(self.epoch, i))
@@ -123,18 +123,15 @@ def main(frame_sizes, **params):
     npy_name_max_cond = 'npy_datasets/max_cond.npy'
     npy_name_min_cond = 'npy_datasets/min_cond.npy'
 
+    # Define npy file name with array of unique speakers in dataset
+    npy_name_spk_id = 'npy_datasets/spk_id.npy'
+
     # Get file names from partition's list list
     partition = 'train'
     file_names = open(params['cond_path'] + params['cond_set'] +
                                              'wav_' + partition + '.list', 'r').read().splitlines()
 
-    # Search for unique speakers in list and sort them
-    spk_list = list()
-    for file in file_names:
-        current_spk = file[0:2]
-        if current_spk not in spk_list:
-            spk_list.append(current_spk)
-    spk_list.sort()
+    spk = np.load(npy_name_spk_id)
 
     i = np.array([-1, -2, -3, -4, -5])
 
@@ -162,7 +159,7 @@ def main(frame_sizes, **params):
         fv = fv.reshape(num_fv, 1)
 
         # Load speaker conditioner
-        spk = spk_list.index(file_names[i][0:2])
+        speaker = np.where(spk == file_names[i][0:2])[0][0]
 
         cond = np.concatenate((c, f0), axis=1)
         cond = np.concatenate((cond, fv), axis=1)
@@ -225,13 +222,13 @@ def main(frame_sizes, **params):
             use_cuda,
             epoch=epoch_index,
             cond=cond,
-            spk=spk,
+            speaker=speaker,
             checkpoints_path=f_name,
             bd=bd,
             g=cont
          )
 
-        generator(params['n_samples'], params['sample_length'], cond, spk)
+        generator(params['n_samples'], params['sample_length'], cond, speaker)
 
 
 if __name__ == '__main__':

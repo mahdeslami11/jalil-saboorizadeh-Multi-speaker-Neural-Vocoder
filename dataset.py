@@ -38,17 +38,20 @@ class FolderDataset(Dataset):
         self.cond_len = cond_len
         self.cond = np.empty(shape=[0, self.cond_dim])
 
-        # Define npy training dataset files
+        # Define npy training dataset file names
         npy_name_data = 'npy_datasets/' + partition + '_data.npy'
         npy_name_cond = 'npy_datasets/' + partition + '_conditioners.npy'
         npy_name_spk = 'npy_datasets/' + partition + '_speakers.npy'
 
-        # Define npy maximum and minimum de-normalized conditioners
+        # Define npy file names with maximum and minimum values of de-normalized conditioners
         npy_name_max_cond = 'npy_datasets/max_cond.npy'
         npy_name_min_cond = 'npy_datasets/min_cond.npy'
 
-        # Define npy length of training dataset
+        # Define npy file name length of training dataset
         npy_name_length = 'npy_datasets/train_length.npy'
+
+        # Define npy file name with array of unique speakers in dataset
+        npy_name_spk_id = 'npy_datasets/spk_id.npy'
 
         # Check if dataset has to be created
         files = [npy_name_data, npy_name_cond, npy_name_spk]
@@ -65,13 +68,18 @@ class FolderDataset(Dataset):
             # Get file names from partition's list list
             file_names = open(datasets_path + 'wav_' + partition + '.list', 'r').read().splitlines()
 
-            # Search for unique speakers in list and sort them
-            spk = list()
-            for file in file_names:
-                current_spk = file[0:2]
-                if current_spk not in spk:
-                    spk.append(current_spk)
-            spk.sort()
+            if not os.path.isfile(npy_name_spk_id):
+                # Search for unique speakers in list and sort them
+                spk_list = list()
+                for file in file_names:
+                    current_spk = file[0:2]
+                    if current_spk not in spk_list:
+                        spk_list.append(current_spk)
+                spk_list.sort()
+                spk = np.asarray(spk_list)
+                np.save(npy_name_spk_id, spk)
+            else:
+                spk = np.load(npy_name_spk_id)
 
             # Load each of the files from the list. Note that extension has to be added
             for file in file_names:
@@ -97,8 +105,8 @@ class FolderDataset(Dataset):
                 uv = uv.reshape(num_fv, 1)
                 fv = fv.reshape(num_fv, 1)
 
-                # Load speaker conditioner
-                speaker = spk.index(file[0:2])
+                # Load speaker conditioner (index where the ID is located)
+                speaker = np.where(spk == file[0:2])[0][0]
 
                 if nosync:
                     oversize = num_samples % 80
