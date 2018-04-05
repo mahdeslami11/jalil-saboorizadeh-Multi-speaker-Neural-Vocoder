@@ -89,9 +89,9 @@ class RunGenerator:
 
         m = re.search('/exp:(.+?)/checkpoints', checkpoints_path)
         if m:
-                found = m.group(1)
-        self.pattern = 'BD_' + bd + '_model_' + found + 'gen-ep{}-g' + g + '.wav'
-        print('Generating file', self.pattern)
+            found = m.group(1)
+            self.pattern = 'BD_' + bd + '_model_' + found + 'gen-ep{}-g' + g + '.wav'
+            print('Generating file', self.pattern)
 
     def __call__(self, n_samples, sample_length, cond, speaker):
         print('Generate', n_samples, 'of length', sample_length)
@@ -125,8 +125,8 @@ def main(frame_sizes, **params):
 
     # Get file names from partition's list list
     partition = 'train'
-    file_names = open(params['cond_path'] + params['cond_set'] +
-                                             'wav_' + partition + '.list', 'r').read().splitlines()
+    file_names = open(str(params['cond_path']) + str(params['cond_set']) +
+                      'wav_' + partition + '.list', 'r').read().splitlines()
 
     spk = np.load(npy_name_spk_id)
 
