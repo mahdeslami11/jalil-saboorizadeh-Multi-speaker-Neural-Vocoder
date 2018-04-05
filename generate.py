@@ -13,12 +13,10 @@ import os
 import glob
 from interpolate import interpolation, linear_interpolation
 
-import random       # just to set seed, which I don't know if ever used 8-|
-
+import random
 
 # From the moment, keep parameters to find the model
 # change!
-
 
 default_params = {
     # model parameters
@@ -43,8 +41,9 @@ default_params = {
     'cond': 0,
 
     # generator parameters
-    'output_path': '.',
-    'cond_path': './datasets/73'
+    'output_path': 'generated/',
+    'cond_path': '/veu/tfgveu7/project/tcstar/',
+    'cond_set': 'cond/'
 }
 
 
@@ -80,13 +79,15 @@ def load_model(checkpoint_path):
 
 
 class RunGenerator:
-    def __init__(self, model, samples_path, sample_rate, cuda, epoch, cond, checkpoints_path, bd, g):
+    def __init__(self, model, samples_path, sample_rate, cuda, epoch, cond, spk, checkpoints_path, bd, g):
         self.generate = Generator(model, cuda)
         self.samples_path = samples_path
         self.sample_rate = sample_rate
         self.cuda = cuda
         self.epoch = epoch
         self.cond = cond
+        self.spk = spk
+
         g = str(g)
 
         m = re.search('/exp:(.+?)/checkpoints', checkpoints_path)
@@ -95,9 +96,9 @@ class RunGenerator:
         self.pattern = 'BD_' + bd + '_model_' + found + 'gen-ep{}-g' + g + '.wav'
         print('Generating file', self.pattern)
 
-    def __call__(self, n_samples, sample_length, cond):
+    def __call__(self, n_samples, sample_length, cond, spk):
         print('Generate', n_samples, 'of length', sample_length)
-        samples = self.generate(n_samples, sample_length, cond).cpu().numpy()
+        samples = self.generate(n_samples, sample_length, cond, spk).cpu().numpy()
         maxv = np.iinfo(np.int16).max
         for i in range(n_samples):
             filename = os.path.join(self.samples_path, self.pattern.format(self.epoch, i))
@@ -118,53 +119,60 @@ def main(frame_sizes, **params):
         frame_sizes=frame_sizes, 
         **params
     )
-    ratio_min = 0.9
-    ratio_max = 1
-    file_ceps = natsorted(glob.glob(os.path.join(params['cond_path'], '*.cc')))
-    file_f0 = natsorted(glob.glob(os.path.join(params['cond_path'], '*.lf0')))
-    file_fv = natsorted(glob.glob(os.path.join(params['cond_path'], '*.gv')))
-    file_uv = natsorted(glob.glob(os.path.join(params['cond_path'], '*.uv')))
+    # Define npy maximum and minimum de-normalized conditioners
+    npy_name_max_cond = 'npy_datasets/max_cond.npy'
+    npy_name_min_cond = 'npy_datasets/min_cond.npy'
 
-    file_ceps = file_ceps[
-        int(ratio_min * len(file_ceps)): int(ratio_max * len(file_ceps))
-        ]
-    file_f0 = file_f0[
-        int(ratio_min * len(file_f0)): int(ratio_max * len(file_f0))
-        ]
-    file_fv = file_fv[
-        int(ratio_min * len(file_fv)): int(ratio_max * len(file_fv))
-        ]
-    file_uv = file_uv[
-        int(ratio_min * len(file_uv)): int(ratio_max * len(file_uv))
-        ]
+    # Get file names from partition's list list
+    partition = 'train'
+    file_names = open(params['cond_path'] + params['cond_set'] +
+                                             'wav_' + partition + '.list', 'r').read().splitlines()
 
-    # i=np.array([-2, -8, -13, -15, -19])
+    # Search for unique speakers in list and sort them
+    spk_list = list()
+    for file in file_names:
+        current_spk = file[0:2]
+        if current_spk not in spk_list:
+            spk_list.append(current_spk)
+    spk_list.sort()
+
     i = np.array([-1, -2, -3, -4, -5])
-    # i=np.array([-19])
-    # i=[-2, -8, -13, -15, -20]
-    print('Generating ', len(i))
+
+    print('Generating', len(i), 'audio files')
     cont = 0
     
     for i in np.nditer(i):
         cont = cont+1
-        # cont=5
         print('Generating Audio', i)
-        # i=i[j]
-        print('Generating...', file_ceps[i])
-        c = np.loadtxt(file_ceps[i])
-        f0 = np.loadtxt(file_f0[i])
-        num_f0 = f0.shape[0]
-        f0 = f0.reshape((num_f0, 1))
-        fv = np.loadtxt(file_fv[i])
-        # fv, uv = interpolation(fvfile, 1e3)
+        print('Generating...', file_names[i])
+
+        # Load CC conditioner
+        c = np.loadtxt(file_names[i] + '.cc')
+
+        # Load LF0 conditioner
+        f0file = np.loadtxt(file_names[i] + '.lf0')
+        f0, _ = interpolation(f0file, -10000000000)
+        f0 = f0.reshape(f0.shape[0], 1)
+
+        # Load FV conditioner
+        fvfile = np.loadtxt(file_names[i] + '.gv')
+        fv, uv = interpolation(fvfile, 1e3)
         num_fv = fv.shape[0]
-        fv = fv.reshape((num_fv, 1))
-        uv = np.loadtxt(file_uv[i])
-        uv = uv.reshape((num_fv, 1))
-        print('fv uv', uv)
+        uv = uv.reshape(num_fv, 1)
+        fv = fv.reshape(num_fv, 1)
+
+        # Load speaker conditioner
+        spk = spk_list.index(file[0:2])
+
         cond = np.concatenate((c, f0), axis=1)
         cond = np.concatenate((cond, fv), axis=1)
         cond = np.concatenate((cond, uv), axis=1)
+
+        # Load maximum and minimum of de-normalized conditioners
+        max_cond = np.load(npy_name_max_cond)
+        min_cond = np.load(npy_name_min_cond)
+
+        cond = (cond - min_cond) / (max_cond - min_cond)
 
         print('shape cond', cond.shape)
         # min_cond=np.load(params['cond_path']+'/min.npy')
@@ -217,6 +225,7 @@ def main(frame_sizes, **params):
             use_cuda,
             epoch=epoch_index,
             cond=cond,
+            spk=spk,
             checkpoints_path=f_name,
             bd=bd,
             g=cont
