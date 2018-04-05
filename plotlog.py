@@ -22,8 +22,8 @@ def plotfigure(fname):
     f = open(fname)
     iterpat = re.compile('training_loss:.*time:')
     trainpat = re.compile('training_loss: ([-0-9.]+)')
-    valpat   = re.compile('validation_loss: ([-0-9.]+)')
-    testpat  = re.compile('test_loss: ([-0-9.]+)')
+    valpat = re.compile('validation_loss: ([-0-9.]+)')
+    testpat = re.compile('test_loss: ([-0-9.]+)')
 
     # Count data
     ntr = nte = nva = 0
@@ -34,7 +34,6 @@ def plotfigure(fname):
             nva += 1
         if testpat.search(line):
             nte += 1
-
 
     idxtr = np.zeros(ntr, dtype=int)
     idxva = np.zeros(nva, dtype=int)
@@ -82,16 +81,16 @@ def plotfigure(fname):
     plt.xlabel('iteration')
     plt.grid()
     
-    ylimits = PP(np.array([1.,4.]),show_pp)
+    ylimits = PP(np.array([1., 4.]), show_pp)
     plt.ylim(ylimits)
-    plt.plot(idxtr, PP(dattr,show_pp), 'b',
-             idxva, PP(datva,show_pp), 'g',
-             idxte, PP(datte,show_pp), 'r--')
-    plt.gca().set_yticks(np.arange(ylimits[0], ylimits[1], (ylimits[1]-ylimits[0])/10)) #0.25))
+    plt.plot(idxtr, PP(dattr, show_pp), 'b',
+             idxva, PP(datva, show_pp), 'g',
+             idxte, PP(datte, show_pp), 'r--')
+    plt.gca().set_yticks(np.arange(ylimits[0], ylimits[1], (ylimits[1]-ylimits[0])/10))
     plt.gca().set_xticks(np.arange(1, niters, it_per_e*5))
 
-    #ax = fig.gca()
-    #ax.set_yticks(np.arange(0, 9., 0.5))
+    # ax = fig.gca()
+    # ax.set_yticks(np.arange(0, 9., 0.5))
 
     if show_pp:
         plt.ylabel('PP (Perplexity)')
