@@ -6,12 +6,9 @@ import re
 import numpy as np
 import argparse
 from librosa.output import write_wav
-from natsort import natsorted
-from dataset import FolderDataset
 
 import os
-import glob
-from interpolate import interpolation, linear_interpolation
+from interpolate import interpolation
 
 import random
 
