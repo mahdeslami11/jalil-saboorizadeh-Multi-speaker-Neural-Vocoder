@@ -162,7 +162,7 @@ def main(frame_sizes, **params):
         fv = fv.reshape(num_fv, 1)
 
         # Load speaker conditioner
-        spk = spk_list.index(file[0:2])
+        spk = spk_list.index(file_names[i][0:2])
 
         cond = np.concatenate((c, f0), axis=1)
         cond = np.concatenate((cond, fv), axis=1)
@@ -231,7 +231,7 @@ def main(frame_sizes, **params):
             g=cont
          )
 
-        generator(params['n_samples'], params['sample_length'], cond)
+        generator(params['n_samples'], params['sample_length'], cond, spk)
 
 
 if __name__ == '__main__':
