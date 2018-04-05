@@ -114,38 +114,12 @@ class FolderDataset(Dataset):
                     if oversize >= 60:
                         zeros = 80 - oversize
                         d = np.append(d, np.zeros(zeros))
-                        # print('c shape over', c.shape)
-                        # print('samples', d.shape)
-                        # print('oversize >60')
                     if oversize <= 60 and oversize != 0:
                         d = d[:-oversize]
                         c = c[:-1][:]
                         f0 = f0[:-1]
                         fv = fv[:-1]
                         uv = uv[:-1]
-                    # if oversize != 0:
-                    #   d = d[:-oversize]
-                    #   c = c[:-1][:]
-                    #   f0 = f0[:-1]
-                    #   fv = fv[:-1]
-                    #   uv = uv[:-1]
-                    if (d.shape[0]/80) != c.shape[0]:
-                        print('ERROR in file: {0}: shape={1}'.format(cond_path + file +
-                                                                     '.cc', d.shape[0]), '_'*50)
-                        # c = c[:-1][:]
-                        # f0 = f0[:-1]
-                        # fv = fv[:-1]
-                        # uv = uv[:-1]
-                        # print('Theoretically edited', d.shape[0]/80)
-                        # print('real cond edited', c.shape)
-
-                    # if (d.shape[0]/80) !=( c.shape[0]):
-                        # print('error')
-                        # break
-                        # print('samples', d.shape)
-                        # print('c shape no over', c.shape)
-                        # print('f0', f0.shape)
-                        # print('oversize <60')
                 else:
                     truncate = num_ceps*80
                     d = d[:truncate]
