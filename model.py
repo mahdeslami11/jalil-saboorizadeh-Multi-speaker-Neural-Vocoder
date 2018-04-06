@@ -487,7 +487,7 @@ class Generator(Runner):
                 if self.cuda:
                     cond = Variable(cond).cuda()
                 frame_level_outputs[tier_index] = self.run_rnn(
-                    rnn, prev_samples, upper_tier_conditioning, cond
+                    rnn, prev_samples, upper_tier_conditioning, cond, spk
                 )
             # print('frame out', frame_level_outputs)
             prev_samples = torch.autograd.Variable(
