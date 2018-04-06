@@ -475,9 +475,10 @@ class Generator(Runner):
                     print('Using conditioning ', j)
                     cond = condtot[j, :]
                     cond = torch.from_numpy(cond.reshape(1, 1, n_dim))
-
+                    spk = torch.from_numpy(np.array(spk))
                 else:
                     cond = None
+                    spk = None
                     frame_index = (i // rnn.n_frame_samples) % \
                         self.model.frame_level_rnns[tier_index + 1].frame_size
                     upper_tier_conditioning = \

@@ -9,8 +9,6 @@ import os
 import numpy as np
 from interpolate import interpolation
 
-from conditioners import cond_max_min
-
 
 class FolderDataset(Dataset):
 
@@ -151,14 +149,16 @@ class FolderDataset(Dataset):
             self.length = self.total_samples // self.seq_len
 
             # Normalize conditioners with absolute maximum and minimum of all the partitions
-            if self.max_cond is None or self.min_cond is None:
+            if (self.max_cond is None or self.min_cond is None) and partition == 'train':
                 files = [npy_name_max_cond, npy_name_min_cond]
                 if len(files) != len([f for f in files if os.path.isfile(f)]):
                     # Compute maximum and minimum of de-normalized conditioners
-                    cond_max_min(datasets_path, cond_path, self.cond, partition, npy_name_max_cond, npy_name_min_cond)
-                # Load maximum and minimum of de-normalized conditioners
-                self.max_cond = np.load(npy_name_max_cond)
-                self.min_cond = np.load(npy_name_min_cond)
+                    self.max_cond = np.amax(self.cond, axis=0)
+                    self.min_cond = np.amin(self.cond, axis=0)
+                else:
+                    # Load maximum and minimum of de-normalized conditioners
+                    self.max_cond = np.load(npy_name_max_cond)
+                    self.min_cond = np.load(npy_name_min_cond)
 
             self.cond = (self.cond - self.min_cond) / (self.max_cond - self.min_cond)
 
