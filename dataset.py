@@ -13,7 +13,7 @@ from interpolate import interpolation
 class FolderDataset(Dataset):
 
     def __init__(self, datasets_path, path, cond_path, overlap_len, q_levels, ulaw, seq_len, batch_size, cond_dim,
-                 cond_len, partition, max_cond=None, min_cond=None):
+                 cond_len, partition):
         super().__init__()
 
         # Define class variables from initialization parameters
@@ -26,8 +26,6 @@ class FolderDataset(Dataset):
             self.quantize = utils.linear_quantize
         self.seq_len = seq_len
         self.batch_size = batch_size
-        self.max_cond = max_cond
-        self.min_cond = min_cond
 
         # Define sets of data, conditioners and speaker IDs
         self.data = []
@@ -149,16 +147,16 @@ class FolderDataset(Dataset):
             self.length = self.total_samples // self.seq_len
 
             # Normalize conditioners with absolute maximum and minimum of all the partitions
-            if (self.max_cond is None or self.min_cond is None) and partition == 'train':
-                files = [npy_name_max_cond, npy_name_min_cond]
-                if len(files) != len([f for f in files if os.path.isfile(f)]):
-                    # Compute maximum and minimum of de-normalized conditioners
-                    self.max_cond = np.amax(self.cond, axis=0)
-                    self.min_cond = np.amin(self.cond, axis=0)
-                else:
-                    # Load maximum and minimum of de-normalized conditioners
-                    self.max_cond = np.load(npy_name_max_cond)
-                    self.min_cond = np.load(npy_name_min_cond)
+            files = [npy_name_max_cond, npy_name_min_cond]
+            if partition == 'train' and len(files) != len([f for f in files if os.path.isfile(f)]):
+                # npy files with conditioners' extrema do not exist.
+                # Compute maximum and minimum of de-normalized conditioners for conditions of train partition
+                self.max_cond = np.amax(self.cond, axis=0)
+                self.min_cond = np.amin(self.cond, axis=0)
+            else:
+                # Load maximum and minimum of de-normalized conditioners
+                self.max_cond = np.load(npy_name_max_cond)
+                self.min_cond = np.load(npy_name_min_cond)
 
             self.cond = (self.cond - self.min_cond) / (self.max_cond - self.min_cond)
 
