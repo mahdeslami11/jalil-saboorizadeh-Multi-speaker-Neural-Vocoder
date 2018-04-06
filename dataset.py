@@ -47,9 +47,6 @@ class FolderDataset(Dataset):
         npy_name_max_cond = 'npy_datasets/max_cond.npy'
         npy_name_min_cond = 'npy_datasets/min_cond.npy'
 
-        # Define npy file name length of training dataset
-        npy_name_length = 'npy_datasets/train_length.npy'
-
         # Define npy file name with array of unique speakers in dataset
         npy_name_spk_id = 'npy_datasets/spk_id.npy'
 
@@ -151,9 +148,7 @@ class FolderDataset(Dataset):
             self.cond = self.cond[:total_conditioning]
             self.data = self.data[:self.total_samples].reshape(self.batch_size, -1)
 
-            if partition == 'train':
-                self.length = self.total_samples // self.seq_len
-                np.save(npy_name_length, self.length)
+            self.length = self.total_samples // self.seq_len
 
             # Normalize conditioners with absolute maximum and minimum of all the partitions
             if self.max_cond is None or self.min_cond is None:
@@ -188,8 +183,8 @@ class FolderDataset(Dataset):
             self.max_cond = np.load(npy_name_max_cond)
             self.min_cond = np.load(npy_name_min_cond)
 
-            # Load length for train partition
-            self.length = np.load(npy_name_length)
+            # Compute length for current partition
+            self.length = np.prod(self.data.shape) // self.seq_len
 
             print('Dataset loaded for ' + partition + ' partition', '-' * 60, '\n')
 
