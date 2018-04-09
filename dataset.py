@@ -161,8 +161,6 @@ class FolderDataset(Dataset):
             self.cond = (self.cond - self.min_cond) / (self.max_cond - self.min_cond)
 
             self.cond = self.cond[:total_conditioning].reshape(self.batch_size, -1, dim_cond)
-            print('cond reshape', self.cond.shape)
-            print('total index', self.total_samples // self.seq_len)
 
             # Save partition's dataset
             np.save(npy_name_data, self.data)
@@ -176,6 +174,11 @@ class FolderDataset(Dataset):
             self.data = np.load(npy_name_data)
             self.cond = np.load(npy_name_cond)
             self.global_spk = np.load(npy_name_spk)
+
+            print('Data shape:', self.data.shape)
+            print('Conditioner shape:', self.cond.shape)
+            print('Global spk shape:', self.global_spk.shape)
+            quit()
 
             # Load maximum and minimum of de-normalized conditioners
             self.max_cond = np.load(npy_name_max_cond)
