@@ -26,6 +26,7 @@ default_params = {
     'batch_size': 128,
     'val_frac': 0.1,
     'test_frac': 0.1,
+    'qrnn': False,
     'cond_dim': 43,
     'spk_dim': 6,
     'weight_norm': True,
@@ -194,7 +195,8 @@ def main(frame_sizes, **params):
             ulaw=params['ulaw'],
             weight_norm=params['weight_norm'],
             cond_dim=params['cond_dim'],
-            spk_dim=params['spk_dim']
+            spk_dim=params['spk_dim'],
+            qrnn=params['qrnn']
         )
         print(model)
         
@@ -289,7 +291,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--cond_set',
-        help='cond_set name - name of a directory in the conditioningsets path \
+        help='cond_set name - name of a directory in the conditioning sets path \
                  (settable by --cond_path)'
     )
     parser.add_argument(
