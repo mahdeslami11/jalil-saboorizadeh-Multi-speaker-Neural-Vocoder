@@ -144,12 +144,12 @@ def main(frame_sizes, **params):
         c = np.loadtxt(file_names[i] + '.cc')
 
         # Load LF0 conditioner
-        f0file = np.loadtxt(file_names[i] + '.lf0')
+        f0file = np.loadtxt(params['cond_path'] + file_names[i] + '.lf0')
         f0, _ = interpolation(f0file, -10000000000)
         f0 = f0.reshape(f0.shape[0], 1)
 
         # Load FV conditioner
-        fvfile = np.loadtxt(file_names[i] + '.gv')
+        fvfile = np.loadtxt(params['cond_path'] + file_names[i] + '.gv')
         fv, uv = interpolation(fvfile, 1e3)
         num_fv = fv.shape[0]
         uv = uv.reshape(num_fv, 1)
