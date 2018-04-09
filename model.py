@@ -416,12 +416,12 @@ class Predictor(Runner, torch.nn.Module):
 
         if verbose:
             print('predictor mlp', self.model.lookback-bottom_frame_size)
-            print('predictor mlp inputseq', mlp_input_sequences.size())
-            print('predictor mlp uppertier_cond', upper_tier_conditioning.size(), '\n')
+            print('predictor mlp input seq', mlp_input_sequences.size())
+            print('predictor mlp upper tier_cond', upper_tier_conditioning.size(), '\n')
 
         # predictor mlp 48
-        # predictor mlp inputseq torch.Size([128, 1039])
-        # predictor mlp uppertier_cond torch.Size([128, 1024, 512])
+        # predictor mlp input seq torch.Size([128, 1039])
+        # predictor mlp upper tier_cond torch.Size([128, 1024, 512])
 
         return self.model.sample_level_mlp(
             mlp_input_sequences, upper_tier_conditioning
