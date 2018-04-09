@@ -125,7 +125,7 @@ def main(frame_sizes, **params):
 
     # Get file names from partition's list list
     partition = 'train'
-    file_names = open(str(params['cond_path']) + str(params['cond_set']) +
+    file_names = open(str(params['cond_path']) +
                       'wav_' + partition + '.list', 'r').read().splitlines()
 
     spk = np.load(npy_name_spk_id)
