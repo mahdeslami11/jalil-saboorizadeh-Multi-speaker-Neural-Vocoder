@@ -141,7 +141,7 @@ def main(frame_sizes, **params):
         print('Generating...', file_names[i])
 
         # Load CC conditioner
-        c = np.loadtxt(file_names[i] + '.cc')
+        c = np.loadtxt(params['cond_path'] + file_names[i] + '.cc')
 
         # Load LF0 conditioner
         f0file = np.loadtxt(params['cond_path'] + file_names[i] + '.lf0')
