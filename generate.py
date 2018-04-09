@@ -268,7 +268,6 @@ if __name__ == '__main__':
         '--ulaw', type=parse_bool,
         help='use  u-law quantization'
     )
-
     parser.add_argument(
         '--q_levels', type=int,
         help='number of bins in quantization of audio samples'
@@ -285,7 +284,11 @@ if __name__ == '__main__':
     parser.add_argument(
         '--cond_path', help='path to the directory to find the conditioning'
     )
-
+    parser.add_argument(
+        '--cond_set',
+        help='cond_set name - name of a directory in the conditioningsets path \
+                 (settable by --cond_path)'
+    )
     parser.add_argument(
         '--sample_rate', type=int,
         help='sample rate of the training data and generated sound'

@@ -49,7 +49,7 @@ default_params = {
     'cond_path': 'datasets',
     'results_path': 'results',
     'dataset': 'wav/',
-    'condset': 'cond/',
+    'cond_set': 'cond/',
     'epoch_limit': 1000,
     'resume': True,
     'sample_rate': 16000,
@@ -62,7 +62,7 @@ default_params = {
 }
 tag_params = [
     'exp', 'frame_sizes', 'n_rnn', 'dim', 'learn_h0', 'ulaw', 'q_levels', 'seq_len',
-    'batch_size', 'dataset', 'condset', 'seed', 'weight_norm', 'qrnn', 'scheduler'
+    'batch_size', 'dataset', 'cond_set', 'seed', 'weight_norm', 'qrnn', 'scheduler'
     ]
 
 
@@ -167,7 +167,7 @@ def load_model(checkpoint_path):
 
 def make_data_loader(overlap_len, params):
     path = os.path.join(params['datasets_path'], params['dataset'])
-    cond_path = os.path.join(params['cond_path'], params['condset'])
+    cond_path = os.path.join(params['cond_path'], params['cond_set'])
     print('cond path', cond_path)
 
     def data_loader(partition):
@@ -346,11 +346,10 @@ if __name__ == '__main__':
               (settable by --datasets_path)'
     )
     parser.add_argument(
-        '--condset',
-        help='condset name - name of a directory in the conditioningsets path \
+        '--cond_set',
+        help='cond_set name - name of a directory in the conditioningsets path \
               (settable by --cond_path)'
     )
-
     parser.add_argument(
         '--n_rnn', type=int, help='number of RNN layers in each tier'
     )
@@ -373,7 +372,10 @@ if __name__ == '__main__':
         '--seq_len', type=int,
         help='how many samples to include in each truncated BPTT pass'
     )
-    parser.add_argument('--batch_size', type=int, help='batch size')
+    parser.add_argument(
+        '--batch_size', type=int,
+        help='batch size'
+    )
     parser.add_argument(
         '--keep_old_checkpoints', type=parse_bool,
         help='whether to keep checkpoints from past epochs'
@@ -413,15 +415,14 @@ if __name__ == '__main__':
     parser.add_argument(
         '--seed', type=int,
         help='seed init of random generator'
-    
     )
     parser.add_argument(
         '--weight_norm', type=parse_bool,
-        help ='Apply weight normalization to linear layers'
+        help='Apply weight normalization to linear layers'
     )
     parser.add_argument(
         '--qrnn', type=parse_bool,
-        help ='Use QRNN instead of RNN'
+        help='Use QRNN instead of RNN'
     )
     parser.add_argument(
         '--model',
