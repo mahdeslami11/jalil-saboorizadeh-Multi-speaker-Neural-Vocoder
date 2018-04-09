@@ -125,8 +125,11 @@ def main(frame_sizes, **params):
 
     # Get file names from partition's list list
     partition = 'train'
+
     file_names = open(str(params['cond_path']) +
                       'wav_' + partition + '.list', 'r').read().splitlines()
+
+    cond_path = os.path.join(params['cond_path'], params['cond_set'])
 
     spk = np.load(npy_name_spk_id)
 
@@ -141,15 +144,15 @@ def main(frame_sizes, **params):
         print('Generating...', file_names[i])
 
         # Load CC conditioner
-        c = np.loadtxt(params['cond_path'] + file_names[i] + '.cc')
+        c = np.loadtxt(cond_path + file_names[i] + '.cc')
 
         # Load LF0 conditioner
-        f0file = np.loadtxt(params['cond_path'] + file_names[i] + '.lf0')
+        f0file = np.loadtxt(cond_path + file_names[i] + '.lf0')
         f0, _ = interpolation(f0file, -10000000000)
         f0 = f0.reshape(f0.shape[0], 1)
 
         # Load FV conditioner
-        fvfile = np.loadtxt(params['cond_path'] + file_names[i] + '.gv')
+        fvfile = np.loadtxt(cond_path + file_names[i] + '.gv')
         fv, uv = interpolation(fvfile, 1e3)
         num_fv = fv.shape[0]
         uv = uv.reshape(num_fv, 1)
