@@ -100,6 +100,7 @@ class FolderDataset(Dataset):
 
                 # Load speaker conditioner (index where the ID is located)
                 speaker = np.where(spk == file[0:2])[0][0]
+                speaker = np.repeat(speaker, num_fv)
 
                 if nosync:
                     oversize = num_samples % 80
@@ -162,6 +163,8 @@ class FolderDataset(Dataset):
 
             self.cond = self.cond[:total_conditioning].reshape(self.batch_size, -1, dim_cond)
 
+            self.global_spk = self.global_spk.reshape(self.batch_size, -1)
+
             # Save partition's dataset
             np.save(npy_name_data, self.data)
             np.save(npy_name_cond, self.cond)
@@ -175,17 +178,16 @@ class FolderDataset(Dataset):
             self.cond = np.load(npy_name_cond)
             self.global_spk = np.load(npy_name_spk)
 
-            print('Data shape:', self.data.shape)
-            print('Conditioner shape:', self.cond.shape)
-            print('Global spk shape:', self.global_spk.shape)
-            quit()
-
             # Load maximum and minimum of de-normalized conditioners
             self.max_cond = np.load(npy_name_max_cond)
             self.min_cond = np.load(npy_name_min_cond)
 
             # Compute length for current partition
             self.length = np.prod(self.data.shape) // self.seq_len
+
+            print('Data shape:', self.data.shape)
+            print('Conditioners shape:', self.cond.shape)
+            print('Global speaker shape:', self.global_spk.shape)
 
             print('Dataset loaded for ' + partition + ' partition', '-' * 60, '\n')
 
@@ -228,7 +230,14 @@ class FolderDataset(Dataset):
         cond = torch.from_numpy(self.cond[sample_in_batch][from_cond:to_cond])
 
         # Get the speaker ID
-        spk = torch.from_numpy(np.array([self.global_spk[sample_in_batch]]))
+        global_spk = self.global_spk[sample_in_batch][from_cond:to_cond]
+        if np.array_equal(global_spk, np.repeat(global_spk[1], len(global_spk))):
+            global_spk = global_spk[1]
+        else:
+            print('Speaker array not equal on all its extension:', global_spk)
+            reset = True
+            quit()
+        spk = torch.from_numpy(np.array([global_spk]))
 
         if verbose:
             print('data size: ', data.size(), 'with sequence length: ', self.seq_len, 'and overlap: ', self.overlap_len)
