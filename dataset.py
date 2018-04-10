@@ -163,7 +163,7 @@ class FolderDataset(Dataset):
 
             self.cond = self.cond[:total_conditioning].reshape(self.batch_size, -1, dim_cond)
 
-            self.global_spk = self.global_spk.reshape(self.batch_size, -1)
+            self.global_spk = self.global_spk[:total_conditioning].reshape(self.batch_size, -1)
 
             # Save partition's dataset
             np.save(npy_name_data, self.data)
