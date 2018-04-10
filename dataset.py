@@ -146,6 +146,10 @@ class FolderDataset(Dataset):
 
             self.length = self.total_samples // self.seq_len
 
+            self.cond = self.cond[:total_conditioning].reshape(self.batch_size, -1, dim_cond)
+
+            self.global_spk = self.global_spk[:total_conditioning].reshape(self.batch_size, -1)
+
             # Save maximum and minimum of de-normalized conditioners for conditions of train partition
             if partition == 'train' and not os.path.isfile(npy_name_min_max_cond):
                 # Compute maximum and minimum of de-normalized conditioners for conditions of train partition
@@ -169,10 +173,6 @@ class FolderDataset(Dataset):
             for i in range(len(spk)):
                 self.cond[self.global_spk == i] = (self.cond[self.global_spk == i] - self.min_cond[i]) /\
                                                   (self.max_cond[i] - self.min_cond[i])
-
-            self.cond = self.cond[:total_conditioning].reshape(self.batch_size, -1, dim_cond)
-
-            self.global_spk = self.global_spk[:total_conditioning].reshape(self.batch_size, -1)
 
             # Save partition's dataset
             np.save(npy_name_data, self.data)
