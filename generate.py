@@ -3,6 +3,7 @@ from model import SampleRNN, Predictor, Generator
 import torch
 
 import re
+import sys
 import numpy as np
 import argparse
 from librosa.output import write_wav
@@ -213,8 +214,7 @@ def main(frame_sizes, **params):
         model_data = load_model(f_name)
     
         if model_data is None:
-            print('ERROR: Model not found in', f_name)
-            quit()
+            sys.exit('ERROR: Model not found in' + str(f_name))
         (state_dict, epoch_index, iteration) = model_data
         print('OK: Read model', f_name, '(epoch:', epoch_index, ')')
         print(state_dict)

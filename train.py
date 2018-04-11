@@ -214,14 +214,14 @@ def main(exp, frame_sizes, dataset, **params):
         predictor = Predictor(model)
 
     print('Done!')
-    fname = params['model']
-    if fname is not None:
-        print('pre train with', fname)
-        model_data = load_model(fname)
+    f_name = params['model']
+    if f_name is not None:
+        print('pre train with', f_name)
+        model_data = load_model(f_name)
         if model_data is None:
-            sys.exit('ERROR: Model not found in' + str(fname))
+            sys.exit('ERROR: Model not found in' + str(f_name))
         (state_dict, epoch_index, iteration) = model_data
-        print('OK: Read model', fname, '(epoch:', epoch_index, ')')
+        print('OK: Read model', f_name, '(epoch:', epoch_index, ')')
         print(state_dict)
         predictor.load_state_dict(state_dict)
     print('predictor', predictor)
@@ -289,7 +289,7 @@ def main(exp, frame_sizes, dataset, **params):
             'time'
         ])
     )
-    
+
     trainer.register_plugin(StatsPlugin(
         results_path,
         iteration_fields=[
