@@ -30,7 +30,7 @@ default_params = {
     'qrnn': False,
     'cond_dim': 43,
     'spk_dim': 6,
-    'weight_norm': True,
+    'weight_norm': False,
 
     # training parameters
     'sample_rate': 16000,

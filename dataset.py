@@ -226,7 +226,7 @@ class FolderDataset(Dataset):
             from_cond = n_batch * cond_in_seq + 1
         else:
             reset = False
-            from_cond = n_batch * cond_in_seq + 2
+            from_cond = n_batch * cond_in_seq + 1
 
         to_cond = from_cond + cond_in_seq
 
@@ -242,9 +242,8 @@ class FolderDataset(Dataset):
         global_spk = self.global_spk[sample_in_batch][from_cond:to_cond]
         if not np.array_equal(global_spk, np.repeat(global_spk[1], len(global_spk))):
             print('Speaker array not equal on all its extension:', global_spk)
-            reset = True
 
-        global_spk = global_spk[1]
+        global_spk = global_spk[0]
         spk = torch.from_numpy(np.array([global_spk]))
 
         if verbose:
