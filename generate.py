@@ -78,7 +78,7 @@ def load_model(checkpoint_path):
 
 
 class RunGenerator:
-    def __init__(self, model, samples_path, sample_rate, cuda, epoch, cond, speaker, checkpoints_path, bd, g):
+    def __init__(self, model, samples_path, sample_rate, cuda, epoch, cond, speaker, checkpoints_path, g):
         self.generate = Generator(model, cuda)
         self.samples_path = samples_path
         self.sample_rate = sample_rate
@@ -92,7 +92,7 @@ class RunGenerator:
         m = re.search('/exp:(.+?)/checkpoints', checkpoints_path)
         if m:
             found = m.group(1)
-            self.pattern = 'BD_' + bd + '_model_' + found + 'gen-ep{}-g' + g + '.wav'
+            self.pattern = 'model_' + found + 'gen-ep{}-g' + g + '.wav'
             print('Generating file', self.pattern)
 
     def __call__(self, n_samples, sample_length, cond, speaker):
@@ -183,8 +183,6 @@ def main(frame_sizes, **params):
         # cond =  (cond-min_cond)/(max_cond-min_cond)
         seed = params.get('seed')
         init_random_seed(seed, use_cuda)
-        m = params['cond_path']
-        bd = m[-1:]
 
         output_path = params['output_path']
         ensure_dir_exists(output_path)
@@ -229,7 +227,6 @@ def main(frame_sizes, **params):
             cond=cond,
             speaker=speaker,
             checkpoints_path=f_name,
-            bd=bd,
             g=cont
          )
 
