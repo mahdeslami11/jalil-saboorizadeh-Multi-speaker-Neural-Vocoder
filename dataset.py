@@ -238,12 +238,14 @@ class FolderDataset(Dataset):
 
         cond = torch.from_numpy(self.cond[sample_in_batch][from_cond:to_cond])
 
-        # Get the speaker ID
+        # Get the speaker ID for each conditioner in the sequence
         global_spk = self.global_spk[sample_in_batch][from_cond:to_cond]
         if not np.array_equal(global_spk, np.repeat(global_spk[1], len(global_spk))):
             print('Speaker array not equal on all its extension:', global_spk)
 
-        global_spk = global_spk[0]
+        # Assume most repeated speaker as it doesn't matter on transitions from one audio to another
+        global_spk = np.argmax(np.bincount(global_spk.astype(int)))
+
         spk = torch.from_numpy(np.array([global_spk]))
 
         if verbose:
