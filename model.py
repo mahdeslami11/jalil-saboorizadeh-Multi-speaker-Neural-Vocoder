@@ -443,6 +443,7 @@ class Generator(Runner):
         self.reset_hidden_states()
         (num_cond, n_dim) = cond.shape
         condtot = cond
+        global_spk = spk
         seq_len = num_cond*self.model.lookback
         print('seq len', seq_len)
         print('model look-back', self.model.lookback)
@@ -475,7 +476,7 @@ class Generator(Runner):
                     print('Using conditioning ', j)
                     cond = condtot[j, :]
                     cond = torch.from_numpy(cond.reshape(1, 1, n_dim))
-                    print('Speaker has ID', spk)
+                    spk = global_spk
                     spk = torch.from_numpy(np.array(spk).reshape(1, 1))
                 else:
                     cond = None
