@@ -476,7 +476,7 @@ class Generator(Runner):
                     cond = condtot[j, :]
                     cond = torch.from_numpy(cond.reshape(1, 1, n_dim))
                     print('Speaker has ID', spk)
-                    spk = torch.from_numpy(np.array(spk).reshape(1, 1))
+                    spk = torch.from_numpy(np.array(spk))
                 else:
                     cond = None
                     spk = None
@@ -488,6 +488,7 @@ class Generator(Runner):
 
                 if self.cuda:
                     cond = Variable(cond).cuda()
+                    spk = Variable(spk).cuda()
                 frame_level_outputs[tier_index] = self.run_rnn(
                     rnn, prev_samples, upper_tier_conditioning, cond, spk
                 )
