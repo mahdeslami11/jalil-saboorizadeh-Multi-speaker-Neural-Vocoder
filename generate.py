@@ -18,24 +18,24 @@ import random
 
 default_params = {
     # model parameters
-    'n_rnn': 2,
+    'n_rnn': 1,
     'dim': 1024,
     'learn_h0': True,
     'ulaw': True,
     'q_levels': 256,
+    'weight_norm': False,
     'seq_len': 1040,
     'batch_size': 128,
+    'qrnn': False,
     'val_frac': 0.1,
     'test_frac': 0.1,
-    'qrnn': False,
     'cond_dim': 43,
     'spk_dim': 6,
-    'weight_norm': False,
 
     # training parameters
     'sample_rate': 16000,
     'n_samples': 1,
-    'sample_length': 40000,
+    'sample_length': 80000,
     'seed': 77977,
     'cond': 0,
 
