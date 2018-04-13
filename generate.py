@@ -220,7 +220,7 @@ def main(frame_sizes, **params):
 
         generator = RunGenerator(
             model,
-            os.path.join(output_path, 'samples'),
+            output_path,
             params['sample_rate'],
             use_cuda,
             epoch=epoch_index,
