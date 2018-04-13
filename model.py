@@ -476,6 +476,7 @@ class Generator(Runner):
                     cond = condtot[j, :]
                     cond = torch.from_numpy(cond.reshape(1, 1, n_dim))
                     spk = torch.from_numpy(np.array(spk))
+                    print('Speaker has ID', spk)
                 else:
                     cond = None
                     spk = None
