@@ -30,6 +30,7 @@ class FolderDataset(Dataset):
         # Define sets of data, conditioners and speaker IDs
         self.data = []
         self.global_spk = []
+        self.audio = []
         self.cond_dim = cond_dim
         self.cond_len = cond_len
         self.cond = np.empty(shape=[0, self.cond_dim])
@@ -74,7 +75,7 @@ class FolderDataset(Dataset):
                 spk = np.load(npy_name_spk_id)
 
             # Load each of the files from the list. Note that extension has to be added
-            for file in file_names:
+            for counter, file in enumerate(file_names):
                 # Load WAV
                 print(file + '.wav')
                 (d, _) = load(path + file + '.wav', sr=None, mono=True)
@@ -100,6 +101,9 @@ class FolderDataset(Dataset):
                 # Load speaker conditioner (index where the ID is located)
                 speaker = np.where(spk == file[0:2])[0][0]
                 speaker = np.repeat(speaker, num_fv)
+
+                # Array of audio ID to show the rearranging
+                audio = np.repeat(counter, num_fv)
 
                 if nosync:
                     oversize = num_samples % 80
@@ -129,6 +133,7 @@ class FolderDataset(Dataset):
                 self.data = np.append(self.data, d)
                 self.cond = np.concatenate((self.cond, cond), axis=0)
                 self.global_spk = np.append(self.global_spk, speaker)
+                self.audio = np.append(self.audio, audio)
 
             total_samples = self.data.shape[0]
             dim_cond = self.cond.shape[1]
@@ -149,6 +154,8 @@ class FolderDataset(Dataset):
             self.cond = self.cond[:total_conditioning].reshape(self.batch_size, -1, dim_cond)
 
             self.global_spk = self.global_spk[:total_conditioning].reshape(self.batch_size, -1)
+
+            self.audio = self.audio[:total_conditioning].reshape(self.batch_size, -1)
 
             # Save maximum and minimum of de-normalized conditioners for conditions of train partition
             if partition == 'train' and not os.path.isfile(npy_name_min_max_cond):
@@ -171,6 +178,7 @@ class FolderDataset(Dataset):
             np.save(npy_name_data, self.data)
             np.save(npy_name_cond, self.cond)
             np.save(npy_name_spk, self.global_spk)
+            np.save('npy_datasets/audio_id.npy', self.audio)
 
             print('Dataset created for ' + partition + ' partition', '-' * 60, '\n')
 
