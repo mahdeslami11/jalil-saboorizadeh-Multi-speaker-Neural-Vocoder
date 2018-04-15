@@ -120,7 +120,7 @@ def main(frame_sizes, **params):
     )
 
     # Define npy file names with maximum and minimum values of de-normalized conditioners
-    npy_name_min_max_cond = 'npy_datasets/min_max_cond.npy'
+    npy_name_min_max_cond = 'npy_datasets/min_max_joint_cond.npy'
 
     # Define npy file name with array of unique speakers in dataset
     npy_name_spk_id = 'npy_datasets/spk_id.npy'
@@ -173,8 +173,8 @@ def main(frame_sizes, **params):
         max_cond = np.load(npy_name_min_max_cond)[1]
 
         # Normalize conditioners with absolute maximum and minimum for each speaker of training partition
-        print('Normalizing conditioners for each speaker of training dataset.')
-        cond = (cond - min_cond[speaker]) / (max_cond[speaker] - min_cond[speaker])
+        print('Normalizing conditioners.')
+        cond = (cond - min_cond) / (max_cond - min_cond)
 
         print('shape cond', cond.shape)
         # min_cond=np.load(params['cond_path']+'/min.npy')
