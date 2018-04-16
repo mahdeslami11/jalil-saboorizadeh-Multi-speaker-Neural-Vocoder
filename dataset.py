@@ -37,7 +37,7 @@ class FolderDataset(Dataset):
 
         # Define npy training dataset file names
         npy_name_data = 'npy_datasets/' + partition + '_data.npy'
-        npy_name_cond = 'npy_datasets/' + partition + '_conditioners.npy'
+        npy_name_cond = 'npy_datasets/' + partition + '_conditioners_joint.npy'
         npy_name_spk = 'npy_datasets/' + partition + '_speakers.npy'
 
         # Define npy file names with maximum and minimum values of de-normalized conditioners
