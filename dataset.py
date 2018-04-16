@@ -40,6 +40,8 @@ class FolderDataset(Dataset):
         npy_name_cond = 'npy_datasets/' + partition + '_conditioners_joint.npy'
         npy_name_spk = 'npy_datasets/' + partition + '_speakers.npy'
 
+        npy_name_audio_id = 'npy_datasets/' + partition + '_audio_id.npy'
+
         # Define npy file names with maximum and minimum values of de-normalized conditioners
         npy_name_min_max_cond = 'npy_datasets/min_max_joint_cond.npy'
 
@@ -178,7 +180,7 @@ class FolderDataset(Dataset):
             np.save(npy_name_data, self.data)
             np.save(npy_name_cond, self.cond)
             np.save(npy_name_spk, self.global_spk)
-            np.save('npy_datasets/audio_id.npy', self.audio)
+            np.save(npy_name_audio_id, self.audio)
 
             print('Dataset created for ' + partition + ' partition', '-' * 60, '\n')
 
