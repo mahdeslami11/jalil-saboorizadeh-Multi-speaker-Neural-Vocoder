@@ -230,8 +230,9 @@ def main(exp, frame_sizes, dataset, **params):
 
     # optimizer = gradient_clipping(torch.optim.Rprop(predictor.parameters(), lr=0.001, etas=(0.5, 1.2),
     # step_sizes=(1e-06, 50)))
-    
-    optimizer = torch.optim.Adam(predictor.parameters())
+
+    # Learning rate is by default 1e-3
+    optimizer = torch.optim.Adam(predictor.parameters(), lr=1e-5)
     if params['scheduler']:
         scheduler = MultiStepLR(optimizer, milestones=[15, 35], gamma=0.1)
     optimizer = gradient_clipping(optimizer)
