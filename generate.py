@@ -30,7 +30,6 @@ default_params = {
     'val_frac': 0.1,
     'test_frac': 0.1,
     'cond_dim': 43,
-    'spk_dim': 6,
 
     # training parameters
     'sample_rate': 16000,
@@ -186,6 +185,9 @@ def main(frame_sizes, **params):
 
         output_path = params['output_path']
         ensure_dir_exists(output_path)
+
+        spk_dim = len(
+            [i for i in os.listdir(os.path.join(params['datasets_path'], params['dataset'])) if os.path.isdir(i)])
         
         print('Start Generate SampleRNN')
         model = SampleRNN(
@@ -197,7 +199,7 @@ def main(frame_sizes, **params):
             ulaw=params['ulaw'],
             weight_norm=params['weight_norm'],
             cond_dim=params['cond_dim'],
-            spk_dim=params['spk_dim'],
+            spk_dim=spk_dim,
             qrnn=params['qrnn']
         )
         print(model)

@@ -41,7 +41,6 @@ default_params = {
     'qrnn': False,
     'cond_dim': 43,     # Conditioners of size 43 = 40 MFCC + 1 LF0 + 1FV + 1 U/V
     'cond_len': 80,     # Conditioners are computed by Ahocoder every 80 audio samples (windows of 5ms at 16kHz)
-    'spk_dim': 6,
 
     # training parameters
     'keep_old_checkpoints': False,
@@ -194,6 +193,8 @@ def main(exp, frame_sizes, dataset, **params):
     results_path = setup_results_dir(params)
     tee_stdout(os.path.join(results_path, 'log'))
 
+    spk_dim = len([i for i in os.listdir(os.path.join(params['datasets_path'], params['dataset'])) if os.path.isdir(i)])
+
     print('Create model')
     model = SampleRNN(
         frame_sizes=params['frame_sizes'],
@@ -204,7 +205,7 @@ def main(exp, frame_sizes, dataset, **params):
         ulaw=params['ulaw'],
         weight_norm=params['weight_norm'],
         cond_dim=params['cond_dim'],
-        spk_dim=params['spk_dim'],
+        spk_dim=spk_dim,
         qrnn=params['qrnn']
     )
     if use_cuda:
