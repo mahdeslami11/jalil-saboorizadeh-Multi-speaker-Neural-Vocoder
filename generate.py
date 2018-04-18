@@ -187,7 +187,7 @@ def main(frame_sizes, **params):
         ensure_dir_exists(output_path)
 
         spk_dim = len([i for i in os.listdir(os.path.join(params['datasets_path'], params['dataset']))
-                       if os.path.islink(i)])
+                       if os.path.islink(os.path.join(params['datasets_path'], params['dataset']) + '/' + i)])
         
         print('Start Generate SampleRNN')
         model = SampleRNN(
