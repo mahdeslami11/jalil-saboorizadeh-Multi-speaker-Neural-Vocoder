@@ -193,6 +193,7 @@ def main(exp, frame_sizes, dataset, **params):
     results_path = setup_results_dir(params)
     tee_stdout(os.path.join(results_path, 'log'))
 
+    print(os.listdir(os.path.join(params['datasets_path'], params['dataset'])))
     spk_dim = len([i for i in os.listdir(os.path.join(params['datasets_path'], params['dataset']))
                    if os.path.islink(i)])
 
