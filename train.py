@@ -193,7 +193,8 @@ def main(exp, frame_sizes, dataset, **params):
     results_path = setup_results_dir(params)
     tee_stdout(os.path.join(results_path, 'log'))
 
-    spk_dim = len([i for i in os.listdir(os.path.join(params['datasets_path'], params['dataset'])) if os.path.isdir(i)])
+    spk_dim = len([i for i in os.listdir(os.path.join(params['datasets_path'], params['dataset']))
+                   if os.path.islink(i)])
 
     print('Create model')
     model = SampleRNN(
