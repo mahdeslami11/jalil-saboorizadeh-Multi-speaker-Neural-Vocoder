@@ -13,9 +13,6 @@ from interpolate import interpolation
 
 import random
 
-# From the moment, keep parameters to find the model
-# change!
-
 default_params = {
     # model parameters
     'n_rnn': 1,
@@ -119,7 +116,7 @@ def main(frame_sizes, **params):
     )
 
     # Define npy file names with maximum and minimum values of de-normalized conditioners
-    npy_name_min_max_cond = 'npy_datasets/min_max_joint_cond.npy'
+    npy_name_min_max_cond = 'npy_datasets/min_max_joint.npy'
 
     # Define npy file name with array of unique speakers in dataset
     npy_name_spk_id = 'npy_datasets/spk_id.npy'
