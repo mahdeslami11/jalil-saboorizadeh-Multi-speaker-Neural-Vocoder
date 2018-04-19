@@ -50,6 +50,7 @@ default_params = {
     'dataset': 'wav/',
     'cond_set': 'cond/',
     'epoch_limit': 1000,
+    'learning_rate': 1e-3,
     'resume': True,
     'sample_rate': 16000,
     'n_samples': 1,
@@ -61,7 +62,7 @@ default_params = {
 }
 tag_params = [
     'exp', 'frame_sizes', 'n_rnn', 'dim', 'learn_h0', 'ulaw', 'q_levels', 'seq_len',
-    'batch_size', 'dataset', 'cond_set', 'seed', 'weight_norm', 'qrnn', 'scheduler'
+    'batch_size', 'dataset', 'cond_set', 'seed', 'weight_norm', 'qrnn', 'scheduler', 'learning_rate'
     ]
 
 
@@ -230,11 +231,7 @@ def main(exp, frame_sizes, dataset, **params):
     for name, param in predictor.named_parameters():
         print(name, param.size())
 
-    # optimizer = gradient_clipping(torch.optim.Rprop(predictor.parameters(), lr=0.001, etas=(0.5, 1.2),
-    # step_sizes=(1e-06, 50)))
-
-    # Learning rate is by default 1e-3
-    optimizer = torch.optim.Adam(predictor.parameters(), lr=1e-5)
+    optimizer = torch.optim.Adam(predictor.parameters(), lr=params['learning_rate'])
     if params['scheduler']:
         scheduler = MultiStepLR(optimizer, milestones=[15, 35], gamma=0.1)
     optimizer = gradient_clipping(optimizer)
@@ -247,7 +244,7 @@ def main(exp, frame_sizes, dataset, **params):
     show_dataset = False
     if show_dataset:
         for i, full in enumerate(data_model):
-            print('dataloader---------------------------------------')
+            print('Data Loader---------------------------------------')
             print('batch', i)
             (data, reset, target, cond) = full           
             print('Data', data.size())
@@ -414,7 +411,10 @@ if __name__ == '__main__':
         help='smoothing parameter of the exponential moving average over \
               training loss, used in the log and in the loss plot'
     )
-    
+    parser.add_argument(
+        '--learning_rate', type=float,
+        help='Velocity of convergence'
+    )
     parser.add_argument(
         '--seed', type=int,
         help='seed init of random generator'
