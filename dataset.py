@@ -36,20 +36,20 @@ class FolderDataset(Dataset):
         self.cond = np.empty(shape=[0, self.cond_dim])
 
         # Define npy training dataset file names
-        npy_name_data = 'npy_datasets/' + partition + '_data.npy'
-        npy_name_cond = 'npy_datasets/' + partition + '_conditioners_joint.npy'
-        npy_name_spk = 'npy_datasets/' + partition + '_speakers.npy'
+        npy_name_data = 'npy_datasets/' + partition + '/data.npy'
+        npy_name_cond = 'npy_datasets/' + partition + '/conditioners_joint.npy'
+        npy_name_spk = 'npy_datasets/' + partition + '/speakers.npy'
 
-        npy_name_audio_id = 'npy_datasets/' + partition + '_audio_id.npy'
+        npy_name_audio_id = 'npy_datasets/' + partition + '/audio_id.npy'
 
         # Define npy file names with maximum and minimum values of de-normalized conditioners
-        npy_name_min_max_cond = 'npy_datasets/min_max_joint_cond.npy'
+        npy_name_min_max_cond = 'npy_datasets/min_max_joint.npy'
 
         # Define npy file name with array of unique speakers in dataset
         npy_name_spk_id = 'npy_datasets/spk_id.npy'
 
         # Check if dataset has to be created
-        files = [npy_name_data, npy_name_cond, npy_name_spk]
+        files = [npy_name_data, npy_name_cond, npy_name_spk, npy_name_min_max_cond]
         create_dataset = len(files) != len([f for f in files if os.path.isfile(f)])
 
         nosync = True
@@ -163,8 +163,8 @@ class FolderDataset(Dataset):
             if partition == 'train' and not os.path.isfile(npy_name_min_max_cond):
                 # Compute maximum and minimum of de-normalized conditioners for conditions of train partition
                 print('Computing maximum and minimum values for each speaker of training dataset.')
-                self.max_cond = np.amax(self.cond)
-                self.min_cond = np.amin(self.cond)
+                self.max_cond = np.amax(np.amax(self.cond, axis=1), axis=0)
+                self.min_cond = np.amin(np.amin(self.cond, axis=1), axis=0)
                 np.save(npy_name_min_max_cond, np.array([self.min_cond, self.max_cond]))
 
             # Load maximum and minimum of de-normalized conditioners
