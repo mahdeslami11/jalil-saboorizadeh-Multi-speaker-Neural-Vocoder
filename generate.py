@@ -23,6 +23,7 @@ default_params = {
     'weight_norm': False,
     'seq_len': 1040,
     'batch_size': 128,
+    'look_ahead': False,
     'qrnn': False,
     'val_frac': 0.1,
     'test_frac': 0.1,
@@ -172,6 +173,11 @@ def main(frame_sizes, **params):
         print('Normalizing conditioners.')
         cond = (cond - min_cond) / (max_cond - min_cond)
 
+        if params['look_ahead']:
+            delayed = np.copy(cond)
+            delayed[:, :-1, :] = delayed[:, 1:, :]
+            cond = np.concatenate((cond, delayed), axis=2)
+
         print('shape cond', cond.shape)
         # min_cond=np.load(params['cond_path']+'/min.npy')
         # max_cond=np.load(params['cond_path']+'/max.npy')
@@ -195,7 +201,7 @@ def main(frame_sizes, **params):
             q_levels=params['q_levels'],
             ulaw=params['ulaw'],
             weight_norm=params['weight_norm'],
-            cond_dim=params['cond_dim'],
+            cond_dim=params['cond_dim']*(1+params['look_ahead']),
             spk_dim=spk_dim,
             qrnn=params['qrnn']
         )
@@ -252,12 +258,10 @@ if __name__ == '__main__':
         help='frame sizes in terms of the number of lower tier frames, \
               starting from the lowest RNN tier'
     )
-
     parser.add_argument(
         '--model', required=True,
         help='model (including path)'
     )
-    
     parser.add_argument(
         '--n_rnn', type=int, help='number of RNN layers in each tier'
     )
@@ -304,6 +308,10 @@ if __name__ == '__main__':
     parser.add_argument(
         '--sample_length', type=int,
         help='length of each generated sample (in samples)'
+    )
+    parser.add_argument(
+        '--look_ahead', type=float,
+        help='Take conditioners from current and next frame'
     )
     parser.add_argument(
         '--seed', type=int,

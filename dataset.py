@@ -13,7 +13,7 @@ from interpolate import interpolation
 class FolderDataset(Dataset):
 
     def __init__(self, datasets_path, path, cond_path, overlap_len, q_levels, ulaw, seq_len, batch_size, cond_dim,
-                 cond_len, partition):
+                 cond_len, look_ahead, partition):
         super().__init__()
 
         # Define class variables from initialization parameters
@@ -185,10 +185,21 @@ class FolderDataset(Dataset):
             print('Dataset created for ' + partition + ' partition', '-' * 60, '\n')
 
         else:
-            # Load previously created training dataset
+            # Load previously created dataset
             self.data = np.load(npy_name_data)
-            self.cond = np.load(npy_name_cond)
             self.global_spk = np.load(npy_name_spk)
+
+            if look_ahead:
+                if os.path.isfile(npy_name_cond.replace('.npy', '_ahead.npy')):
+                    self.cond = np.load(npy_name_cond.replace('.npy', '_ahead.npy'))
+                else:
+                    self.cond = np.load(npy_name_cond)
+                    delayed = np.copy(self.cond)
+                    delayed[:, :-1, :] = delayed[:, 1:, :]
+                    self.cond = np.concatenate((self.cond, delayed), axis=2)
+                    np.save(npy_name_cond.replace('.npy', '_ahead.npy'), self.cond)
+            else:
+                self.cond = np.load(npy_name_cond)
 
             # Load maximum and minimum of de-normalized conditioners
             self.min_cond = np.load(npy_name_min_max_cond)[0]

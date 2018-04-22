@@ -38,6 +38,7 @@ default_params = {
     'weight_norm': False,
     'seq_len': 1040,
     'batch_size': 128,
+    'look_ahead': False,
     'qrnn': False,
     'cond_dim': 43,     # Conditioners of size 43 = 40 MFCC + 1 LF0 + 1FV + 1 U/V
     'cond_len': 80,     # Conditioners are computed by Ahocoder every 80 audio samples (windows of 5ms at 16kHz)
@@ -61,7 +62,7 @@ default_params = {
     'scheduler': False
 }
 tag_params = [
-    'exp', 'frame_sizes', 'n_rnn', 'dim', 'learn_h0', 'ulaw', 'q_levels', 'seq_len',
+    'exp', 'frame_sizes', 'n_rnn', 'dim', 'learn_h0', 'ulaw', 'q_levels', 'seq_len', 'look_ahead',
     'batch_size', 'dataset', 'cond_set', 'seed', 'weight_norm', 'qrnn', 'scheduler', 'learning_rate'
     ]
 
@@ -173,7 +174,7 @@ def make_data_loader(overlap_len, params):
     def data_loader(partition):
         dataset = FolderDataset(params['datasets_path'], path, cond_path, overlap_len, params['q_levels'],
                                 params['ulaw'], params['seq_len'], params['batch_size'], params['cond_dim'],
-                                params['cond_len'], partition)
+                                params['cond_len'], params['look_ahead'], partition)
 
         return DataLoader(dataset, batch_size=params['batch_size'], shuffle=False, drop_last=True, num_workers=2)
     return data_loader
@@ -206,7 +207,7 @@ def main(exp, frame_sizes, dataset, **params):
         q_levels=params['q_levels'],
         ulaw=params['ulaw'],
         weight_norm=params['weight_norm'],
-        cond_dim=params['cond_dim'],
+        cond_dim=params['cond_dim']*(1+params['look_ahead']),
         spk_dim=spk_dim,
         qrnn=params['qrnn']
     )
@@ -414,6 +415,10 @@ if __name__ == '__main__':
     parser.add_argument(
         '--learning_rate', type=float,
         help='Velocity of convergence'
+    )
+    parser.add_argument(
+        '--look_ahead', type=float,
+        help='Take conditioners from current and next frame'
     )
     parser.add_argument(
         '--seed', type=int,
