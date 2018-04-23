@@ -76,7 +76,7 @@ def make_tag(params):
         else:
             return str(value)
 
-    return '-'.join(
+    return '~'.join(
         key + ':' + to_string(params[key])
         for key in tag_params
         if key not in default_params or params[key] != default_params[key]
