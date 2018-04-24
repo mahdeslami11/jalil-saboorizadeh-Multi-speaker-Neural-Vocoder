@@ -116,6 +116,12 @@ def main(frame_sizes, **params):
         **params
     )
 
+    # Redefine parameters listed in the experiment directory and separated with '~'
+    for i in params['model'].split('/')[1].split('~'):
+        parameter = i.split(':')
+        if parameter[0] in params:
+            params[parameter[0]] = parameter[1]
+
     # Define npy file names with maximum and minimum values of de-normalized conditioners
     npy_name_min_max_cond = 'npy_datasets/min_max_joint.npy'
 
