@@ -57,6 +57,20 @@ def ensure_dir_exists(path):
         os.makedirs(path)
 
 
+def as_type(var, target_type):
+    case = str(target_type).split('\'')[1].split('\'')[0]
+    if case == 'boolean':
+        return var == 'True'
+    elif case == 'int':
+        return int(var)
+    elif case == 'float':
+        return float(var)
+    elif case == 'list':
+        return list(map(int, var.split(',')))
+    else:
+        return var
+
+
 def load_model(checkpoint_path):
     model_pattern = '.*ep{}-it{}'
 
@@ -70,7 +84,7 @@ def load_model(checkpoint_path):
         iteration = int(match.group(2))
     else:
         epoch, iteration = (0, 0)
-        
+
     return torch.load(checkpoint_path), epoch, iteration
 
 
@@ -118,9 +132,9 @@ def main(frame_sizes, **params):
 
     # Redefine parameters listed in the experiment directory and separated with '~'
     for i in params['model'].split('/')[1].split('~'):
-        parameter = i.split(':')
-        if parameter[0] in params:
-            params[parameter[0]] = parameter[1]
+        param = i.split(':')
+        if param[0] in params:
+            params[param[0]] = as_type(param[1], type(params[param[0]]))
 
     # Define npy file names with maximum and minimum values of de-normalized conditioners
     npy_name_min_max_cond = 'npy_datasets/min_max_joint.npy'
@@ -197,7 +211,7 @@ def main(frame_sizes, **params):
 
         spk_dim = len([i for i in os.listdir(os.path.join(params['cond_path'], params['cond_set']))
                        if os.path.islink(os.path.join(params['cond_path'], params['cond_set']) + '/' + i)])
-        
+
         print('Start Generate SampleRNN')
         model = SampleRNN(
             frame_sizes=params['frame_sizes'],
