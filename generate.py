@@ -91,7 +91,8 @@ class RunGenerator:
         self.cond = cond
         self.speaker = speaker
 
-        self.filename = '/'.join(checkpoints_path.split('/')[:2]) + 'file' + \
+        path_split = checkpoints_path.split('/')
+        self.filename = '/'.join(path_split[:2]) + '/samples/' + path_split[-1] + 'file' + \
                         original_name + '_spk' + spk_list[self.speaker] + '.wav'
         print('Generating file', self.filename)
 
