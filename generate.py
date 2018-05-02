@@ -100,12 +100,13 @@ class RunGenerator:
         print('Generate', n_samples, 'of length', sample_length)
         samples = self.generate(n_samples, sample_length, cond, speaker).cpu().numpy()
         max_v = np.iinfo(np.int16).max
-        print(self.filename)
+        for i in range(n_samples):
+            print(self.filename)
 
-        write_wav(
-            self.filename,
-            (samples * max_v).astype(np.int16), sr=self.sample_rate
-        )
+            write_wav(
+                self.filename,
+                (samples[i, :] * max_v).astype(np.int16), sr=self.sample_rate
+            )
 
 
 def main(frame_sizes, **params):
@@ -172,7 +173,6 @@ def main(frame_sizes, **params):
         cond = np.concatenate((cond, fv), axis=1)
         cond = np.concatenate((cond, uv), axis=1)
 
-        # Load maximum and minimum of de-normalized conditioners
         # Load maximum and minimum of de-normalized conditioners
         min_cond = np.load(npy_name_min_max_cond)[0]
         max_cond = np.load(npy_name_min_max_cond)[1]
