@@ -3,8 +3,7 @@ from optim import gradient_clipping
 from nn import sequence_nll_loss_bits
 from trainer import Trainer
 from trainer.plugins import (
-    TrainingLossMonitor, ValidationPlugin, AbsoluteTimeMonitor, SaverPlugin,
-    GeneratorPlugin, StatsPlugin
+    TrainingLossMonitor, ValidationPlugin, AbsoluteTimeMonitor, SaverPlugin, StatsPlugin
 )
 from dataset import FolderDataset
 from torch.utils.data import DataLoader
@@ -16,7 +15,6 @@ from torch.utils.trainer.plugins import Logger
 
 from natsort import natsorted
 
-from functools import reduce
 import os
 import shutil
 import sys
@@ -40,9 +38,10 @@ default_params = {
     'batch_size': 128,
     'look_ahead': False,
     'qrnn': False,
-    'cond_dim': 43,     # Conditioners of size 43 = 40 MFCC + 1 LF0 + 1FV + 1 U/V
-    'cond_len': 80,     # Conditioners are computed by Ahocoder every 80 audio samples (windows of 5ms at 16kHz)
-    'norm_ind': None,   # If true, normalization is done independent by speaker. If false, normalization is joint
+    'cond_dim': 43,         # Conditioners of size 43 = 40 MFCC + 1 LF0 + 1FV + 1 U/V
+    'cond_len': 80,         # Conditioners are computed by Ahocoder every 80 audio samples (windows of 5ms at 16kHz)
+    'norm_ind': False,      # If true, normalization is done independent by speaker. If false, normalization is joint
+    'static_spk': False,     # If true, training is only done with one speaker
 
     # training parameters
     'keep_old_checkpoints': False,
@@ -64,7 +63,7 @@ default_params = {
 }
 tag_params = [
     'exp', 'frame_sizes', 'n_rnn', 'dim', 'learn_h0', 'ulaw', 'q_levels', 'seq_len', 'look_ahead', 'norm_ind',
-    'batch_size', 'dataset', 'cond_set', 'seed', 'weight_norm', 'qrnn', 'scheduler', 'learning_rate'
+    'batch_size', 'dataset', 'cond_set', 'static_spk', 'seed', 'weight_norm', 'qrnn', 'scheduler', 'learning_rate'
     ]
 
 
@@ -175,7 +174,8 @@ def make_data_loader(overlap_len, params):
     def data_loader(partition):
         dataset = FolderDataset(params['datasets_path'], path, cond_path, overlap_len, params['q_levels'],
                                 params['ulaw'], params['seq_len'], params['batch_size'], params['cond_dim'],
-                                params['cond_len'], params['norm_ind'], params['look_ahead'], partition)
+                                params['cond_len'], params['norm_ind'], params['static_spk'],
+                                params['look_ahead'], partition)
 
         return DataLoader(dataset, batch_size=params['batch_size'], shuffle=False, drop_last=True, num_workers=2)
     return data_loader
@@ -386,7 +386,7 @@ if __name__ == '__main__':
         '--datasets_path', help='path to the directory containing datasets'
     )
     parser.add_argument(
-        '--cond_path', help='path to the directory containing conditioningsets'
+        '--cond_path', help='path to the directory containing conditioner sets'
     )
     parser.add_argument(
         '--results_path', help='path to the directory to save the results to'
@@ -432,6 +432,10 @@ if __name__ == '__main__':
     parser.add_argument(
         '--norm_ind', type=parse_bool,
         help='Apply conditioner normalization independently by speaker or jointly if false'
+    )
+    parser.add_argument(
+        '--static_spk', type=parse_bool,
+        help='Only train with one speaker'
     )
     parser.add_argument(
         '--qrnn', type=parse_bool,

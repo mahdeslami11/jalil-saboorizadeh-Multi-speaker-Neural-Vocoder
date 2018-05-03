@@ -13,7 +13,7 @@ from interpolate import interpolation
 class FolderDataset(Dataset):
 
     def __init__(self, datasets_path, path, cond_path, overlap_len, q_levels, ulaw, seq_len, batch_size, cond_dim,
-                 cond_len, norm_ind, look_ahead, partition):
+                 cond_len, norm_ind, static_spk, look_ahead, partition):
         super().__init__()
 
         # Define class variables from initialization parameters
@@ -36,21 +36,19 @@ class FolderDataset(Dataset):
         self.cond = np.empty(shape=[0, self.cond_dim])
 
         # Define npy training dataset file names
-        npy_name_data = 'npy_datasets/' + partition + '/data.npy'
-        npy_name_spk = 'npy_datasets/' + partition + '/speakers.npy'
+        npy_name_data = 'npy_datasets/' + partition + '/data' + static_spk*'_static' + '.npy'
+        npy_name_spk = 'npy_datasets/' + partition + '/speakers' + static_spk*'_static' + '.npy'
 
-        npy_name_audio_id = 'npy_datasets/' + partition + '/audio_id.npy'
+        npy_name_audio_id = 'npy_datasets/' + partition + '/audio_id' + static_spk*'_static' + '.npy'
 
         # Define npy file names with maximum and minimum values of de-normalized conditioners
-        if norm_ind:
-            npy_name_min_max_cond = 'npy_datasets/min_max_ind.npy'
-            npy_name_cond = 'npy_datasets/' + partition + '/conditioners_ind.npy'
-        else:
-            npy_name_min_max_cond = 'npy_datasets/min_max_joint.npy'
-            npy_name_cond = 'npy_datasets/' + partition + '/conditioners_joint.npy'
+        npy_name_min_max_cond = 'npy_datasets/min_max' + norm_ind*'_ind' + (not norm_ind)*'_joint' \
+                                + static_spk*'_static' + '.npy'
+        npy_name_cond = 'npy_datasets/' + partition + '/conditioners' + norm_ind*'_ind' + (not norm_ind)*'_joint'\
+                        + static_spk*'_static' + '.npy'
 
         # Define npy file name with array of unique speakers in dataset
-        npy_name_spk_id = 'npy_datasets/spk_id.npy'
+        npy_name_spk_id = 'npy_datasets/spk_id' + static_spk*'_static' + '.npy'
 
         # Check if dataset has to be created
         files = [npy_name_data, npy_name_cond, npy_name_spk, npy_name_min_max_cond]
@@ -62,10 +60,11 @@ class FolderDataset(Dataset):
             print('Create ' + partition + ' dataset', '-' * 60, '\n')
             print('Extracting wav from: ', path)
             print('Extracting conditioning from: ', cond_path)
-            print('List of files is: wav_' + partition + '.list')
+            print('List of files is: wav_' + partition + static_spk*'_static' + '.list')
 
             # Get file names from partition's list list
-            file_names = open(datasets_path + 'wav_' + partition + '.list', 'r').read().splitlines()
+            file_names = open(datasets_path + 'wav_' + partition + static_spk*'_static' + '.list', 'r').\
+                read().splitlines()
 
             if not os.path.isfile(npy_name_spk_id):
                 # Search for unique speakers in list and sort them

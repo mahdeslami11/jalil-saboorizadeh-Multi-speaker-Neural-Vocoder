@@ -27,8 +27,9 @@ default_params = {
     'qrnn': False,
     'val_frac': 0.1,
     'test_frac': 0.1,
-    'cond_dim': 43,     # Conditioners of size 43 = 40 MFCC + 1 LF0 + 1FV + 1 U/V
-    'norm_ind': None,   # If true, normalization is done independent by speaker. If false, normalization is joint
+    'cond_dim': 43,         # Conditioners of size 43 = 40 MFCC + 1 LF0 + 1FV + 1 U/V
+    'norm_ind': False,      # If true, normalization is done independent by speaker. If false, normalization is joint
+    'static_spk': False,    # If true, training is only done with one speaker
 
     # training parameters
     'sample_rate': 16000,
@@ -127,10 +128,8 @@ def main(frame_sizes, **params):
             params[param[0]] = as_type(param[1], type(params[param[0]]))
 
     # Define npy file names with maximum and minimum values of de-normalized conditioners
-    if params['norm_ind']:
-        npy_name_min_max_cond = 'npy_datasets/min_max_ind.npy'
-    else:
-        npy_name_min_max_cond = 'npy_datasets/min_max_joint.npy'
+    npy_name_min_max_cond = 'npy_datasets/min_max' + params['norm_ind'] * '_ind' + (not params['norm_ind']) * '_joint' \
+                            + params['static_spk'] * '_static' + '.npy'
 
     # Define npy file name with array of unique speakers in dataset
     npy_name_spk_id = 'npy_datasets/spk_id.npy'
