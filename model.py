@@ -473,7 +473,6 @@ class Generator(Runner):
                 if tier_index == len(self.model.frame_level_rnns) - 1:
                     upper_tier_conditioning = None
                     j = i//self.model.lookback - 1
-                    print('Using conditioning ', j)
                     cond = condtot[j, :]
                     cond = torch.from_numpy(cond.reshape(1, 1, n_dim))
                     spk = global_spk

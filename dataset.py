@@ -13,7 +13,7 @@ from interpolate import interpolation
 class FolderDataset(Dataset):
 
     def __init__(self, datasets_path, path, cond_path, overlap_len, q_levels, ulaw, seq_len, batch_size, cond_dim,
-                 cond_len, partition):
+                 cond_len, look_ahead, partition):
         super().__init__()
 
         # Define class variables from initialization parameters
@@ -30,23 +30,26 @@ class FolderDataset(Dataset):
         # Define sets of data, conditioners and speaker IDs
         self.data = []
         self.global_spk = []
+        self.audio = []
         self.cond_dim = cond_dim
         self.cond_len = cond_len
         self.cond = np.empty(shape=[0, self.cond_dim])
 
         # Define npy training dataset file names
-        npy_name_data = 'npy_datasets/' + partition + '_data.npy'
-        npy_name_cond = 'npy_datasets/' + partition + '_conditioners.npy'
-        npy_name_spk = 'npy_datasets/' + partition + '_speakers.npy'
+        npy_name_data = 'npy_datasets/' + partition + '/data.npy'
+        npy_name_cond = 'npy_datasets/' + partition + '/conditioners_joint.npy'
+        npy_name_spk = 'npy_datasets/' + partition + '/speakers.npy'
+
+        npy_name_audio_id = 'npy_datasets/' + partition + '/audio_id.npy'
 
         # Define npy file names with maximum and minimum values of de-normalized conditioners
-        npy_name_min_max_cond = 'npy_datasets/min_max_cond.npy'
+        npy_name_min_max_cond = 'npy_datasets/min_max_joint.npy'
 
         # Define npy file name with array of unique speakers in dataset
         npy_name_spk_id = 'npy_datasets/spk_id.npy'
 
         # Check if dataset has to be created
-        files = [npy_name_data, npy_name_cond, npy_name_spk]
+        files = [npy_name_data, npy_name_cond, npy_name_spk, npy_name_min_max_cond]
         create_dataset = len(files) != len([f for f in files if os.path.isfile(f)])
 
         nosync = True
@@ -74,7 +77,7 @@ class FolderDataset(Dataset):
                 spk = np.load(npy_name_spk_id)
 
             # Load each of the files from the list. Note that extension has to be added
-            for file in file_names:
+            for counter, file in enumerate(file_names):
                 # Load WAV
                 print(file + '.wav')
                 (d, _) = load(path + file + '.wav', sr=None, mono=True)
@@ -100,6 +103,9 @@ class FolderDataset(Dataset):
                 # Load speaker conditioner (index where the ID is located)
                 speaker = np.where(spk == file[0:2])[0][0]
                 speaker = np.repeat(speaker, num_fv)
+
+                # Array of audio ID to show the rearranging
+                audio = np.repeat(counter, num_fv)
 
                 if nosync:
                     oversize = num_samples % 80
@@ -129,6 +135,7 @@ class FolderDataset(Dataset):
                 self.data = np.append(self.data, d)
                 self.cond = np.concatenate((self.cond, cond), axis=0)
                 self.global_spk = np.append(self.global_spk, speaker)
+                self.audio = np.append(self.audio, audio)
 
             total_samples = self.data.shape[0]
             dim_cond = self.cond.shape[1]
@@ -150,18 +157,15 @@ class FolderDataset(Dataset):
 
             self.global_spk = self.global_spk[:total_conditioning].reshape(self.batch_size, -1)
 
+            self.audio = self.audio[:total_conditioning].reshape(self.batch_size, -1)
+
             # Save maximum and minimum of de-normalized conditioners for conditions of train partition
             if partition == 'train' and not os.path.isfile(npy_name_min_max_cond):
                 # Compute maximum and minimum of de-normalized conditioners for conditions of train partition
                 print('Computing maximum and minimum values for each speaker of training dataset.')
-                num_spk = len(spk)
-                self.max_cond = np.empty(num_spk)
-                self.min_cond = np.empty(num_spk)
-                for i in range(num_spk):
-                    print('Computing speaker', i, 'of', num_spk, 'with ID:', spk[i])
-                    self.max_cond[i] = np.amax(self.cond[self.global_spk == i])
-                    self.min_cond[i] = np.amin(self.cond[self.global_spk == i])
-                np.save(npy_name_min_max_cond, np.matrix([self.min_cond, self.max_cond]))
+                self.max_cond = np.amax(np.amax(self.cond, axis=1), axis=0)
+                self.min_cond = np.amin(np.amin(self.cond, axis=1), axis=0)
+                np.save(npy_name_min_max_cond, np.array([self.min_cond, self.max_cond]))
 
             # Load maximum and minimum of de-normalized conditioners
             else:
@@ -169,23 +173,33 @@ class FolderDataset(Dataset):
                 self.max_cond = np.load(npy_name_min_max_cond)[1]
 
             # Normalize conditioners with absolute maximum and minimum for each speaker of training partition
-            print('Normalizing conditioners for each speaker of training dataset.')
-            for i in range(len(spk)):
-                self.cond[self.global_spk == i] = (self.cond[self.global_spk == i] - self.min_cond[i]) /\
-                                                  (self.max_cond[i] - self.min_cond[i])
+            print('Normalizing conditioners.')
+            self.cond = (self.cond - self.min_cond) / (self.max_cond - self.min_cond)
 
             # Save partition's dataset
             np.save(npy_name_data, self.data)
             np.save(npy_name_cond, self.cond)
             np.save(npy_name_spk, self.global_spk)
+            np.save(npy_name_audio_id, self.audio)
 
             print('Dataset created for ' + partition + ' partition', '-' * 60, '\n')
 
         else:
-            # Load previously created training dataset
+            # Load previously created dataset
             self.data = np.load(npy_name_data)
-            self.cond = np.load(npy_name_cond)
             self.global_spk = np.load(npy_name_spk)
+
+            if look_ahead:
+                if os.path.isfile(npy_name_cond.replace('.npy', '_ahead.npy')):
+                    self.cond = np.load(npy_name_cond.replace('.npy', '_ahead.npy'))
+                else:
+                    self.cond = np.load(npy_name_cond)
+                    delayed = np.copy(self.cond)
+                    delayed[:, :-1, :] = delayed[:, 1:, :]
+                    self.cond = np.concatenate((self.cond, delayed), axis=2)
+                    np.save(npy_name_cond.replace('.npy', '_ahead.npy'), self.cond)
+            else:
+                self.cond = np.load(npy_name_cond)
 
             # Load maximum and minimum of de-normalized conditioners
             self.min_cond = np.load(npy_name_min_max_cond)[0]

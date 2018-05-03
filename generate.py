@@ -13,9 +13,6 @@ from interpolate import interpolation
 
 import random
 
-# From the moment, keep parameters to find the model
-# change!
-
 default_params = {
     # model parameters
     'n_rnn': 1,
@@ -26,11 +23,11 @@ default_params = {
     'weight_norm': False,
     'seq_len': 1040,
     'batch_size': 128,
+    'look_ahead': False,
     'qrnn': False,
     'val_frac': 0.1,
     'test_frac': 0.1,
     'cond_dim': 43,
-    'spk_dim': 6,
 
     # training parameters
     'sample_rate': 16000,
@@ -40,7 +37,6 @@ default_params = {
     'cond': 0,
 
     # generator parameters
-    'output_path': 'generated/',
     'cond_path': '/veu/tfgveu7/project/tcstar/',
     'cond_set': 'cond/'
 }
@@ -55,9 +51,18 @@ def init_random_seed(seed, cuda):
         torch.cuda.manual_seed(seed)
 
 
-def ensure_dir_exists(path):
-    if not os.path.exists(path):
-        os.makedirs(path)
+def as_type(var, target_type):
+    case = str(target_type).split('\'')[1].split('\'')[0]
+    if case == 'boolean':
+        return var == 'True'
+    elif case == 'int':
+        return int(var)
+    elif case == 'float':
+        return float(var)
+    elif case == 'list':
+        return list(map(int, var.split(',')))
+    else:
+        return var
 
 
 def load_model(checkpoint_path):
@@ -73,39 +78,34 @@ def load_model(checkpoint_path):
         iteration = int(match.group(2))
     else:
         epoch, iteration = (0, 0)
-        
+
     return torch.load(checkpoint_path), epoch, iteration
 
 
 class RunGenerator:
-    def __init__(self, model, samples_path, sample_rate, cuda, epoch, cond, speaker, checkpoints_path, g):
+    def __init__(self, model, sample_rate, cuda, epoch, cond, spk_list, speaker, checkpoints_path, original_name):
         self.generate = Generator(model, cuda)
-        self.samples_path = samples_path
         self.sample_rate = sample_rate
         self.cuda = cuda
         self.epoch = epoch
         self.cond = cond
         self.speaker = speaker
 
-        g = str(g)
-
-        m = re.search('/exp:(.+?)/checkpoints', checkpoints_path)
-        if m:
-            found = m.group(1)
-            self.pattern = 'model_' + found + 'gen-ep{}-g' + g + '.wav'
-            print('Generating file', self.pattern)
+        path_split = checkpoints_path.split('/')
+        self.filename = '/'.join(path_split[:2]) + '/samples/' + path_split[-1] + '_file-' + \
+                        original_name + '_spk-' + spk_list[self.speaker] + '.wav'
+        print('Generating file', self.filename)
 
     def __call__(self, n_samples, sample_length, cond, speaker):
         print('Generate', n_samples, 'of length', sample_length)
         samples = self.generate(n_samples, sample_length, cond, speaker).cpu().numpy()
-        maxv = np.iinfo(np.int16).max
+        max_v = np.iinfo(np.int16).max
         for i in range(n_samples):
-            filename = os.path.join(self.samples_path, self.pattern.format(self.epoch, i))
-            print(filename)
+            print(self.filename)
 
             write_wav(
-                filename,
-                (samples[i, :] * maxv).astype(np.int16), sr=self.sample_rate
+                self.filename,
+                (samples[i, :] * max_v).astype(np.int16), sr=self.sample_rate
             )
 
 
@@ -119,8 +119,14 @@ def main(frame_sizes, **params):
         **params
     )
 
+    # Redefine parameters listed in the experiment directory and separated with '~'
+    for i in params['model'].split('/')[1].split('~'):
+        param = i.split(':')
+        if param[0] in params:
+            params[param[0]] = as_type(param[1], type(params[param[0]]))
+
     # Define npy file names with maximum and minimum values of de-normalized conditioners
-    npy_name_min_max_cond = 'npy_datasets/min_max_cond.npy'
+    npy_name_min_max_cond = 'npy_datasets/min_max_joint.npy'
 
     # Define npy file name with array of unique speakers in dataset
     npy_name_spk_id = 'npy_datasets/spk_id.npy'
@@ -168,13 +174,17 @@ def main(frame_sizes, **params):
         cond = np.concatenate((cond, uv), axis=1)
 
         # Load maximum and minimum of de-normalized conditioners
-        # Load maximum and minimum of de-normalized conditioners
         min_cond = np.load(npy_name_min_max_cond)[0]
         max_cond = np.load(npy_name_min_max_cond)[1]
 
         # Normalize conditioners with absolute maximum and minimum for each speaker of training partition
-        print('Normalizing conditioners for each speaker of training dataset.')
-        cond = (cond - min_cond[speaker]) / (max_cond[speaker] - min_cond[speaker])
+        print('Normalizing conditioners.')
+        cond = (cond - min_cond) / (max_cond - min_cond)
+
+        if params['look_ahead']:
+            delayed = np.copy(cond)
+            delayed[:, :-1, :] = delayed[:, 1:, :]
+            cond = np.concatenate((cond, delayed), axis=2)
 
         print('shape cond', cond.shape)
         # min_cond=np.load(params['cond_path']+'/min.npy')
@@ -184,9 +194,9 @@ def main(frame_sizes, **params):
         seed = params.get('seed')
         init_random_seed(seed, use_cuda)
 
-        output_path = params['output_path']
-        ensure_dir_exists(output_path)
-        
+        spk_dim = len([i for i in os.listdir(os.path.join(params['cond_path'], params['cond_set']))
+                       if os.path.islink(os.path.join(params['cond_path'], params['cond_set']) + '/' + i)])
+
         print('Start Generate SampleRNN')
         model = SampleRNN(
             frame_sizes=params['frame_sizes'],
@@ -196,8 +206,8 @@ def main(frame_sizes, **params):
             q_levels=params['q_levels'],
             ulaw=params['ulaw'],
             weight_norm=params['weight_norm'],
-            cond_dim=params['cond_dim'],
-            spk_dim=params['spk_dim'],
+            cond_dim=params['cond_dim']*(1+params['look_ahead']),
+            spk_dim=spk_dim,
             qrnn=params['qrnn']
         )
         print(model)
@@ -219,15 +229,15 @@ def main(frame_sizes, **params):
         predictor.load_state_dict(state_dict)
 
         generator = RunGenerator(
-            model,
-            output_path,
-            params['sample_rate'],
-            use_cuda,
+            model=model,
+            sample_rate=params['sample_rate'],
+            cuda=use_cuda,
             epoch=epoch_index,
             cond=cond,
+            spk_list=spk,
             speaker=speaker,
             checkpoints_path=f_name,
-            g=cont
+            original_name=file_names[i].split('/')[1]
          )
 
         generator(params['n_samples'], params['sample_length'], cond, speaker)
@@ -253,12 +263,10 @@ if __name__ == '__main__':
         help='frame sizes in terms of the number of lower tier frames, \
               starting from the lowest RNN tier'
     )
-
     parser.add_argument(
         '--model', required=True,
         help='model (including path)'
     )
-    
     parser.add_argument(
         '--n_rnn', type=int, help='number of RNN layers in each tier'
     )
@@ -282,10 +290,6 @@ if __name__ == '__main__':
         help='how many samples to include in each truncated BPTT pass'
     )
     parser.add_argument('--batch_size', type=int, help='batch size')
-
-    parser.add_argument(
-        '--output_path', help='path to the directory to save the generated samples to'
-    )
     parser.add_argument(
         '--cond_path', help='path to the directory to find the conditioning'
     )
@@ -305,6 +309,10 @@ if __name__ == '__main__':
     parser.add_argument(
         '--sample_length', type=int,
         help='length of each generated sample (in samples)'
+    )
+    parser.add_argument(
+        '--look_ahead', type=float,
+        help='Take conditioners from current and next frame'
     )
     parser.add_argument(
         '--seed', type=int,

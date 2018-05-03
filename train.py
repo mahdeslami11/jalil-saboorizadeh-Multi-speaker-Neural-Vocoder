@@ -38,10 +38,10 @@ default_params = {
     'weight_norm': False,
     'seq_len': 1040,
     'batch_size': 128,
+    'look_ahead': False,
     'qrnn': False,
     'cond_dim': 43,     # Conditioners of size 43 = 40 MFCC + 1 LF0 + 1FV + 1 U/V
     'cond_len': 80,     # Conditioners are computed by Ahocoder every 80 audio samples (windows of 5ms at 16kHz)
-    'spk_dim': 6,
 
     # training parameters
     'keep_old_checkpoints': False,
@@ -51,6 +51,7 @@ default_params = {
     'dataset': 'wav/',
     'cond_set': 'cond/',
     'epoch_limit': 1000,
+    'learning_rate': 1e-3,
     'resume': True,
     'sample_rate': 16000,
     'n_samples': 1,
@@ -61,8 +62,8 @@ default_params = {
     'scheduler': False
 }
 tag_params = [
-    'exp', 'frame_sizes', 'n_rnn', 'dim', 'learn_h0', 'ulaw', 'q_levels', 'seq_len',
-    'batch_size', 'dataset', 'cond_set', 'seed', 'weight_norm', 'qrnn', 'scheduler'
+    'exp', 'frame_sizes', 'n_rnn', 'dim', 'learn_h0', 'ulaw', 'q_levels', 'seq_len', 'look_ahead',
+    'batch_size', 'dataset', 'cond_set', 'seed', 'weight_norm', 'qrnn', 'scheduler', 'learning_rate'
     ]
 
 
@@ -75,7 +76,7 @@ def make_tag(params):
         else:
             return str(value)
 
-    return '-'.join(
+    return '~'.join(
         key + ':' + to_string(params[key])
         for key in tag_params
         if key not in default_params or params[key] != default_params[key]
@@ -173,7 +174,7 @@ def make_data_loader(overlap_len, params):
     def data_loader(partition):
         dataset = FolderDataset(params['datasets_path'], path, cond_path, overlap_len, params['q_levels'],
                                 params['ulaw'], params['seq_len'], params['batch_size'], params['cond_dim'],
-                                params['cond_len'], partition)
+                                params['cond_len'], params['look_ahead'], partition)
 
         return DataLoader(dataset, batch_size=params['batch_size'], shuffle=False, drop_last=True, num_workers=2)
     return data_loader
@@ -194,6 +195,9 @@ def main(exp, frame_sizes, dataset, **params):
     results_path = setup_results_dir(params)
     tee_stdout(os.path.join(results_path, 'log'))
 
+    spk_dim = len([i for i in os.listdir(os.path.join(params['datasets_path'], params['dataset']))
+                   if os.path.islink(os.path.join(params['datasets_path'], params['dataset']) + '/' + i)])
+
     print('Create model')
     model = SampleRNN(
         frame_sizes=params['frame_sizes'],
@@ -203,8 +207,8 @@ def main(exp, frame_sizes, dataset, **params):
         q_levels=params['q_levels'],
         ulaw=params['ulaw'],
         weight_norm=params['weight_norm'],
-        cond_dim=params['cond_dim'],
-        spk_dim=params['spk_dim'],
+        cond_dim=params['cond_dim']*(1+params['look_ahead']),
+        spk_dim=spk_dim,
         qrnn=params['qrnn']
     )
     if use_cuda:
@@ -228,10 +232,7 @@ def main(exp, frame_sizes, dataset, **params):
     for name, param in predictor.named_parameters():
         print(name, param.size())
 
-    # optimizer = gradient_clipping(torch.optim.Rprop(predictor.parameters(), lr=0.001, etas=(0.5, 1.2),
-    # step_sizes=(1e-06, 50)))
-    
-    optimizer = torch.optim.Adam(predictor.parameters())
+    optimizer = torch.optim.Adam(predictor.parameters(), lr=params['learning_rate'])
     if params['scheduler']:
         scheduler = MultiStepLR(optimizer, milestones=[15, 35], gamma=0.1)
     optimizer = gradient_clipping(optimizer)
@@ -244,7 +245,7 @@ def main(exp, frame_sizes, dataset, **params):
     show_dataset = False
     if show_dataset:
         for i, full in enumerate(data_model):
-            print('dataloader---------------------------------------')
+            print('Data Loader---------------------------------------')
             print('batch', i)
             (data, reset, target, cond) = full           
             print('Data', data.size())
@@ -411,7 +412,14 @@ if __name__ == '__main__':
         help='smoothing parameter of the exponential moving average over \
               training loss, used in the log and in the loss plot'
     )
-    
+    parser.add_argument(
+        '--learning_rate', type=float,
+        help='Velocity of convergence'
+    )
+    parser.add_argument(
+        '--look_ahead', type=float,
+        help='Take conditioners from current and next frame'
+    )
     parser.add_argument(
         '--seed', type=int,
         help='seed init of random generator'
