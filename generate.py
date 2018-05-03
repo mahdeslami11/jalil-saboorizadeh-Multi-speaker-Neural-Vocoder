@@ -27,7 +27,8 @@ default_params = {
     'qrnn': False,
     'val_frac': 0.1,
     'test_frac': 0.1,
-    'cond_dim': 43,
+    'cond_dim': 43,     # Conditioners of size 43 = 40 MFCC + 1 LF0 + 1FV + 1 U/V
+    'norm_ind': None,   # If true, normalization is done independent by speaker. If false, normalization is joint
 
     # training parameters
     'sample_rate': 16000,
@@ -126,7 +127,10 @@ def main(frame_sizes, **params):
             params[param[0]] = as_type(param[1], type(params[param[0]]))
 
     # Define npy file names with maximum and minimum values of de-normalized conditioners
-    npy_name_min_max_cond = 'npy_datasets/min_max_joint.npy'
+    if params['norm_ind']:
+        npy_name_min_max_cond = 'npy_datasets/min_max_ind.npy'
+    else:
+        npy_name_min_max_cond = 'npy_datasets/min_max_joint.npy'
 
     # Define npy file name with array of unique speakers in dataset
     npy_name_spk_id = 'npy_datasets/spk_id.npy'
@@ -178,8 +182,12 @@ def main(frame_sizes, **params):
         max_cond = np.load(npy_name_min_max_cond)[1]
 
         # Normalize conditioners with absolute maximum and minimum for each speaker of training partition
-        print('Normalizing conditioners.')
-        cond = (cond - min_cond) / (max_cond - min_cond)
+        if params['norm_ind']:
+            print('Normalizing conditioners for each speaker of training dataset')
+            cond = (cond - min_cond[speaker]) / (max_cond[speaker] - min_cond[speaker])
+        else:
+            print('Normalizing conditioners jointly')
+            cond = (cond - min_cond) / (max_cond - min_cond)
 
         if params['look_ahead']:
             delayed = np.copy(cond)
@@ -309,6 +317,10 @@ if __name__ == '__main__':
     parser.add_argument(
         '--sample_length', type=int,
         help='length of each generated sample (in samples)'
+    )
+    parser.add_argument(
+        '--norm_ind', type=parse_bool,
+        help='Apply conditioner normalization independently by speaker or jointly if false'
     )
     parser.add_argument(
         '--look_ahead', type=float,

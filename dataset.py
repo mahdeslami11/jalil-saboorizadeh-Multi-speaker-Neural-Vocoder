@@ -13,7 +13,7 @@ from interpolate import interpolation
 class FolderDataset(Dataset):
 
     def __init__(self, datasets_path, path, cond_path, overlap_len, q_levels, ulaw, seq_len, batch_size, cond_dim,
-                 cond_len, look_ahead, partition):
+                 cond_len, norm_ind, look_ahead, partition):
         super().__init__()
 
         # Define class variables from initialization parameters
@@ -37,13 +37,17 @@ class FolderDataset(Dataset):
 
         # Define npy training dataset file names
         npy_name_data = 'npy_datasets/' + partition + '/data.npy'
-        npy_name_cond = 'npy_datasets/' + partition + '/conditioners_joint.npy'
         npy_name_spk = 'npy_datasets/' + partition + '/speakers.npy'
 
         npy_name_audio_id = 'npy_datasets/' + partition + '/audio_id.npy'
 
         # Define npy file names with maximum and minimum values of de-normalized conditioners
-        npy_name_min_max_cond = 'npy_datasets/min_max_joint.npy'
+        if norm_ind:
+            npy_name_min_max_cond = 'npy_datasets/min_max_ind.npy'
+            npy_name_cond = 'npy_datasets/' + partition + '/conditioners_ind.npy'
+        else:
+            npy_name_min_max_cond = 'npy_datasets/min_max_joint.npy'
+            npy_name_cond = 'npy_datasets/' + partition + '/conditioners_joint.npy'
 
         # Define npy file name with array of unique speakers in dataset
         npy_name_spk_id = 'npy_datasets/spk_id.npy'
@@ -161,10 +165,20 @@ class FolderDataset(Dataset):
 
             # Save maximum and minimum of de-normalized conditioners for conditions of train partition
             if partition == 'train' and not os.path.isfile(npy_name_min_max_cond):
-                # Compute maximum and minimum of de-normalized conditioners for conditions of train partition
-                print('Computing maximum and minimum values for each speaker of training dataset.')
-                self.max_cond = np.amax(np.amax(self.cond, axis=1), axis=0)
-                self.min_cond = np.amin(np.amin(self.cond, axis=1), axis=0)
+                # Compute maximum and minimum of de-normalized conditioners of train partition
+                if norm_ind:
+                    print('Computing maximum and minimum values for each speaker of training dataset.')
+                    num_spk = len(spk)
+                    self.max_cond = np.empty(shape=(num_spk, cond_dim))
+                    self.min_cond = np.empty(shape=(num_spk, cond_dim))
+                    for i in range(num_spk):
+                        print('Computing speaker', i, 'of', num_spk, 'with ID:', spk[i])
+                        self.max_cond[i] = np.amax(self.cond[self.global_spk == i], axis=0)
+                        self.min_cond[i] = np.amin(self.cond[self.global_spk == i], axis=0)
+                else:
+                    print('Computing maximum and minimum values for every speaker of training dataset.')
+                    self.max_cond = np.amax(np.amax(self.cond, axis=1), axis=0)
+                    self.min_cond = np.amin(np.amin(self.cond, axis=1), axis=0)
                 np.save(npy_name_min_max_cond, np.array([self.min_cond, self.max_cond]))
 
             # Load maximum and minimum of de-normalized conditioners
@@ -173,8 +187,16 @@ class FolderDataset(Dataset):
                 self.max_cond = np.load(npy_name_min_max_cond)[1]
 
             # Normalize conditioners with absolute maximum and minimum for each speaker of training partition
-            print('Normalizing conditioners.')
-            self.cond = (self.cond - self.min_cond) / (self.max_cond - self.min_cond)
+            if norm_ind:
+                # Normalize conditioners with absolute maximum and minimum for each speaker of training partition
+                print('Normalizing conditioners for each speaker of training dataset.')
+                for i in range(len(spk)):
+                    self.cond[self.global_spk == i] = (self.cond[self.global_spk == i] - self.min_cond[i]) / \
+                                                      (self.max_cond[i] - self.min_cond[i])
+            else:
+                # Normalize conditioners with absolute maximum and minimum for each speaker of training partition
+                print('Normalizing conditioners for all speakers of training dataset.')
+                self.cond = (self.cond - self.min_cond) / (self.max_cond - self.min_cond)
 
             # Save partition's dataset
             np.save(npy_name_data, self.data)
