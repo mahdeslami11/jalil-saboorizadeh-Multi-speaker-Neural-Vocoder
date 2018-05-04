@@ -39,7 +39,7 @@ default_params = {
     'cond': 0,
 
     # generator parameters
-    'cond_path': '/veu/tfgveu7/project/tcstar/',
+    'datasets_path': '/veu/tfgveu7/project/tcstar/',
     'cond_set': 'cond/'
 }
 
@@ -134,43 +134,44 @@ def main(frame_sizes, **params):
     # Define npy file name with array of unique speakers in dataset
     npy_name_spk_id = 'npy_datasets/spk_id.npy'
 
-    # Get file names from partition's list list
-    partition = 'train'
+    # Get file names from partition's list
+    file_names = open(str(params['datasets_path']) +
+                      'generate_cond.list', 'r').read().splitlines()
 
-    file_names = open(str(params['cond_path']) +
-                      'wav_' + partition + '.list', 'r').read().splitlines()
+    spk_names = open(str(params['datasets_path']) +
+                     'generate_spk.list', 'r').read().splitlines()
 
-    cond_path = os.path.join(params['cond_path'], params['cond_set'])
+    datasets_path = os.path.join(params['datasets_path'], params['cond_set'])
 
     spk = np.load(npy_name_spk_id)
 
-    i = np.array([-1, -2, -3, -4, -5])
+    if len(spk_names) != len(file_names):
+        print('Length of speaker file do not match length of conditioner file.')
+        quit()
 
-    print('Generating', len(i), 'audio files')
-    cont = 0
+    print('Generating', len(file_names), 'audio files')
     
-    for i in np.nditer(i):
-        cont = cont+1
+    for i in range(len(file_names)):
         print('Generating Audio', i)
         print('Generating...', file_names[i])
 
         # Load CC conditioner
-        c = np.loadtxt(cond_path + file_names[i] + '.cc')
+        c = np.loadtxt(datasets_path + file_names[i] + '.cc')
 
         # Load LF0 conditioner
-        f0file = np.loadtxt(cond_path + file_names[i] + '.lf0')
+        f0file = np.loadtxt(datasets_path + file_names[i] + '.lf0')
         f0, _ = interpolation(f0file, -10000000000)
         f0 = f0.reshape(f0.shape[0], 1)
 
         # Load FV conditioner
-        fvfile = np.loadtxt(cond_path + file_names[i] + '.gv')
+        fvfile = np.loadtxt(datasets_path + file_names[i] + '.gv')
         fv, uv = interpolation(fvfile, 1e3)
         num_fv = fv.shape[0]
         uv = uv.reshape(num_fv, 1)
         fv = fv.reshape(num_fv, 1)
 
         # Load speaker conditioner
-        speaker = np.where(spk == file_names[i][0:2])[0][0]
+        speaker = np.where(spk == spk_names[i])[0][0]
 
         cond = np.concatenate((c, f0), axis=1)
         cond = np.concatenate((cond, fv), axis=1)
@@ -194,15 +195,12 @@ def main(frame_sizes, **params):
             cond = np.concatenate((cond, delayed), axis=2)
 
         print('shape cond', cond.shape)
-        # min_cond=np.load(params['cond_path']+'/min.npy')
-        # max_cond=np.load(params['cond_path']+'/max.npy')
-        # print('max cond', max_cond.shape)
-        # cond =  (cond-min_cond)/(max_cond-min_cond)
+
         seed = params.get('seed')
         init_random_seed(seed, use_cuda)
 
-        spk_dim = len([i for i in os.listdir(os.path.join(params['cond_path'], params['cond_set']))
-                       if os.path.islink(os.path.join(params['cond_path'], params['cond_set']) + '/' + i)])
+        spk_dim = len([i for i in os.listdir(os.path.join(params['datasets_path'], params['cond_set']))
+                       if os.path.islink(os.path.join(params['datasets_path'], params['cond_set']) + '/' + i)])
 
         print('Start Generate SampleRNN')
         model = SampleRNN(
@@ -298,12 +296,12 @@ if __name__ == '__main__':
     )
     parser.add_argument('--batch_size', type=int, help='batch size')
     parser.add_argument(
-        '--cond_path', help='path to the directory to find the conditioning'
+        '--datasets_path', help='path to the directory to find the conditioning'
     )
     parser.add_argument(
         '--cond_set',
         help='cond_set name - name of a directory in the conditioning sets path \
-                 (settable by --cond_path)'
+                 (settable by --datasets_path)'
     )
     parser.add_argument(
         '--sample_rate', type=int,
