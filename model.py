@@ -6,7 +6,6 @@ from torch.nn import functional as F
 from torch.nn import init
 from torch.autograd import Variable
 from torch.nn.utils import weight_norm
-# from torchqrnn import QRNN
 
 import numpy as np
 
@@ -15,15 +14,13 @@ verbose = False
 
 class SampleRNNGAN(torch.nn.Module):
 
-    def __init__(self, frame_sizes, n_rnn, dim, learn_h0, q_levels, ulaw, weight_norm, cond_dim, spk_dim, qrnn=False):
+    def __init__(self, frame_sizes, n_rnn, dim, learn_h0, q_levels, ulaw, weight_norm, spk_dim, qrnn):
         super().__init__()
 
         self.dim = dim
         self.q_levels = q_levels
         self.ulaw = ulaw
-        self.cond_dim = cond_dim
         self.spk_dim = spk_dim
-        self.output_cnn_dim = 40
 
         if ulaw:
             self.dequantize = utils.udequantize
@@ -45,13 +42,9 @@ class SampleRNNGAN(torch.nn.Module):
         is_cond = [False]*len(frame_sizes)
         is_cond[-1] = True
 
-        self.conditioner_cnn = ConditionerCNN(cond_dim, self.output_cnn_dim)
-
-        self.discriminant = Discriminant(spk_dim, self.output_cnn_dim)
-
         self.frame_level_rnns = torch.nn.ModuleList([
             FrameLevelRNN(
-                frame_size, n_frame_samples, n_rnn, dim, learn_h0, IsCond, cond_dim, spk_dim, weight_norm, qrnn
+                frame_size, n_frame_samples, n_rnn, dim, learn_h0, IsCond, spk_dim, weight_norm, qrnn
             )
             for (frame_size, n_frame_samples, IsCond) in zip(
                 frame_sizes, ns_frame_samples, is_cond
@@ -68,14 +61,12 @@ class SampleRNNGAN(torch.nn.Module):
 
 class FrameLevelRNN(torch.nn.Module):
 
-    def __init__(self, frame_size, n_frame_samples, n_rnn, dim,
-                 learn_h0, is_cond, cond_dim, spk_dim, w_norm, qrnn):
+    def __init__(self, frame_size, n_frame_samples, n_rnn, dim, learn_h0, is_cond, spk_dim, w_norm, qrnn):
         super().__init__()
 
         self.frame_size = frame_size
         self.n_frame_samples = n_frame_samples
         self.dim = dim
-        self.cond_dim = cond_dim
         self.spk_dim = spk_dim
         self.weight_norm = w_norm
         self.qrnn = qrnn
@@ -92,17 +83,6 @@ class FrameLevelRNN(torch.nn.Module):
             kernel_size=1
         )
         if is_cond:
-            # Acoustic conditioners expansion
-            self.cond_expand = torch.nn.Conv1d(
-                in_channels=cond_dim,
-                out_channels=dim,
-                kernel_size=1
-            )
-
-            # Initialize 1D-Convolution (Fully-connected Layer) for acoustic conditioners
-            init.kaiming_uniform(self.cond_expand.weight)
-            init.constant(self.cond_expand.bias, 0)
-
             # Speaker embedding
             self.spk_embedding = torch.nn.Embedding(
                 self.spk_dim,
@@ -121,11 +101,11 @@ class FrameLevelRNN(torch.nn.Module):
 
             # Apply weight normalization if chosen
             if self.weight_norm:
-                self.cond_expand = weight_norm(self.cond_expand, name='weight')
                 self.spk_expand = weight_norm(self.spk_expand, name='weight')
 
         else:
             self.cond_expand = None
+            self.spk_expand = None
         init.kaiming_uniform(self.input_expand.weight)
         init.constant(self.input_expand.bias, 0)
 
@@ -133,18 +113,13 @@ class FrameLevelRNN(torch.nn.Module):
             self.input_expand = weight_norm(self.input_expand, name='weight')
 
         if self.qrnn:
-            self.rnn = torch.nn.GRU(
+            from torchqrnn import QRNN
+
+            self.rnn = QRNN(
                 input_size=dim,
                 hidden_size=dim,
                 num_layers=n_rnn,
-                batch_first=True
             )
-
-            # self.rnn = QRNN(
-            # input_size=dim,
-            # hidden_size=dim,
-            # num_layers=n_rnn,
-            # )
    
         else:    
             self.rnn = torch.nn.GRU(
@@ -179,7 +154,7 @@ class FrameLevelRNN(torch.nn.Module):
         if weight_norm:
             self.upsampling.conv_t = weight_norm(self.upsampling.conv_t, name='weight')
 
-    def forward(self, prev_samples, upper_tier_conditioning, hidden, cond, spk):
+    def forward(self, prev_samples, upper_tier_conditioning, hidden, cond_cnn, spk):
         (batch_size, _, _) = prev_samples.size()
         # The first called
         # forward rnn     frame_size:  4  n_frame_samples:  64    prev_samples: torch.Size([128, 16, 64])
@@ -201,11 +176,10 @@ class FrameLevelRNN(torch.nn.Module):
         if upper_tier_conditioning is not None:
             input_rnn += upper_tier_conditioning
         else:
-            cond = self.cond_expand(cond.permute(0, 2, 1).float()).permute(0, 2, 1)
-            input_rnn += cond
+            input_rnn += cond_cnn
             if verbose:
                 print('Input rnn has size:', input_rnn.size())
-                print('After expansion, conditioner has size: ', cond.size())
+                print('After expansion, conditioner has size: ', cond_cnn.size())
                 print('Compute speaker embedding for spk of size: ', spk.size())
             spk_embed = self.spk_embedding(spk.long())
             if verbose:
@@ -219,7 +193,7 @@ class FrameLevelRNN(torch.nn.Module):
 
         reset = hidden is None
 
-        if hidden is None:
+        if reset:
             (n_rnn, _) = self.h0.size()
             hidden = self.h0.unsqueeze(1) \
                             .expand(n_rnn, batch_size, self.dim) \
@@ -324,63 +298,74 @@ class SampleLevelMLP(torch.nn.Module):
 
 
 class ConditionerCNN(torch.nn.Module):
-    def __init__(self, cond_dim, output_cnn_dim):
-        super(ConditionerCNN, self).__init__()
-        self.conv = torch.nn.Conv1d(cond_dim, 50, 5)    # 50 out channels and kernel size 5
-        self.pool = torch.nn.MaxPool1d(2)               # Max pooling layer with kernel size 2
-        self.fc1 = torch.nn.Linear(25, 30)              # Linear layer with 25 inputs and 30 output channels
-        self.fc2 = torch.nn.Linear(30, output_cnn_dim)  # Linear layer with 30 inputs and custom output channels
+    def __init__(self, cond_dim, dim):
+        # Acoustic conditioners expansion
+        self.cond_expand = torch.nn.Conv1d(
+            in_channels=cond_dim,
+            out_channels=dim,
+            kernel_size=1
+        )
+
+        # Initialize 1D-Convolution (Fully-connected Layer) for acoustic conditioners
+        init.kaiming_uniform(self.cond_expand.weight)
+        init.constant(self.cond_expand.bias, 0)
+        if self.weight_norm:
+            self.cond_expand = weight_norm(self.cond_expand, name='weight')
 
     def forward(self, x):
-        x = self.pool(F.relu(self.conv(x)))
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
+        x = self.cond_expand(x.permute(0, 2, 1).float()).permute(0, 2, 1)
         return x
 
 
 class Discriminant(torch.nn.Module):
-    def __init__(self, spk_dim, output_cnn_dim):
+    def __init__(self, spk_dim, dim):
         super(Discriminant, self).__init__()
-        self.conv = torch.nn.Conv1d(output_cnn_dim, 50, 5)  # 50 out channels and kernel size 5
-        self.pool = torch.nn.MaxPool1d(2)                   # Max pooling layer with kernel size 2
-        self.fc1 = torch.nn.Linear(25, 30)                  # Linear layer with 25 inputs and 30 output channels
-        self.fc2 = torch.nn.Linear(30, spk_dim)             # Linear layer with 30 inputs and spk_dim output channels
+        self.conv = torch.nn.Conv1d(dim, 50, 5)     # 50 out channels and kernel size 5
+        self.fc1 = torch.nn.Linear(50, 20)          # Linear layer with 50 inputs and 20 output channels
+        self.fc2 = torch.nn.Linear(20, spk_dim)     # Linear layer with 20 inputs and spk_dim output channels
+        self.softmax = torch.nn.Softmax(spk_dim)
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv(x)))
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
+        x = self.softmax(x)
         return x
 
 
 class Runner:
 
-    def __init__(self, model):
+    def __init__(self, samplernn_model, conditioner_model, discriminant_model):
         super().__init__()
-        self.model = model
+        self.samplernn_model = samplernn_model
+        self.conditioner_model = conditioner_model
+        self.discriminant_model = discriminant_model
         self.reset_hidden_states()
 
     def reset_hidden_states(self):
-        self.hidden_states = {rnn: None for rnn in self.model.frame_level_rnns}
+        self.hidden_states = {rnn: None for rnn in self.samplernn_model.frame_level_rnns}
 
-    def run_rnn(self, rnn, prev_samples, upper_tier_conditioning, cond, spk):
-        if cond is None:
-            (output, new_hidden) = rnn(
-                prev_samples, upper_tier_conditioning, self.hidden_states[rnn], cond, spk
-            )
-        else:
-            (output, new_hidden) = rnn(
-                prev_samples, upper_tier_conditioning, self.hidden_states[rnn], cond, spk
-            )
+    def run_rnn(self, rnn, prev_samples, upper_tier_conditioning, cond_cnn, spk):
+        (output, new_hidden) = rnn(
+            prev_samples, upper_tier_conditioning, self.hidden_states[rnn], cond_cnn, spk
+        )
 
         self.hidden_states[rnn] = new_hidden.detach()
+        return output
+
+    def run_cond(self, cond):
+        cond_cnn = self.conditioner_model(cond)
+        return cond_cnn
+
+    def run_discriminant(self, cond_cnn):
+        output = self.discriminant_model(cond_cnn)
         return output
 
 
 class Predictor(Runner, torch.nn.Module):
 
-    def __init__(self, model):
-        super().__init__(model)
+    def __init__(self, samplernn_model, conditioner_model, discriminant_model):
+        super().__init__(samplernn_model, conditioner_model, discriminant_model)
 
     def forward(self, input_sequences, reset, cond, spk):
         if reset:
@@ -389,7 +374,7 @@ class Predictor(Runner, torch.nn.Module):
         # input_seq: 128 x 1087; reset: boolean
 
         (batch_size, _) = input_sequences.size()
-        # print('model input', imput.size())
+        # print('model input', input.size())
         (batch_size, numcond, cond_dim) = cond.size()
         # print('model cond', cond.size())
 
@@ -403,16 +388,16 @@ class Predictor(Runner, torch.nn.Module):
         # predictor rnn prev_samples view torch.Size([128, 52, 20])
 
         upper_tier_conditioning = None
-        for rnn in reversed(self.model.frame_level_rnns):
-            from_index = self.model.look_back - rnn.n_frame_samples
+        for rnn in reversed(self.samplernn_model.frame_level_rnns):
+            from_index = self.samplernn_model.look_back - rnn.n_frame_samples
             to_index = -rnn.n_frame_samples + 1
             if verbose:
                 print('predictor rnn ', from_index, to_index)
 
             # prev_samples = 2 * utils.linear_dequantize(
-            prev_samples = 2 * self.model.dequantize(
+            prev_samples = 2 * self.samplernn_model.dequantize(
                 input_sequences[:, from_index: to_index],
-                self.model.q_levels
+                self.samplernn_model.q_levels
             )
             if upper_tier_conditioning is None:
                 cond = cond[:, :, :]
@@ -437,9 +422,11 @@ class Predictor(Runner, torch.nn.Module):
             if verbose:
                 print('predictor rnn prev_samples view', prev_samples.size())
             if upper_tier_conditioning is None:
+                cond_cnn = self.run_cond(cond)
                 upper_tier_conditioning = self.run_rnn(
-                    rnn, prev_samples, upper_tier_conditioning, cond, spk
+                    rnn, prev_samples, upper_tier_conditioning, cond_cnn, spk
                 )
+                spk_prediction = self.run_discriminant(cond_cnn)
             else:
                 cond = None
                 spk = None
@@ -461,7 +448,7 @@ class Predictor(Runner, torch.nn.Module):
 
         return self.model.sample_level_mlp(
             mlp_input_sequences, upper_tier_conditioning
-        )
+        ), spk_prediction
 
 
 class Generator(Runner):

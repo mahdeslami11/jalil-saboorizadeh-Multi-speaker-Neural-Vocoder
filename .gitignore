@@ -4,3 +4,4 @@ log_dir/
 results/
 trials/
 __pycache__/
+unused_code/

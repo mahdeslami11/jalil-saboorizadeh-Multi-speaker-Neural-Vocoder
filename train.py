@@ -1,4 +1,4 @@
-from model import SampleRNNGAN, Predictor
+from model import SampleRNNGAN, ConditionerCNN, Discriminant, Predictor
 from optim import gradient_clipping
 from nn import sequence_nll_loss_bits
 from trainer import Trainer
@@ -59,8 +59,11 @@ default_params = {
     'loss_smoothing': 0.99,
     'seed': 77977,
     'model': None,
-    'scheduler': False
+    'scheduler': False,
+    'alpha_1': 0.2,
+    'alpha_2': 0.8
 }
+
 tag_params = [
     'exp', 'frame_sizes', 'n_rnn', 'dim', 'learn_h0', 'ulaw', 'q_levels', 'seq_len', 'look_ahead', 'norm_ind',
     'batch_size', 'dataset', 'cond_set', 'static_spk', 'seed', 'weight_norm', 'qrnn', 'scheduler', 'learning_rate'
@@ -129,11 +132,13 @@ def tee_stdout(log_path):
     stdout = sys.stdout
 
     class Tee:
-        def write(self, string):
+        @staticmethod
+        def write(string):
             log_file.write(string)
             stdout.write(string)
 
-        def flush(self):
+        @staticmethod
+        def flush():
             log_file.flush()
             stdout.flush()
 
@@ -200,7 +205,7 @@ def main(exp, frame_sizes, dataset, **params):
                    if os.path.islink(os.path.join(params['datasets_path'], params['dataset']) + '/' + i)])
 
     print('Create model')
-    model = SampleRNNGAN(
+    samplernn_model = SampleRNNGAN(
         frame_sizes=params['frame_sizes'],
         n_rnn=params['n_rnn'],
         dim=params['dim'],
@@ -208,15 +213,27 @@ def main(exp, frame_sizes, dataset, **params):
         q_levels=params['q_levels'],
         ulaw=params['ulaw'],
         weight_norm=params['weight_norm'],
-        cond_dim=params['cond_dim']*(1+params['look_ahead']),
         spk_dim=spk_dim,
         qrnn=params['qrnn']
     )
+
+    conditioner_model = ConditionerCNN(
+        dim=params['dim'],
+        cond_dim=params['cond_dim'] * (1 + params['look_ahead'])
+    )
+
+    discriminant_model = Discriminant(
+        dim=params['dim'],
+        spk_dim=spk_dim
+    )
+
     if use_cuda:
-        model = model.cuda()
-        predictor = Predictor(model).cuda()
+        samplernn_model = samplernn_model.cuda()
+        conditioner_model = conditioner_model.cuda()
+        discriminant_model = discriminant_model.cuda()
+        predictor = Predictor(samplernn_model, conditioner_model, discriminant_model).cuda()
     else:
-        predictor = Predictor(model)
+        predictor = Predictor(samplernn_model, conditioner_model, discriminant_model)
 
     print('Done!')
     f_name = params['model']
@@ -239,7 +256,7 @@ def main(exp, frame_sizes, dataset, **params):
     optimizer = gradient_clipping(optimizer)
     print('Saving results in path', results_path)
     print('Read data')
-    data_loader = make_data_loader(model.look_back, params)
+    data_loader = make_data_loader(samplernn_model.look_back, params)
     print('Done!')
     data_model = data_loader('train')
 
@@ -259,8 +276,8 @@ def main(exp, frame_sizes, dataset, **params):
     else:
         cuda = False
     trainer = Trainer(
-        predictor, sequence_nll_loss_bits, optimizer,  data_model, cuda, scheduler
-
+        predictor, sequence_nll_loss_bits, torch.nn.CrossEntropyLoss, optimizer,  data_model, cuda, scheduler,
+        params['alpha_1'], params['alpha_2']
     )
 
     checkpoints_path = os.path.join(results_path, 'checkpoints')

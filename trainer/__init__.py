@@ -7,9 +7,11 @@ import heapq
 # Based on torch.utils.trainer.Trainer code.
 # Allows multiple inputs to the model, not all need to be Tensors.
 class Trainer(object):
-    def __init__(self, model, criterion, optimizer, dataset, cuda, scheduler=None):
+    def __init__(self, model, criterion_rnn, criterion_discriminant, optimizer, dataset, cuda, scheduler,
+                 alpha_1, alpha_2):
         self.model = model
-        self.criterion = criterion
+        self.criterion_rnn = criterion_rnn
+        self.criterion_discriminant = criterion_discriminant
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.dataset = dataset
@@ -23,6 +25,8 @@ class Trainer(object):
             'batch': [],
             'update': [],
         }
+        self.alpha_1 = alpha_1
+        self.alpha_2 = alpha_2
 
     def register_plugin(self, plugin):
         plugin.register(self)
@@ -96,10 +100,15 @@ class Trainer(object):
             plugin_data = [None, None]
 
             def closure():
-                batch_output = self.model(*batch_inputs, batch_cond, batch_spk)
+                batch_output, spk_prediction = self.model(*batch_inputs, batch_cond, batch_spk)
 
-                loss = self.criterion(batch_output, batch_target)
-                loss.backward()
+                loss1 = self.criterion_rnn(batch_output, batch_target)
+                loss1.backward()
+
+                loss2 = self.criterion_discriminant(spk_prediction, batch_spk)
+                loss2.backward()
+
+                loss = self.alpha_1*loss1-self.alpha_2*loss2
 
                 if plugin_data[0] is None:
                     plugin_data[0] = batch_output.data
@@ -114,5 +123,3 @@ class Trainer(object):
                 *plugin_data
             )
             self.call_plugins('update', self.iterations, self.model)
-        
-
