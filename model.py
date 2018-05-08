@@ -13,7 +13,7 @@ import numpy as np
 verbose = False
 
 
-class SampleRNN(torch.nn.Module):
+class SampleRNNGAN(torch.nn.Module):
 
     def __init__(self, frame_sizes, n_rnn, dim, learn_h0, q_levels, ulaw, weight_norm, cond_dim, spk_dim, qrnn=False):
         super().__init__()
@@ -23,6 +23,7 @@ class SampleRNN(torch.nn.Module):
         self.ulaw = ulaw
         self.cond_dim = cond_dim
         self.spk_dim = spk_dim
+        self.output_cnn_dim = 40
 
         if ulaw:
             self.dequantize = utils.udequantize
@@ -43,6 +44,11 @@ class SampleRNN(torch.nn.Module):
 
         is_cond = [False]*len(frame_sizes)
         is_cond[-1] = True
+
+        self.conditioner_cnn = ConditionerCNN(cond_dim, self.output_cnn_dim)
+
+        self.discriminant = Discriminant(spk_dim, self.output_cnn_dim)
+
         self.frame_level_rnns = torch.nn.ModuleList([
             FrameLevelRNN(
                 frame_size, n_frame_samples, n_rnn, dim, learn_h0, IsCond, cond_dim, spk_dim, weight_norm, qrnn
@@ -56,7 +62,7 @@ class SampleRNN(torch.nn.Module):
         self.sample_level_mlp = SampleLevelMLP(frame_sizes[0], dim, q_levels, weight_norm)
 
     @property
-    def lookback(self):
+    def look_back(self):
         return self.frame_level_rnns[-1].n_frame_samples
 
 
@@ -317,6 +323,36 @@ class SampleLevelMLP(torch.nn.Module):
                 .view(batch_size, -1, self.q_levels)
 
 
+class ConditionerCNN(torch.nn.Module):
+    def __init__(self, cond_dim, output_cnn_dim):
+        super(ConditionerCNN, self).__init__()
+        self.conv = torch.nn.Conv1d(cond_dim, 50, 5)    # 50 out channels and kernel size 5
+        self.pool = torch.nn.MaxPool1d(2)               # Max pooling layer with kernel size 2
+        self.fc1 = torch.nn.Linear(25, 30)              # Linear layer with 25 inputs and 30 output channels
+        self.fc2 = torch.nn.Linear(30, output_cnn_dim)  # Linear layer with 30 inputs and custom output channels
+
+    def forward(self, x):
+        x = self.pool(F.relu(self.conv(x)))
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)
+        return x
+
+
+class Discriminant(torch.nn.Module):
+    def __init__(self, spk_dim, output_cnn_dim):
+        super(Discriminant, self).__init__()
+        self.conv = torch.nn.Conv1d(output_cnn_dim, 50, 5)  # 50 out channels and kernel size 5
+        self.pool = torch.nn.MaxPool1d(2)                   # Max pooling layer with kernel size 2
+        self.fc1 = torch.nn.Linear(25, 30)                  # Linear layer with 25 inputs and 30 output channels
+        self.fc2 = torch.nn.Linear(30, spk_dim)             # Linear layer with 30 inputs and spk_dim output channels
+
+    def forward(self, x):
+        x = self.pool(F.relu(self.conv(x)))
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)
+        return x
+
+
 class Runner:
 
     def __init__(self, model):
@@ -368,7 +404,7 @@ class Predictor(Runner, torch.nn.Module):
 
         upper_tier_conditioning = None
         for rnn in reversed(self.model.frame_level_rnns):
-            from_index = self.model.lookback - rnn.n_frame_samples
+            from_index = self.model.look_back - rnn.n_frame_samples
             to_index = -rnn.n_frame_samples + 1
             if verbose:
                 print('predictor rnn ', from_index, to_index)
@@ -412,10 +448,10 @@ class Predictor(Runner, torch.nn.Module):
                 )
 
         bottom_frame_size = self.model.frame_level_rnns[0].frame_size
-        mlp_input_sequences = input_sequences[:, self.model.lookback - bottom_frame_size:]
+        mlp_input_sequences = input_sequences[:, self.model.look_back - bottom_frame_size:]
 
         if verbose:
-            print('predictor mlp', self.model.lookback-bottom_frame_size)
+            print('predictor mlp', self.model.look_back - bottom_frame_size)
             print('predictor mlp input seq', mlp_input_sequences.size())
             print('predictor mlp upper tier_cond', upper_tier_conditioning.size(), '\n')
 
@@ -444,14 +480,14 @@ class Generator(Runner):
         (num_cond, n_dim) = cond.shape
         condtot = cond
         global_spk = spk
-        seq_len = num_cond*self.model.lookback
+        seq_len = num_cond*self.model.look_back
         print('seq len', seq_len)
-        print('model look-back', self.model.lookback)
+        print('model look-back', self.model.look_back)
         bottom_frame_size = self.model.frame_level_rnns[0].n_frame_samples
-        sequences = torch.LongTensor(n_seqs, self.model.lookback + seq_len).fill_(utils.q_zero(self.model.q_levels))
+        sequences = torch.LongTensor(n_seqs, self.model.look_back + seq_len).fill_(utils.q_zero(self.model.q_levels))
         frame_level_outputs = [None for _ in self.model.frame_level_rnns]
 
-        for i in range(self.model.lookback, self.model.lookback + seq_len):
+        for i in range(self.model.look_back, self.model.look_back + seq_len):
             for (tier_index, rnn) in \
                     reversed(list(enumerate(self.model.frame_level_rnns))):
                 if i % rnn.n_frame_samples != 0:
@@ -472,7 +508,7 @@ class Generator(Runner):
 
                 if tier_index == len(self.model.frame_level_rnns) - 1:
                     upper_tier_conditioning = None
-                    j = i//self.model.lookback - 1
+                    j = i // self.model.look_back - 1
                     cond = condtot[j, :]
                     cond = torch.from_numpy(cond.reshape(1, 1, n_dim))
                     spk = global_spk
@@ -510,4 +546,4 @@ class Generator(Runner):
 
         torch.backends.cudnn.enabled = cuda_enabled
 
-        return self.model.dequantize(sequences[:, self.model.lookback:], self.model.q_levels)
+        return self.model.dequantize(sequences[:, self.model.look_back:], self.model.q_levels)

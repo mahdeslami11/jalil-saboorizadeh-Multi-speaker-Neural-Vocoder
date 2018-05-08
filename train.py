@@ -1,4 +1,4 @@
-from model import SampleRNN, Predictor
+from model import SampleRNNGAN, Predictor
 from optim import gradient_clipping
 from nn import sequence_nll_loss_bits
 from trainer import Trainer
@@ -200,7 +200,7 @@ def main(exp, frame_sizes, dataset, **params):
                    if os.path.islink(os.path.join(params['datasets_path'], params['dataset']) + '/' + i)])
 
     print('Create model')
-    model = SampleRNN(
+    model = SampleRNNGAN(
         frame_sizes=params['frame_sizes'],
         n_rnn=params['n_rnn'],
         dim=params['dim'],
@@ -239,7 +239,7 @@ def main(exp, frame_sizes, dataset, **params):
     optimizer = gradient_clipping(optimizer)
     print('Saving results in path', results_path)
     print('Read data')
-    data_loader = make_data_loader(model.lookback, params)
+    data_loader = make_data_loader(model.look_back, params)
     print('Done!')
     data_model = data_loader('train')
 
