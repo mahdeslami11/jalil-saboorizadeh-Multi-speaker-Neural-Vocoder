@@ -323,13 +323,11 @@ class Discriminant(torch.nn.Module):
         self.conv = torch.nn.Conv1d(dim, 50, 5)     # 50 out channels and kernel size 5
         self.fc1 = torch.nn.Linear(50, 20)          # Linear layer with 50 inputs and 20 output channels
         self.fc2 = torch.nn.Linear(20, spk_dim)     # Linear layer with 20 inputs and spk_dim output channels
-        self.softmax = torch.nn.Softmax(spk_dim)
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv(x)))
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
-        x = self.softmax(x)
         return x
 
 
