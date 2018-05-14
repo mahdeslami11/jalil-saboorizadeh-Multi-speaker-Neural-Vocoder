@@ -191,7 +191,7 @@ def main(frame_sizes, **params):
         print('Shape cond', cond.shape)
         if params['look_ahead']:
             delayed = np.copy(cond)
-            delayed[:, :-1, :] = delayed[:, 1:, :]
+            delayed[:, :-1] = delayed[:, 1:]
             cond = np.concatenate((cond, delayed), axis=2)
             print('Shape cond after look ahead', cond.shape)
 
