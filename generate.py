@@ -324,6 +324,10 @@ if __name__ == '__main__':
         help='Take conditioners from current and next frame'
     )
     parser.add_argument(
+        '--static_spk', type=parse_bool,
+        help='Only train with one speaker'
+    )
+    parser.add_argument(
         '--seed', type=int,
         help='seed initialization of random generator'
     )
