@@ -435,7 +435,7 @@ if __name__ == '__main__':
         help='Velocity of convergence'
     )
     parser.add_argument(
-        '--look_ahead', type=float,
+        '--look_ahead', type=parse_bool,
         help='Take conditioners from current and next frame'
     )
     parser.add_argument(
