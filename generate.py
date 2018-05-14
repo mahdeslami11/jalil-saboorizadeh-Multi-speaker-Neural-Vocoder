@@ -55,6 +55,7 @@ def init_random_seed(seed, cuda):
 
 def as_type(var, target_type):
     case = str(target_type).split('\'')[1].split('\'')[0]
+    print(case, var)
     if case == 'boolean':
         return var[0] == 'T'
     elif case == 'int':
