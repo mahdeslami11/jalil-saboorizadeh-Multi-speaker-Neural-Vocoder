@@ -126,7 +126,7 @@ def main(frame_sizes, **params):
         param = i.split(':')
         if param[0] in params:
             params[param[0]] = as_type(param[1], type(params[param[0]]))
-
+    print('Params static:', params['static_spk'])
     # Define npy file names with maximum and minimum values of de-normalized conditioners
     npy_name_min_max_cond = 'npy_datasets/min_max' + params['norm_ind'] * '_ind' + (not params['norm_ind']) * '_joint' \
                             + params['static_spk'] * '_static' + '.npy'
