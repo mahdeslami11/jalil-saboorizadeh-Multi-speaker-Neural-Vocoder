@@ -55,7 +55,6 @@ def init_random_seed(seed, cuda):
 
 def as_type(var, target_type):
     case = str(target_type).split('\'')[1].split('\'')[0]
-    print(case, var)
     if case == 'bool':
         return var[0] == 'T'
     elif case == 'int':
@@ -127,9 +126,6 @@ def main(frame_sizes, **params):
         param = i.split(':')
         if param[0] in params:
             params[param[0]] = as_type(param[1], type(params[param[0]]))
-            print(type(params[param[0]]))
-    print('Params norm ind:', params['norm_ind'], type(params['norm_ind']))
-    print('Params static:', params['static_spk'], type(params['static_spk']))
     # Define npy file names with maximum and minimum values of de-normalized conditioners
     npy_name_min_max_cond = 'npy_datasets/min_max' + params['norm_ind'] * '_ind' + (not params['norm_ind']) * '_joint' \
                             + params['static_spk'] * '_static' + '.npy'
@@ -192,12 +188,12 @@ def main(frame_sizes, **params):
             print('Normalizing conditioners jointly')
             cond = (cond - min_cond) / (max_cond - min_cond)
 
+        print('Shape cond', cond.shape)
         if params['look_ahead']:
             delayed = np.copy(cond)
             delayed[:, :-1, :] = delayed[:, 1:, :]
             cond = np.concatenate((cond, delayed), axis=2)
-
-        print('shape cond', cond.shape)
+            print('Shape cond after look ahead', cond.shape)
 
         seed = params.get('seed')
         init_random_seed(seed, use_cuda)
