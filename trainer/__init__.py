@@ -8,7 +8,7 @@ import heapq
 # Allows multiple inputs to the model, not all need to be Tensors.
 class Trainer(object):
     def __init__(self, model, criterion_rnn, criterion_discriminant, optimizer, dataset, cuda, scheduler,
-                 alpha_1, alpha_2):
+                 lambda_weight):
         self.model = model
         self.criterion_rnn = criterion_rnn
         self.criterion_discriminant = criterion_discriminant
@@ -25,8 +25,7 @@ class Trainer(object):
             'batch': [],
             'update': [],
         }
-        self.alpha_1 = alpha_1
-        self.alpha_2 = alpha_2
+        self.lambda_weight = lambda_weight
 
     def register_plugin(self, plugin):
         plugin.register(self)
@@ -108,7 +107,10 @@ class Trainer(object):
                 loss2 = self.criterion_discriminant(spk_prediction, batch_spk)
                 loss2.backward()
 
-                loss = self.alpha_1*loss1-self.alpha_2*loss2
+                current_lambda_weight = (self.iterations/self.lambda_weight[2]) * \
+                                        (self.lambda_weight[1]-self.lambda_weight[0]) + self.lambda_weight[0]
+
+                loss = loss1-current_lambda_weight*loss2
 
                 if plugin_data[0] is None:
                     plugin_data[0] = batch_output.data

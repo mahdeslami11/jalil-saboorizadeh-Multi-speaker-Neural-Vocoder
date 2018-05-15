@@ -59,14 +59,13 @@ default_params = {
     'loss_smoothing': 0.99,
     'seed': 77977,
     'model': None,
-    'scheduler': False,
-    'alpha_1': 0.2,
-    'alpha_2': 0.8
+    'scheduler': False
 }
 
 tag_params = [
     'exp', 'frame_sizes', 'n_rnn', 'dim', 'learn_h0', 'ulaw', 'q_levels', 'seq_len', 'look_ahead', 'norm_ind',
-    'batch_size', 'dataset', 'cond_set', 'static_spk', 'seed', 'weight_norm', 'qrnn', 'scheduler', 'learning_rate'
+    'lambda_weight', 'batch_size', 'dataset', 'cond_set', 'static_spk', 'seed', 'weight_norm', 'qrnn',
+    'scheduler', 'learning_rate'
     ]
 
 
@@ -186,13 +185,13 @@ def make_data_loader(overlap_len, params):
     return data_loader
 
 
-def main(exp, frame_sizes, dataset, **params):
+def main(exp, frame_sizes, dataset, lambda_weight, **params):
     scheduler = True
     use_cuda = torch.cuda.is_available()
     print('Start Sample-RNN')
     params = dict(
         default_params,
-        exp=exp, frame_sizes=frame_sizes, dataset=dataset,
+        exp=exp, frame_sizes=frame_sizes, dataset=dataset, lambda_weight=lambda_weight,
         **params
     )
     seed = params.get('seed')
@@ -277,7 +276,7 @@ def main(exp, frame_sizes, dataset, **params):
         cuda = False
     trainer = Trainer(
         predictor, sequence_nll_loss_bits, torch.nn.CrossEntropyLoss, optimizer,  data_model, cuda, scheduler,
-        params['alpha_1'], params['alpha_2']
+        params['lambda_weight']
     )
 
     checkpoints_path = os.path.join(results_path, 'checkpoints')
@@ -363,6 +362,11 @@ if __name__ == '__main__':
         '--dataset', required=True,
         help='dataset name - name of a directory in the datasets path \
               (settable by --datasets_path)'
+    )
+    parser.add_argument(
+        '--lambda_weight', nargs='+', type=float, required=True,
+        help='3x1 array representing weight that applies to the negative loss of the speaker prediction discriminant.\
+                 It increases from [0] to [1] in [2] iterations.'
     )
     parser.add_argument(
         '--cond_set',
