@@ -281,6 +281,7 @@ class SampleLevelMLP(torch.nn.Module):
 
 class ConditionerCNN(torch.nn.Module):
     def __init__(self, cond_dim, dim):
+        super().__init__()
         # Acoustic conditioners expansion
         self.cond_expand = torch.nn.Conv1d(
             in_channels=cond_dim,
