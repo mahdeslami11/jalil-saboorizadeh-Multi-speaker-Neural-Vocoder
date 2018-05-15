@@ -218,7 +218,8 @@ def main(exp, frame_sizes, dataset, lambda_weight, **params):
 
     conditioner_model = ConditionerCNN(
         dim=params['dim'],
-        cond_dim=params['cond_dim'] * (1 + params['look_ahead'])
+        cond_dim=params['cond_dim'] * (1 + params['look_ahead']),
+        weight_norm=params['weight_norm']
     )
 
     discriminant_model = Discriminant(
