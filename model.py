@@ -302,16 +302,45 @@ class ConditionerCNN(torch.nn.Module):
 
 
 class Discriminant(torch.nn.Module):
-    def __init__(self, spk_dim, dim):
+    def __init__(self, spk_dim):
         super().__init__()
-        self.conv = torch.nn.Conv1d(dim, 50, 5)     # 50 out channels and kernel size 5
-        self.fc1 = torch.nn.Linear(50, 20)          # Linear layer with 50 inputs and 20 output channels
-        self.fc2 = torch.nn.Linear(20, spk_dim)     # Linear layer with 20 inputs and spk_dim output channels
+        # Architecture inspired by paper published as arXiv:1804.02812v1
+        self.block1 = torch.nn.Sequential(
+            torch.nn.Conv2d(
+                in_channels=1,
+                out_channels=512,
+                kernel_size=5
+            ),
+            torch.nn.LeakyRelu(),
+            torch.nn.Conv2d(
+                in_channels=512,
+                out_channels=512,
+                kernel_size=5
+            ),
+            torch.nn.InstanceNorm2d(512)
+        )
+        self.block2 = torch.nn.Sequential(
+            torch.nn.Conv2d(
+                in_channels=512,
+                out_channels=512,
+                kernel_size=5
+            ),
+            torch.nn.LeakyRelu(),
+            torch.nn.Conv2d(
+                in_channels=512,
+                out_channels=512,
+                kernel_size=5
+            ),
+            torch.nn.InstanceNorm2d(512)
+        )
+        self.fc = torch.nn.Linear(512, spk_dim)             # Linear layer with 512 inputs and spk_dim output channels
 
     def forward(self, x):
-        x = self.pool(F.relu(self.conv(x)))
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
+        x = self.block1(x)
+        x = self.bloc2(x)
+        x = self.block2(x)
+        x = self.block2(x)
+        x = self.fc(x)
         return x
 
 
@@ -349,9 +378,11 @@ class Predictor(Runner, torch.nn.Module):
     def __init__(self, samplernn_model, conditioner_model, discriminant_model):
         super().__init__(samplernn_model, conditioner_model, discriminant_model)
 
-    def forward(self, input_sequences, reset, cond, spk):
+    def forward(self, input_sequences, reset, cond, spk, cond_cnn, frames_spk):
         if reset:
             self.reset_hidden_states()
+
+        spk_prediction = None
 
         # input_seq: 128 x 1087; reset: boolean
 
@@ -404,11 +435,18 @@ class Predictor(Runner, torch.nn.Module):
             if verbose:
                 print('predictor rnn prev_samples view', prev_samples.size())
             if upper_tier_conditioning is None:
-                cond_cnn = self.run_cond(cond)
+                current_cond_cnn = self.run_cond(cond)
+                if cond_cnn is None:
+                    cond_cnn = current_cond_cnn.view(1, -1, 1)
+                else:
+                    cond_cnn = torch.cat((cond_cnn, current_cond_cnn.view(1, -1, 1)), 2)
                 upper_tier_conditioning = self.run_rnn(
-                    rnn, prev_samples, upper_tier_conditioning, cond_cnn, spk
+                    rnn, prev_samples, upper_tier_conditioning, current_cond_cnn, spk
                 )
-                spk_prediction = self.run_discriminant(cond_cnn)
+
+                # Speaker prediction is done every frames_spk. Input is of size 1 x cond_dim x frames_spk
+                if cond_cnn.shape[2] == frames_spk:
+                    spk_prediction = self.run_discriminant(cond_cnn)
             else:
                 cond = None
                 spk = None
@@ -435,8 +473,8 @@ class Predictor(Runner, torch.nn.Module):
 
 class Generator(Runner):
 
-    def __init__(self, model, cuda=False):
-        super().__init__(model)
+    def __init__(self, samplernn_model, conditioner_model, disciminant_model, cuda=False):
+        super().__init__(samplernn_model, conditioner_model, disciminant_model)
         self.cuda = cuda
 
     def __call__(self, n_seqs, seq_len, cond, spk):
@@ -449,25 +487,24 @@ class Generator(Runner):
         (num_cond, n_dim) = cond.shape
         condtot = cond
         global_spk = spk
-        seq_len = num_cond*self.model.look_back
+        seq_len = num_cond*self.samplernn_model.look_back
         print('seq len', seq_len)
-        print('model look-back', self.model.look_back)
-        bottom_frame_size = self.model.frame_level_rnns[0].n_frame_samples
-        sequences = torch.LongTensor(n_seqs, self.model.look_back + seq_len).fill_(utils.q_zero(self.model.q_levels))
-        frame_level_outputs = [None for _ in self.model.frame_level_rnns]
+        print('model look-back', self.samplernn_model.look_back)
+        bottom_frame_size = self.samplernn_model.frame_level_rnns[0].n_frame_samples
+        sequences = torch.LongTensor(n_seqs, self.samplernn_model.look_back + seq_len).\
+            fill_(utils.q_zero(self.samplernn_model.q_levels))
+        frame_level_outputs = [None for _ in self.samplernn_model.frame_level_rnns]
 
-        for i in range(self.model.look_back, self.model.look_back + seq_len):
-            for (tier_index, rnn) in \
-                    reversed(list(enumerate(self.model.frame_level_rnns))):
+        for i in range(self.samplernn_model.look_back, self.samplernn_model.look_back + seq_len):
+            for (tier_index, rnn) in reversed(list(enumerate(self.samplernn_model.frame_level_rnns))):
                 if i % rnn.n_frame_samples != 0:
                     continue
 
-                # 2 * utils.linear_dequantize(
                 print('Predicting sample ', i)
                 prev_samples = torch.autograd.Variable(
-                    2 * self.model.dequantize(
+                    2 * self.samplernn_model.dequantize(
                         sequences[:, i - rnn.n_frame_samples: i],
-                        self.model.q_levels
+                        self.samplernn_model.q_levels
                     ).unsqueeze(1),
                     volatile=True
                 )
@@ -475,9 +512,9 @@ class Generator(Runner):
                 if self.cuda:
                     prev_samples = prev_samples.cuda()
 
-                if tier_index == len(self.model.frame_level_rnns) - 1:
+                if tier_index == len(self.samplernn_model.frame_level_rnns) - 1:
                     upper_tier_conditioning = None
-                    j = i // self.model.look_back - 1
+                    j = i // self.samplernn_model.look_back - 1
                     cond = condtot[j, :]
                     cond = torch.from_numpy(cond.reshape(1, 1, n_dim))
                     spk = global_spk
@@ -486,16 +523,21 @@ class Generator(Runner):
                     cond = None
                     spk = None
                     frame_index = (i // rnn.n_frame_samples) % \
-                        self.model.frame_level_rnns[tier_index + 1].frame_size
+                        self.samplernn_model.frame_level_rnns[tier_index + 1].frame_size
                     upper_tier_conditioning = \
                         frame_level_outputs[tier_index + 1][:, frame_index, :] \
                         .unsqueeze(1)
 
+                cond_cnn = cond
                 if self.cuda:
                     cond = Variable(cond).cuda()
                     spk = Variable(spk).cuda()
+                    if cond.dim() != 0:
+                        cond_cnn = self.run_cond(cond)
+                    else:
+                        cond_cnn = cond
                 frame_level_outputs[tier_index] = self.run_rnn(
-                    rnn, prev_samples, upper_tier_conditioning, cond, spk
+                    rnn, prev_samples, upper_tier_conditioning, cond_cnn, spk
                 )
             # print('frame out', frame_level_outputs)
             prev_samples = torch.autograd.Variable(
@@ -508,11 +550,12 @@ class Generator(Runner):
             upper_tier_conditioning = \
                 frame_level_outputs[0][:, i % bottom_frame_size, :] \
                 .unsqueeze(1)
-            sample_dist = self.model.sample_level_mlp(
+            sample_dist = self.samplernn_model.sample_level_mlp(
                 prev_samples, upper_tier_conditioning
             ).squeeze(1).exp_().data
             sequences[:, i] = sample_dist.multinomial(1).squeeze(1)
 
         torch.backends.cudnn.enabled = cuda_enabled
 
-        return self.model.dequantize(sequences[:, self.model.look_back:], self.model.q_levels)
+        return self.samplernn_model.dequantize(sequences[:, self.samplernn_model.look_back:],
+                                               self.samplernn_model.q_levels)

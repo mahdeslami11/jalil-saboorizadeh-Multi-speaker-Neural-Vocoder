@@ -1,4 +1,4 @@
-from model import SampleRNN, Predictor, Generator
+from model import SampleRNNGAN, ConditionerCNN, Discriminant, Predictor, Generator
 
 import torch
 
@@ -85,8 +85,9 @@ def load_model(checkpoint_path):
 
 
 class RunGenerator:
-    def __init__(self, model, sample_rate, cuda, epoch, cond, spk_list, speaker, checkpoints_path, original_name):
-        self.generate = Generator(model, cuda)
+    def __init__(self, samplernn_model, conditioner_model, disciminant_model, sample_rate, cuda, epoch, cond,
+                 spk_list, speaker, checkpoints_path, original_name):
+        self.generate = Generator(samplernn_model, conditioner_model, disciminant_model, cuda)
         self.sample_rate = sample_rate
         self.cuda = cuda
         self.epoch = epoch
@@ -202,8 +203,8 @@ def main(frame_sizes, **params):
         spk_dim = len([i for i in os.listdir(os.path.join(params['datasets_path'], params['cond_set']))
                        if os.path.islink(os.path.join(params['datasets_path'], params['cond_set']) + '/' + i)])
 
-        print('Start Generate SampleRNN')
-        model = SampleRNN(
+        print('Start Generate SampleRNNGAN')
+        samplernn_model = SampleRNNGAN(
             frame_sizes=params['frame_sizes'],
             n_rnn=params['n_rnn'],
             dim=params['dim'],
@@ -211,17 +212,33 @@ def main(frame_sizes, **params):
             q_levels=params['q_levels'],
             ulaw=params['ulaw'],
             weight_norm=params['weight_norm'],
-            cond_dim=params['cond_dim']*(1+params['look_ahead']),
             spk_dim=spk_dim,
             qrnn=params['qrnn']
         )
-        print(model)
+        print('-' * 30, ' SampleRNNGAN ', '-' * 30)
+        print(samplernn_model)
+
+        conditioner_model = ConditionerCNN(
+            dim=params['dim'],
+            cond_dim=params['cond_dim'] * (1 + params['look_ahead']),
+            w_norm=params['weight_norm']
+        )
+        print('-' * 30, ' Conditioner CNN ', '-' * 30)
+        print(conditioner_model)
+
+        discriminant_model = Discriminant(
+            spk_dim=spk_dim
+        )
+        print('-' * 30, ' Discriminant ', '-' * 30)
+        print(discriminant_model)
         
         if use_cuda:
-            model = model.cuda()
-            predictor = Predictor(model).cuda()
+            samplernn_model = samplernn_model.cuda()
+            conditioner_model = conditioner_model.cuda()
+            discriminant_model = discriminant_model.cuda()
+            predictor = Predictor(samplernn_model, conditioner_model, discriminant_model).cuda()
         else:
-            predictor = Predictor(model)
+            predictor = Predictor(samplernn_model, conditioner_model, discriminant_model)
 
         f_name = params['model']
         model_data = load_model(f_name)
@@ -234,7 +251,9 @@ def main(frame_sizes, **params):
         predictor.load_state_dict(state_dict)
 
         generator = RunGenerator(
-            model=model,
+            samplernn_model=samplernn_model,
+            conditioner_model=conditioner_model,
+            discriminant_model=discriminant_model,
             sample_rate=params['sample_rate'],
             cuda=use_cuda,
             epoch=epoch_index,
