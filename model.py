@@ -219,11 +219,11 @@ class FrameLevelRNN(torch.nn.Module):
 
 class SampleLevelMLP(torch.nn.Module):
 
-    def __init__(self, frame_size, dim, q_levels, wnorm):
+    def __init__(self, frame_size, dim, q_levels, w_norm):
         super().__init__()
 
         self.q_levels = q_levels
-        self.weight_norm = wnorm
+        self.weight_norm = w_norm
 
         self.embedding = torch.nn.Embedding(
             self.q_levels,
@@ -280,9 +280,9 @@ class SampleLevelMLP(torch.nn.Module):
 
 
 class ConditionerCNN(torch.nn.Module):
-    def __init__(self, cond_dim, dim, weight_norm):
+    def __init__(self, cond_dim, dim, w_norm):
         super().__init__()
-        self.weight_norm = weight_norm
+        self.weight_norm = w_norm
         # Acoustic conditioners expansion
         self.cond_expand = torch.nn.Conv1d(
             in_channels=cond_dim,
@@ -303,7 +303,7 @@ class ConditionerCNN(torch.nn.Module):
 
 class Discriminant(torch.nn.Module):
     def __init__(self, spk_dim, dim):
-        super(Discriminant, self).__init__()
+        super().__init__()
         self.conv = torch.nn.Conv1d(dim, 50, 5)     # 50 out channels and kernel size 5
         self.fc1 = torch.nn.Linear(50, 20)          # Linear layer with 50 inputs and 20 output channels
         self.fc2 = torch.nn.Linear(20, spk_dim)     # Linear layer with 20 inputs and spk_dim output channels
