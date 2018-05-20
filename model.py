@@ -297,7 +297,9 @@ class ConditionerCNN(torch.nn.Module):
             self.cond_expand = weight_norm(self.cond_expand, name='weight')
 
     def forward(self, x):
+        print('Conditioner CNN input shape:', x.shape)
         x = self.cond_expand(x.permute(0, 2, 1).float()).permute(0, 2, 1)
+        print('Conditioner CNN output shape:', x.shape)
         return x
 
 
@@ -308,6 +310,20 @@ class Discriminant(torch.nn.Module):
         self.block1 = torch.nn.Sequential(
             torch.nn.Conv2d(
                 in_channels=1,
+                out_channels=512,
+                kernel_size=5
+            ),
+            torch.nn.LeakyReLU(),
+            torch.nn.Conv2d(
+                in_channels=512,
+                out_channels=512,
+                kernel_size=5
+            ),
+            torch.nn.InstanceNorm2d(512)
+        )
+        self.block2 = torch.nn.Sequential(
+            torch.nn.Conv2d(
+                in_channels=512,
                 out_channels=512,
                 kernel_size=5
             ),
@@ -333,13 +349,41 @@ class Discriminant(torch.nn.Module):
             ),
             torch.nn.InstanceNorm2d(512)
         )
+        self.block3 = torch.nn.Sequential(
+            torch.nn.Conv2d(
+                in_channels=512,
+                out_channels=512,
+                kernel_size=5
+            ),
+            torch.nn.LeakyRelu(),
+            torch.nn.Conv2d(
+                in_channels=512,
+                out_channels=512,
+                kernel_size=5
+            ),
+            torch.nn.InstanceNorm2d(512)
+        )
+        self.block4 = torch.nn.Sequential(
+            torch.nn.Conv2d(
+                in_channels=512,
+                out_channels=512,
+                kernel_size=5
+            ),
+            torch.nn.LeakyRelu(),
+            torch.nn.Conv2d(
+                in_channels=512,
+                out_channels=512,
+                kernel_size=5
+            ),
+            torch.nn.InstanceNorm2d(512)
+        )
         self.fc = torch.nn.Linear(512, spk_dim)             # Linear layer with 512 inputs and spk_dim output channels
 
     def forward(self, x):
         x = self.block1(x)
-        x = self.bloc2(x)
-        x = self.block2(x)
-        x = self.block2(x)
+        x = self.block2(x) + x
+        x = self.block3(x) + x
+        x = self.block4(x) + x
         x = self.fc(x)
         return x
 
@@ -378,7 +422,7 @@ class Predictor(Runner, torch.nn.Module):
     def __init__(self, samplernn_model, conditioner_model, discriminant_model):
         super().__init__(samplernn_model, conditioner_model, discriminant_model)
 
-    def forward(self, input_sequences, reset, cond, spk, cond_cnn, frames_spk):
+    def forward(self, input_sequences, reset, cond, spk):
         if reset:
             self.reset_hidden_states()
 
@@ -436,17 +480,13 @@ class Predictor(Runner, torch.nn.Module):
                 print('predictor rnn prev_samples view', prev_samples.size())
             if upper_tier_conditioning is None:
                 current_cond_cnn = self.run_cond(cond)
-                if cond_cnn is None:
-                    cond_cnn = current_cond_cnn.view(1, -1, 1)
-                else:
-                    cond_cnn = torch.cat((cond_cnn, current_cond_cnn.view(1, -1, 1)), 2)
+                cond_cnn = current_cond_cnn
                 upper_tier_conditioning = self.run_rnn(
                     rnn, prev_samples, upper_tier_conditioning, current_cond_cnn, spk
                 )
 
                 # Speaker prediction is done every frames_spk. Input is of size 1 x cond_dim x frames_spk
-                if cond_cnn.shape[2] == frames_spk:
-                    spk_prediction = self.run_discriminant(cond_cnn)
+                spk_prediction = self.run_discriminant(cond_cnn)
             else:
                 cond = None
                 spk = None

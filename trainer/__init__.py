@@ -7,8 +7,8 @@ import heapq
 # Based on torch.utils.trainer.Trainer code.
 # Allows multiple inputs to the model, not all need to be Tensors.
 class Trainer(object):
-    def __init__(self, model, criterion_rnn, criterion_discriminant, optimizer, dataset, cuda, scheduler,
-                 lambda_weight, frames_spk):
+    def __init__(self, model, criterion_rnn, criterion_discriminant, optimizer, dataset, cuda,
+                 scheduler, lambda_weight):
         self.model = model
         self.criterion_rnn = criterion_rnn
         self.criterion_discriminant = criterion_discriminant
@@ -26,8 +26,6 @@ class Trainer(object):
             'update': [],
         }
         self.lambda_weight = lambda_weight
-        self.frames_spk = frames_spk
-        self.cond_cnn = None
 
     def register_plugin(self, plugin):
         plugin.register(self)
@@ -100,19 +98,13 @@ class Trainer(object):
             plugin_data = [None, None]
 
             def closure():
-                batch_output, spk_prediction = self.model(*batch_inputs, batch_cond, batch_spk,
-                                                          self.cond_cnn, self.frames_spk)
+                batch_output, spk_prediction = self.model(*batch_inputs, batch_cond, batch_spk)
 
                 loss1 = self.criterion_rnn(batch_output, batch_target)
                 loss1.backward()
 
-                if spk_prediction is not None:
-                    loss2 = self.criterion_discriminant(spk_prediction, batch_spk)
-                    self.spk_loss = loss2
-                    loss2.backward()
-                    self.cond_cnn = None
-                else:
-                    loss2 = self.spk_loss
+                loss2 = self.criterion_discriminant(spk_prediction, batch_spk)
+                loss2.backward()
 
                 current_lambda_weight = (self.iterations/self.lambda_weight[2]) * \
                                         (self.lambda_weight[1]-self.lambda_weight[0]) + self.lambda_weight[0]
