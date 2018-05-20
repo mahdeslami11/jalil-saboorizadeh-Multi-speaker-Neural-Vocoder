@@ -327,7 +327,7 @@ class Discriminant(torch.nn.Module):
                 out_channels=512,
                 kernel_size=5
             ),
-            torch.nn.LeakyRelu(),
+            torch.nn.LeakyReLU(),
             torch.nn.Conv2d(
                 in_channels=512,
                 out_channels=512,
