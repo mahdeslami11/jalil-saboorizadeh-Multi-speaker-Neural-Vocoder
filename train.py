@@ -42,6 +42,7 @@ default_params = {
     'cond_len': 80,         # Conditioners are computed by Ahocoder every 80 audio samples (windows of 5ms at 16kHz)
     'norm_ind': False,      # If true, normalization is done independent by speaker. If false, normalization is joint
     'static_spk': False,     # If true, training is only done with one speaker
+    'ind_cond_dim': 50,
 
     # training parameters
     'keep_old_checkpoints': False,
@@ -181,7 +182,7 @@ def make_data_loader(overlap_len, params):
                                 params['cond_len'], params['norm_ind'], params['static_spk'],
                                 params['look_ahead'], partition)
 
-        return DataLoader(dataset, batch_size=params['batch_size'], shuffle=False, drop_last=True, num_workers=2)
+        return DataLoader(dataset, batch_size=params['batch_size'], shuffle=False, drop_last=True, num_workers=0)
     return data_loader
 
 
@@ -212,18 +213,21 @@ def main(exp, frame_sizes, dataset, lambda_weight, **params):
         q_levels=params['q_levels'],
         ulaw=params['ulaw'],
         weight_norm=params['weight_norm'],
+        ind_cond_dim=params['ind_cond_dim'],
         spk_dim=spk_dim,
         qrnn=params['qrnn']
     )
 
     conditioner_model = ConditionerCNN(
-        dim=params['dim'],
+        ind_cond_dim=params['ind_cond_dim'],
         cond_dim=params['cond_dim'] * (1 + params['look_ahead']),
         w_norm=params['weight_norm']
     )
 
     discriminant_model = Discriminant(
-        spk_dim=spk_dim
+        spk_dim=spk_dim,
+        ind_cond_dim=params['ind_cond_dim'],
+        cond_frames=params['seq_len']/params['cond_len']
     )
 
     if use_cuda:

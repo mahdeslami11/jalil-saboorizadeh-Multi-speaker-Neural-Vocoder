@@ -14,7 +14,7 @@ verbose = False
 
 class SampleRNNGAN(torch.nn.Module):
 
-    def __init__(self, frame_sizes, n_rnn, dim, learn_h0, q_levels, ulaw, weight_norm, spk_dim, qrnn):
+    def __init__(self, frame_sizes, n_rnn, dim, learn_h0, q_levels, ulaw, weight_norm, ind_cond_dim, spk_dim, qrnn):
         super().__init__()
 
         self.dim = dim
@@ -44,7 +44,7 @@ class SampleRNNGAN(torch.nn.Module):
 
         self.frame_level_rnns = torch.nn.ModuleList([
             FrameLevelRNN(
-                frame_size, n_frame_samples, n_rnn, dim, learn_h0, IsCond, spk_dim, weight_norm, qrnn
+                frame_size, n_frame_samples, n_rnn, dim, learn_h0, IsCond, ind_cond_dim, spk_dim, weight_norm, qrnn
             )
             for (frame_size, n_frame_samples, IsCond) in zip(
                 frame_sizes, ns_frame_samples, is_cond
@@ -61,7 +61,7 @@ class SampleRNNGAN(torch.nn.Module):
 
 class FrameLevelRNN(torch.nn.Module):
 
-    def __init__(self, frame_size, n_frame_samples, n_rnn, dim, learn_h0, is_cond, spk_dim, w_norm, qrnn):
+    def __init__(self, frame_size, n_frame_samples, n_rnn, dim, learn_h0, is_cond, ind_cond_dim, spk_dim, w_norm, qrnn):
         super().__init__()
 
         self.frame_size = frame_size
@@ -83,6 +83,18 @@ class FrameLevelRNN(torch.nn.Module):
             kernel_size=1
         )
         if is_cond:
+            self.cond_expand = torch.nn.Conv1d(
+                in_channels=ind_cond_dim,
+                out_channels=dim,
+                kernel_size=1
+            )
+
+            # Initialize 1D-Convolution (Fully-connected Layer) for acoustic conditioners
+            init.kaiming_uniform(self.cond_expand.weight)
+            init.constant(self.cond_expand.bias, 0)
+            if self.weight_norm:
+                self.cond_expand = weight_norm(self.cond_expand, name='weight')
+
             # Speaker embedding
             self.spk_embedding = torch.nn.Embedding(
                 self.spk_dim,
@@ -280,13 +292,13 @@ class SampleLevelMLP(torch.nn.Module):
 
 
 class ConditionerCNN(torch.nn.Module):
-    def __init__(self, cond_dim, dim, w_norm):
+    def __init__(self, cond_dim, ind_cond_dim, w_norm):
         super().__init__()
         self.weight_norm = w_norm
         # Acoustic conditioners expansion
         self.cond_expand = torch.nn.Conv1d(
             in_channels=cond_dim,
-            out_channels=dim,
+            out_channels=ind_cond_dim,
             kernel_size=1
         )
 
@@ -304,16 +316,21 @@ class ConditionerCNN(torch.nn.Module):
 
 
 class Discriminant(torch.nn.Module):
-    def __init__(self, spk_dim):
+    def __init__(self, spk_dim, ind_cond_dim, cond_frames):
         super().__init__()
+        self.ind_cond_dim = ind_cond_dim
+        self.cond_frames = cond_frames
+
         # Architecture inspired by paper published as arXiv:1804.02812v1
         self.block1 = torch.nn.Sequential(
+            torch.nn.ReflectionPad2d(2),
             torch.nn.Conv2d(
                 in_channels=1,
                 out_channels=512,
                 kernel_size=5
             ),
             torch.nn.LeakyReLU(),
+            torch.nn.ReflectionPad1d(2),
             torch.nn.Conv2d(
                 in_channels=512,
                 out_channels=512,
@@ -322,26 +339,14 @@ class Discriminant(torch.nn.Module):
             torch.nn.InstanceNorm2d(512)
         )
         self.block2 = torch.nn.Sequential(
+            torch.nn.ReflectionPad1d(2),
             torch.nn.Conv2d(
                 in_channels=512,
                 out_channels=512,
                 kernel_size=5
             ),
             torch.nn.LeakyReLU(),
-            torch.nn.Conv2d(
-                in_channels=512,
-                out_channels=512,
-                kernel_size=5
-            ),
-            torch.nn.InstanceNorm2d(512)
-        )
-        self.block2 = torch.nn.Sequential(
-            torch.nn.Conv2d(
-                in_channels=512,
-                out_channels=512,
-                kernel_size=5
-            ),
-            torch.nn.LeakyRelu(),
+            torch.nn.ReflectionPad1d(2),
             torch.nn.Conv2d(
                 in_channels=512,
                 out_channels=512,
@@ -350,12 +355,14 @@ class Discriminant(torch.nn.Module):
             torch.nn.InstanceNorm2d(512)
         )
         self.block3 = torch.nn.Sequential(
+            torch.nn.ReflectionPad1d(2),
             torch.nn.Conv2d(
                 in_channels=512,
                 out_channels=512,
                 kernel_size=5
             ),
             torch.nn.LeakyRelu(),
+            torch.nn.ReflectionPad1d(2),
             torch.nn.Conv2d(
                 in_channels=512,
                 out_channels=512,
@@ -364,12 +371,14 @@ class Discriminant(torch.nn.Module):
             torch.nn.InstanceNorm2d(512)
         )
         self.block4 = torch.nn.Sequential(
+            torch.nn.ReflectionPad1d(2),
             torch.nn.Conv2d(
                 in_channels=512,
                 out_channels=512,
                 kernel_size=5
             ),
             torch.nn.LeakyRelu(),
+            torch.nn.ReflectionPad2d(2),
             torch.nn.Conv2d(
                 in_channels=512,
                 out_channels=512,
@@ -377,14 +386,19 @@ class Discriminant(torch.nn.Module):
             ),
             torch.nn.InstanceNorm2d(512)
         )
-        self.fc = torch.nn.Linear(512, spk_dim)             # Linear layer with 512 inputs and spk_dim output channels
+        self.fc = torch.nn.Linear(512 * self.ind_cond_dim * self.cond_frames, spk_dim)
 
     def forward(self, x):
+        print('Discriminant input shape:', x.shape)
+        x = x.view(-1, 1, self.ind_cond_dim, self.cond_frames)
         x = self.block1(x)
         x = self.block2(x) + x
         x = self.block3(x) + x
         x = self.block4(x) + x
+        print('Discriminant shape before FC layer:', x.shape)
+        x = x.view(-1, 512 * self.ind_cond_dim * self.cond_frames)
         x = self.fc(x)
+        print('Discriminant output shape:', x.shape)
         return x
 
 
