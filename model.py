@@ -173,6 +173,7 @@ class FrameLevelRNN(torch.nn.Module):
         if upper_tier_conditioning is not None:
             input_rnn += upper_tier_conditioning
         else:
+            cond_cnn = self.cond_expand(cond_cnn)
             input_rnn += cond_cnn
             if verbose:
                 print('Input rnn has size:', input_rnn.size())
