@@ -330,7 +330,7 @@ class Discriminant(torch.nn.Module):
                 kernel_size=5
             ),
             torch.nn.LeakyReLU(),
-            torch.nn.ReflectionPad1d(2),
+            torch.nn.ReflectionPad2d(2),
             torch.nn.Conv2d(
                 in_channels=512,
                 out_channels=512,
@@ -339,14 +339,14 @@ class Discriminant(torch.nn.Module):
             torch.nn.InstanceNorm2d(512)
         )
         self.block2 = torch.nn.Sequential(
-            torch.nn.ReflectionPad1d(2),
+            torch.nn.ReflectionPad2d(2),
             torch.nn.Conv2d(
                 in_channels=512,
                 out_channels=512,
                 kernel_size=5
             ),
             torch.nn.LeakyReLU(),
-            torch.nn.ReflectionPad1d(2),
+            torch.nn.ReflectionPad2d(2),
             torch.nn.Conv2d(
                 in_channels=512,
                 out_channels=512,
@@ -355,14 +355,14 @@ class Discriminant(torch.nn.Module):
             torch.nn.InstanceNorm2d(512)
         )
         self.block3 = torch.nn.Sequential(
-            torch.nn.ReflectionPad1d(2),
+            torch.nn.ReflectionPad2d(2),
             torch.nn.Conv2d(
                 in_channels=512,
                 out_channels=512,
                 kernel_size=5
             ),
             torch.nn.LeakyRelu(),
-            torch.nn.ReflectionPad1d(2),
+            torch.nn.ReflectionPad2d(2),
             torch.nn.Conv2d(
                 in_channels=512,
                 out_channels=512,
@@ -371,7 +371,7 @@ class Discriminant(torch.nn.Module):
             torch.nn.InstanceNorm2d(512)
         )
         self.block4 = torch.nn.Sequential(
-            torch.nn.ReflectionPad1d(2),
+            torch.nn.ReflectionPad2d(2),
             torch.nn.Conv2d(
                 in_channels=512,
                 out_channels=512,
