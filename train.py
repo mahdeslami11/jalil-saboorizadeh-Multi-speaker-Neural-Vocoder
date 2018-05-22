@@ -1,6 +1,6 @@
 from model import SampleRNNGAN, ConditionerCNN, Discriminant, Predictor
 from optim import gradient_clipping
-from nn import sequence_nll_loss_bits, sequence_cross_entropy_loss_bits
+from nn import sequence_nll_loss_bits, discriminant_nll_loss_bits
 from trainer import Trainer
 from trainer.plugins import (
     TrainingLossMonitor, ValidationPlugin, AbsoluteTimeMonitor, SaverPlugin, StatsPlugin
@@ -279,7 +279,7 @@ def main(exp, frame_sizes, dataset, lambda_weight, **params):
     else:
         cuda = False
     trainer = Trainer(
-        predictor, sequence_nll_loss_bits, sequence_cross_entropy_loss_bits, optimizer,  data_model, cuda, scheduler,
+        predictor, sequence_nll_loss_bits, discriminant_nll_loss_bits, optimizer,  data_model, cuda, scheduler,
         params['lambda_weight']
     )
 

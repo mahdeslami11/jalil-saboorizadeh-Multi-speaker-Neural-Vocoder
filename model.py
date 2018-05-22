@@ -402,7 +402,7 @@ class Discriminant(torch.nn.Module):
         x = x.view(-1, 512 * self.ind_cond_dim * self.cond_frames)
         x = self.fc(x)
         print('Discriminant output shape:', x.size())
-        return x
+        return F.log_softmax(x)
 
 
 class Runner:

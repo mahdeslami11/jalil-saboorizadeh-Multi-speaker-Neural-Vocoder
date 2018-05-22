@@ -70,8 +70,8 @@ def sequence_nll_loss_bits(input, target, *args, **kwargs):
     ) * math.log(math.e, 2)
 
 
-def sequence_cross_entropy_loss_bits(input, target, *args, **kwargs):
+def discriminant_nll_loss_bits(input, target, *args, **kwargs):
     (_, n_classes) = input.size()
-    return nn.functional.cross_entropy(
+    return nn.functional.nll_loss(
         input.view(-1, n_classes), target.view(-1), *args, **kwargs
     ) * math.log(math.e, 2)
