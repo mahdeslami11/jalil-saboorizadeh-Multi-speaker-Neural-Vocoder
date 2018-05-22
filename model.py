@@ -511,11 +511,11 @@ class Predictor(Runner, torch.nn.Module):
                     rnn, prev_samples, upper_tier_conditioning, cond_cnn, spk
                 )
 
-        bottom_frame_size = self.model.frame_level_rnns[0].frame_size
-        mlp_input_sequences = input_sequences[:, self.model.look_back - bottom_frame_size:]
+        bottom_frame_size = self.samplernn_model.frame_level_rnns[0].frame_size
+        mlp_input_sequences = input_sequences[:, self.samplernn_model.look_back - bottom_frame_size:]
 
         if verbose:
-            print('predictor mlp', self.model.look_back - bottom_frame_size)
+            print('predictor mlp', self.samplernn_model.look_back - bottom_frame_size)
             print('predictor mlp input seq', mlp_input_sequences.size())
             print('predictor mlp upper tier_cond', upper_tier_conditioning.size(), '\n')
 
@@ -523,7 +523,7 @@ class Predictor(Runner, torch.nn.Module):
         # predictor mlp input seq torch.Size([128, 1039])
         # predictor mlp upper tier_cond torch.Size([128, 1024, 512])
 
-        return self.model.sample_level_mlp(
+        return self.samplernn_model.sample_level_mlp(
             mlp_input_sequences, upper_tier_conditioning
         ), spk_prediction
 
