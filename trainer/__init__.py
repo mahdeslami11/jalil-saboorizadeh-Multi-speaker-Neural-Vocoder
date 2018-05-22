@@ -101,7 +101,7 @@ class Trainer(object):
                 batch_output, spk_prediction = self.model(*batch_inputs, batch_cond, batch_spk)
 
                 loss1 = self.criterion_rnn(batch_output, batch_target)
-                loss1.backward()
+                loss1.backward(retain_graph=True)
 
                 loss2 = self.criterion_discriminant(spk_prediction, batch_spk)
                 loss2.backward()
