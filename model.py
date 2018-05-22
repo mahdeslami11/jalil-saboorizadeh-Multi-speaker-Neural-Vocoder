@@ -493,22 +493,22 @@ class Predictor(Runner, torch.nn.Module):
             prev_samples = prev_samples.contiguous().view(
                 batch_size, -1, rnn.n_frame_samples
             )
-            if verbose:
-                print('predictor rnn prev_samples view', prev_samples.size())
+
             if upper_tier_conditioning is None:
-                current_cond_cnn = self.run_cond(cond)
-                cond_cnn = current_cond_cnn
+                cond_cnn = self.run_cond(cond)
+                if verbose:
+                    print('predictor rnn prev_samples view', prev_samples.size())
+                    print('Cond_cnn has size:', cond_cnn.size())
                 upper_tier_conditioning = self.run_rnn(
-                    rnn, prev_samples, upper_tier_conditioning, current_cond_cnn, spk
+                    rnn, prev_samples, upper_tier_conditioning, cond_cnn, spk
                 )
 
-                # Speaker prediction is done every frames_spk. Input is of size 1 x cond_dim x frames_spk
                 spk_prediction = self.run_discriminant(cond_cnn)
             else:
-                cond = None
+                cond_cnn = None
                 spk = None
                 upper_tier_conditioning = self.run_rnn(
-                    rnn, prev_samples, upper_tier_conditioning, cond, spk
+                    rnn, prev_samples, upper_tier_conditioning, cond_cnn, spk
                 )
 
         bottom_frame_size = self.model.frame_level_rnns[0].frame_size
