@@ -319,7 +319,7 @@ class Discriminant(torch.nn.Module):
     def __init__(self, spk_dim, ind_cond_dim, cond_frames):
         super().__init__()
         self.ind_cond_dim = ind_cond_dim
-        self.cond_frames = cond_frames
+        self.cond_frames = int(cond_frames)
         print('Cond frames:', self.cond_frames, '\tInd cond dim:', self.ind_cond_dim)
 
         # Architecture inspired by paper published as arXiv:1804.02812v1
