@@ -72,6 +72,6 @@ def sequence_nll_loss_bits(input, target, *args, **kwargs):
 
 def sequence_cross_entropy_loss_bits(input, target, *args, **kwargs):
     (_, n_classes) = input.size()
-    return nn.CrossEntropyLoss(
+    return nn.functional.cross_entropy(
         input.view(-1, n_classes), target.view(-1), *args, **kwargs
     ) * math.log(math.e, 2)
