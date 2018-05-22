@@ -227,7 +227,7 @@ def main(exp, frame_sizes, dataset, lambda_weight, **params):
     discriminant_model = Discriminant(
         spk_dim=spk_dim,
         ind_cond_dim=params['ind_cond_dim'],
-        cond_frames=params['seq_len']/params['cond_len']
+        cond_frames=params['seq_len'] // params['cond_len']
     )
 
     if use_cuda:
