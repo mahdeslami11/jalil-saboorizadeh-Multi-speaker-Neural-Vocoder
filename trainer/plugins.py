@@ -82,7 +82,7 @@ class ValidationPlugin(Plugin):
                 batch_spk = batch_spk.cuda()
 
             batch_output = self.trainer.model(*batch_inputs, batch_cond, batch_spk)
-            loss = self.trainer.criterion(batch_output, batch_target)  
+            loss = self.trainer.criterion_rnn(batch_output, batch_target)
             print('loss evaluate', loss)
             loss_sum += loss .data[0] * batch_size
 
