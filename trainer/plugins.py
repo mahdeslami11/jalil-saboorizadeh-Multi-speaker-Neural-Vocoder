@@ -1,7 +1,4 @@
 import matplotlib
-matplotlib.use('Agg')
-
-from model import Generator
 
 import torch
 from torch.autograd import Variable
@@ -9,13 +6,14 @@ from torch.utils.trainer.plugins.plugin import Plugin
 from torch.utils.trainer.plugins.monitor import Monitor
 from torch.utils.trainer.plugins import LossMonitor
 
-from librosa.output import write_wav
 from matplotlib import pyplot
 
 from glob import glob
 import os
 import pickle
 import time
+
+matplotlib.use('Agg')
 
 
 class TrainingLossMonitor(LossMonitor):
@@ -155,32 +153,6 @@ class SaverPlugin(Plugin):
             os.remove(file_name)
 
 
-class GeneratorPlugin(Plugin):
-
-    pattern = 'ep{}-s{}.wav'
-
-    def __init__(self, samples_path, n_samples, sample_length, sample_rate):
-        super().__init__([(1, 'epoch')])
-        self.samples_path = samples_path
-        self.n_samples = n_samples
-        self.sample_length = sample_length
-        self.sample_rate = sample_rate
-
-    def register(self, trainer):
-        self.generate = Generator(trainer.model.model, trainer.cuda)
-
-    def epoch(self, epoch_index):
-        samples = self.generate(self.n_samples, self.sample_length) \
-                      .cpu().float().numpy()
-        for i in range(self.n_samples):
-            write_wav(
-                os.path.join(
-                    self.samples_path, self.pattern.format(epoch_index, i + 1)
-                ),
-                samples[i, :], sr=self.sample_rate, norm=True
-            )
-
-
 class StatsPlugin(Plugin):
 
     data_file_name = 'stats.pkl'
@@ -276,7 +248,7 @@ class StatsPlugin(Plugin):
         if type(field) is tuple:
             return field
         else:
-            return (field, 'last')
+            return field, 'last'
 
     @classmethod
     def _fields_to_pairs(cls, fields):

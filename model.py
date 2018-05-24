@@ -530,8 +530,8 @@ class Predictor(Runner, torch.nn.Module):
 
 class Generator(Runner):
 
-    def __init__(self, samplernn_model, conditioner_model, disciminant_model, cuda=False):
-        super().__init__(samplernn_model, conditioner_model, disciminant_model)
+    def __init__(self, samplernn_model, conditioner_model, discriminant_model, cuda=False):
+        super().__init__(samplernn_model, conditioner_model, discriminant_model)
         self.cuda = cuda
 
     def __call__(self, n_seqs, seq_len, cond, spk):
