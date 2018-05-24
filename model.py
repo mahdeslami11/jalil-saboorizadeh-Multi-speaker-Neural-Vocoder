@@ -393,7 +393,7 @@ class Discriminant(torch.nn.Module):
 
     def forward(self, x):
         print('Discriminant input shape:', x.size())
-        x = x.contiguous().view(-1, 1, self.ind_cond_dim, self.cond_frames)
+        x = x.contiguous().view(-1, 1, self.cond_frames, self.ind_cond_dim)
         x = self.block1(x)
         x = self.block2(x) + x
         x = self.block3(x) + x
