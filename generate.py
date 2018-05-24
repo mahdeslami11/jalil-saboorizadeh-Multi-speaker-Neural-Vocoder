@@ -190,6 +190,9 @@ def main(frame_sizes, **params):
             print('Normalizing conditioners jointly')
             cond = (cond - min_cond) / (max_cond - min_cond)
 
+        # TODO Mirar que la normalització sigui coherent
+        print(cond.shape)
+
         if params['look_ahead']:
             delayed = np.copy(cond)
             delayed[:, :-1, :] = delayed[:, 1:, :]
