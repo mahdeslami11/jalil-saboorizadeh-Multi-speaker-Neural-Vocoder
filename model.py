@@ -100,15 +100,27 @@ class FrameLevelRNN(torch.nn.Module):
             # Speaker embedding
             self.spk_embedding = torch.nn.Embedding(
                 self.spk_dim,
-                dim
+                self.spk_dim
             )
+
+            self.spk_expand = torch.nn.Conv1d(
+                in_channels=self.spk_dim,
+                out_channels=dim,
+                kernel_size=1
+            )
+
+            # Initialize 1D-Convolution (Fully-connected Layer) for acoustic conditioners
+            init.kaiming_uniform(self.spk_expand.weight)
+            init.constant(self.spk_expand.bias, 0)
 
             # Apply weight normalization if chosen
             if self.weight_norm:
                 self.cond_expand = weight_norm(self.cond_expand, name='weight')
+                self.spk_expand = weight_norm(self.spk_expand, name='weight')
 
         else:
             self.cond_expand = None
+            self.spk_expand = None
             self.spk_embedding = None
         init.kaiming_uniform(self.input_expand.weight)
         init.constant(self.input_expand.bias, 0)
@@ -192,9 +204,10 @@ class FrameLevelRNN(torch.nn.Module):
                 print('After expansion, conditioner has size: ', cond.size())
                 print('Compute speaker embedding for spk of size: ', spk.size())
             spk_embed = self.spk_embedding(spk.long())
+            spk_expand = self.spk_expand(spk_embed)
             if verbose:
                 print('Embedding has size: ', spk_embed.size())
-            input_rnn += spk_embed
+            input_rnn += spk_expand
             if verbose:
                 print('After adding speaker, input rnn has size:', input_rnn.size())
 
