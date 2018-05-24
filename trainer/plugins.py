@@ -1,4 +1,5 @@
 import matplotlib
+matplotlib.use('Agg')
 
 import torch
 from torch.autograd import Variable
@@ -12,8 +13,6 @@ from glob import glob
 import os
 import pickle
 import time
-
-matplotlib.use('Agg')
 
 
 class TrainingLossMonitor(LossMonitor):
