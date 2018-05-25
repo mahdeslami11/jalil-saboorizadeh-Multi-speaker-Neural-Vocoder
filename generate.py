@@ -214,7 +214,7 @@ def main(frame_sizes, **params):
             weight_norm=params['weight_norm'],
             spk_dim=spk_dim,
             qrnn=params['qrnn'],
-            ind_cond_dim=params['dim']
+            ind_cond_dim=params['ind_cond_dim']
         )
         print('-' * 30, ' SampleRNNGAN ', '-' * 30)
         print(samplernn_model)
