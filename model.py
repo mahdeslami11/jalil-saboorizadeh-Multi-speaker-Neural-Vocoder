@@ -589,7 +589,11 @@ class Generator(Runner):
                     cond = Variable(cond).cuda()
                     spk = Variable(spk).cuda()
 
-                cond_cnn = self.run_cond(cond)
+                if cond is not None:
+                    cond_cnn = self.run_cond(cond)
+                else:
+                    cond_cnn = None
+
                 frame_level_outputs[tier_index] = self.run_rnn(
                     rnn, prev_samples, upper_tier_conditioning, cond_cnn, spk
                 )
