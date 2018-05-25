@@ -257,6 +257,7 @@ def main(exp, frame_sizes, dataset, lambda_weight, **params):
     if params['scheduler']:
         scheduler = MultiStepLR(optimizer, milestones=[15, 35], gamma=0.1)
     optimizer = gradient_clipping(optimizer)
+    # TODO fer dos optimitzadors: Un només per discriminant i l'altre per la resta
     print('Saving results in path', results_path)
     print('Read data')
     data_loader = make_data_loader(samplernn_model.look_back, params)

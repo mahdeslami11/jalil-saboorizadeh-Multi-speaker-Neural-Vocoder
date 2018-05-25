@@ -55,8 +55,8 @@ def init_random_seed(seed, cuda):
 
 def as_type(var, target_type):
     case = str(target_type).split('\'')[1].split('\'')[0]
-    if case == 'boolean':
-        return var == 'True'
+    if case == 'bool':
+        return var[0] == 'T'
     elif case == 'int':
         return int(var)
     elif case == 'float':
@@ -190,15 +190,10 @@ def main(frame_sizes, **params):
             print('Normalizing conditioners jointly')
             cond = (cond - min_cond) / (max_cond - min_cond)
 
-        # TODO Mirar que la normalització sigui coherent
-        print(cond.shape)
-
         if params['look_ahead']:
             delayed = np.copy(cond)
-            delayed[:, :-1, :] = delayed[:, 1:, :]
-            cond = np.concatenate((cond, delayed), axis=2)
-
-        print('shape cond', cond.shape)
+            delayed[:-1, :] = delayed[1:, :]
+            cond = np.concatenate((cond, delayed), axis=1)
 
         seed = params.get('seed')
         init_random_seed(seed, use_cuda)
