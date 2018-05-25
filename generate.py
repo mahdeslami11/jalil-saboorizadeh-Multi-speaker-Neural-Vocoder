@@ -220,7 +220,7 @@ def main(frame_sizes, **params):
         print(samplernn_model)
 
         conditioner_model = ConditionerCNN(
-            ind_cond_dim=params['dim'],
+            ind_cond_dim=params['ind_cond_dim'],
             cond_dim=params['cond_dim'] * (1 + params['look_ahead']),
             w_norm=params['weight_norm']
         )
