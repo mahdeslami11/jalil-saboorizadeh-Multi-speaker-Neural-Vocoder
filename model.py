@@ -311,9 +311,11 @@ class ConditionerCNN(torch.nn.Module):
             self.cond_expand = weight_norm(self.cond_expand, name='weight')
 
     def forward(self, x):
-        print('Conditioner CNN input shape:', x.size())
+        if verbose:
+            print('Conditioner CNN input shape:', x.size())
         x = self.cond_expand(x.permute(0, 2, 1).float()).permute(0, 2, 1)
-        print('Conditioner CNN output shape:', x.size())
+        if verbose:
+            print('Conditioner CNN output shape:', x.size())
         return x
 
 
@@ -392,16 +394,19 @@ class Discriminant(torch.nn.Module):
         self.fc = torch.nn.Linear(512 * self.ind_cond_dim * self.cond_frames, spk_dim)
 
     def forward(self, x):
-        print('Discriminant input shape:', x.size())
+        if verbose:
+            print('Discriminant input shape:', x.size())
         x = x.contiguous().view(-1, 1, self.cond_frames, self.ind_cond_dim)
         x = self.block1(x)
         x = self.block2(x) + x
         x = self.block3(x) + x
         x = self.block4(x) + x
-        print('Discriminant shape before FC layer:', x.size())
+        if verbose:
+            print('Discriminant shape before FC layer:', x.size())
         x = x.view(-1, 512 * self.ind_cond_dim * self.cond_frames)
         x = self.fc(x)
-        print('Discriminant output shape:', x.size())
+        if verbose:
+            print('Discriminant output shape:', x.size())
         return F.log_softmax(x)
 
 
