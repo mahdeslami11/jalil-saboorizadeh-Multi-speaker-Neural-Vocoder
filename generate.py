@@ -30,6 +30,7 @@ default_params = {
     'cond_dim': 43,         # Conditioners of size 43 = 40 MFCC + 1 LF0 + 1FV + 1 U/V
     'norm_ind': False,      # If true, normalization is done independent by speaker. If false, normalization is joint
     'static_spk': False,    # If true, training is only done with one speaker
+    'ind_cond_dim': 50,
 
     # training parameters
     'sample_rate': 16000,
@@ -85,9 +86,9 @@ def load_model(checkpoint_path):
 
 
 class RunGenerator:
-    def __init__(self, samplernn_model, conditioner_model, disciminant_model, sample_rate, cuda, epoch, cond,
+    def __init__(self, samplernn_model, conditioner_model, discriminant_model, sample_rate, cuda, epoch, cond,
                  spk_list, speaker, checkpoints_path, original_name):
-        self.generate = Generator(samplernn_model, conditioner_model, disciminant_model, cuda)
+        self.generate = Generator(samplernn_model, conditioner_model, discriminant_model, cuda)
         self.sample_rate = sample_rate
         self.cuda = cuda
         self.epoch = epoch
@@ -211,13 +212,14 @@ def main(frame_sizes, **params):
             ulaw=params['ulaw'],
             weight_norm=params['weight_norm'],
             spk_dim=spk_dim,
-            qrnn=params['qrnn']
+            qrnn=params['qrnn'],
+            ind_cond_dim=params['dim']
         )
         print('-' * 30, ' SampleRNNGAN ', '-' * 30)
         print(samplernn_model)
 
         conditioner_model = ConditionerCNN(
-            dim=params['dim'],
+            ind_cond_dim=params['dim'],
             cond_dim=params['cond_dim'] * (1 + params['look_ahead']),
             w_norm=params['weight_norm']
         )
@@ -225,7 +227,9 @@ def main(frame_sizes, **params):
         print(conditioner_model)
 
         discriminant_model = Discriminant(
-            spk_dim=spk_dim
+            spk_dim=spk_dim,
+            ind_cond_dim=params['ind_cond_dim'],
+            cond_frames=params['seq_len'] // params['cond_len']
         )
         print('-' * 30, ' Discriminant ', '-' * 30)
         print(discriminant_model)
