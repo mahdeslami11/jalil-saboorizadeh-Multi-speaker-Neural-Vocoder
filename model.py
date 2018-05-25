@@ -585,14 +585,15 @@ class Generator(Runner):
                         frame_level_outputs[tier_index + 1][:, frame_index, :] \
                         .unsqueeze(1)
 
-                if self.cuda:
-                    cond = Variable(cond).cuda()
-                    spk = Variable(spk).cuda()
-
                 if cond is not None:
+                    if self.cuda:
+                        cond = Variable(cond).cuda()
                     cond_cnn = self.run_cond(cond)
                 else:
                     cond_cnn = None
+
+                if self.cuda:
+                    spk = Variable(spk).cuda()
 
                 frame_level_outputs[tier_index] = self.run_rnn(
                     rnn, prev_samples, upper_tier_conditioning, cond_cnn, spk
