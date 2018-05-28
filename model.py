@@ -117,7 +117,6 @@ class FrameLevelRNN(torch.nn.Module):
 
             # Apply weight normalization if chosen
             if self.weight_norm:
-                self.cond_bottle_neck = weight_norm(self.cond_bottle_neck, name='weight')
                 self.spk_expand = weight_norm(self.spk_expand, name='weight')
 
         else:
