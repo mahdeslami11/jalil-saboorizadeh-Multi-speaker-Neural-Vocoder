@@ -99,10 +99,6 @@ class FrameLevelRNN(torch.nn.Module):
                 torch.nn.Linear(10, dim)
             )
 
-            # Initialize 1D-Convolution (Fully-connected Layer) for acoustic conditioners
-            init.kaiming_uniform(self.cond_bottle_neck.weight)
-            init.constant(self.cond_bottle_neck.bias, 0)
-
             # Speaker embedding
             self.spk_embedding = torch.nn.Embedding(
                 self.spk_dim,
