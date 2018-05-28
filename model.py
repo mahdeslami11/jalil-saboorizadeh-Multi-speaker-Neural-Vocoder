@@ -87,15 +87,21 @@ class FrameLevelRNN(torch.nn.Module):
         )
         if is_cond:
             # Acoustic conditioners expansion
-            self.cond_expand = torch.nn.Conv1d(
-                in_channels=cond_dim,
-                out_channels=dim,
-                kernel_size=1
+            self.cond_bottle_neck = torch.nn.Sequential(
+                torch.nn.Linear(cond_dim, 40),
+                torch.nn.ReLU(),
+                torch.nn.Linear(40, 30),
+                torch.nn.ReLU(),
+                torch.nn.Linear(30, 20),
+                torch.nn.ReLU(),
+                torch.nn.Linear(20, 10),
+                torch.nn.ReLU(),
+                torch.nn.Linear(10, dim)
             )
 
             # Initialize 1D-Convolution (Fully-connected Layer) for acoustic conditioners
-            init.kaiming_uniform(self.cond_expand.weight)
-            init.constant(self.cond_expand.bias, 0)
+            init.kaiming_uniform(self.cond_bottle_neck.weight)
+            init.constant(self.cond_bottle_neck.bias, 0)
 
             # Speaker embedding
             self.spk_embedding = torch.nn.Embedding(
@@ -115,11 +121,11 @@ class FrameLevelRNN(torch.nn.Module):
 
             # Apply weight normalization if chosen
             if self.weight_norm:
-                self.cond_expand = weight_norm(self.cond_expand, name='weight')
+                self.cond_bottle_neck = weight_norm(self.cond_bottle_neck, name='weight')
                 self.spk_expand = weight_norm(self.spk_expand, name='weight')
 
         else:
-            self.cond_expand = None
+            self.cond_bottle_neck = None
             self.spk_expand = None
             self.spk_embedding = None
         init.kaiming_uniform(self.input_expand.weight)
@@ -197,7 +203,7 @@ class FrameLevelRNN(torch.nn.Module):
         if upper_tier_conditioning is not None:
             input_rnn += upper_tier_conditioning
         else:
-            cond = self.cond_expand(cond.permute(0, 2, 1).float()).permute(0, 2, 1)
+            cond = self.cond_bottle_neck(cond.permute(0, 2, 1).float()).permute(0, 2, 1)
             input_rnn += cond
             if verbose:
                 print('Input rnn has size:', input_rnn.size())
