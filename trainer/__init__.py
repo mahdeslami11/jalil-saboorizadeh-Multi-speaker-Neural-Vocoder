@@ -7,13 +7,15 @@ import heapq
 # Based on torch.utils.trainer.Trainer code.
 # Allows multiple inputs to the model, not all need to be Tensors.
 class Trainer(object):
-    def __init__(self, model, criterion_rnn, criterion_discriminant, optimizer, dataset, cuda,
-                 scheduler, lambda_weight):
+    def __init__(self, model, criterion_rnn, criterion_discriminant, optimizer_samplernn, optimizer_discriminant,
+                 dataset, cuda, scheduler_samplernn, scheduler_discriminant, lambda_weight):
         self.model = model
         self.criterion_rnn = criterion_rnn
         self.criterion_discriminant = criterion_discriminant
-        self.optimizer = optimizer
-        self.scheduler = scheduler
+        self.optimizer_samplernn = optimizer_samplernn
+        self.optimizer_discriminant = optimizer_discriminant
+        self.scheduler_samplernn = scheduler_samplernn
+        self.scheduler_discriminant = scheduler_discriminant
         self.dataset = dataset
         self.cuda = cuda
         self.iterations = 0
@@ -26,6 +28,8 @@ class Trainer(object):
             'update': [],
         }
         self.lambda_weight = lambda_weight
+        self.batch_output = None
+        self.spk_prediction = None
 
     def register_plugin(self, plugin):
         plugin.register(self)
@@ -57,8 +61,10 @@ class Trainer(object):
 
         for self.epochs in range(self.epochs + 1, self.epochs + int(epochs) + 1):
             self.train()
-            if self.scheduler is not None:
-                self.scheduler.step()
+            if self.scheduler_samplernn is not None:
+                self.scheduler_samplernn.step()
+            if self.scheduler_discriminant is not None:
+                self.scheduler_discriminant.step()
             self.call_plugins('epoch', self.epochs)
 
     def train(self):
@@ -97,28 +103,41 @@ class Trainer(object):
                 
             plugin_data = [None, None]
 
-            def closure():
-                batch_output, spk_prediction = self.model(*batch_inputs, batch_cond, batch_spk)
+            def closure_samplernn():
+                self.batch_output, self.spk_prediction = self.model(*batch_inputs, batch_cond, batch_spk)
 
-                loss1 = self.criterion_rnn(batch_output, batch_target)
-                loss1.backward(retain_graph=True)
+                loss1 = self.criterion_rnn(self.batch_output, batch_target)
 
-                loss2 = self.criterion_discriminant(spk_prediction, batch_spk)
-                loss2.backward()
+                loss2 = self.criterion_discriminant(self.spk_prediction, batch_spk)
 
                 current_lambda_weight = (self.iterations/self.lambda_weight[2]) * \
                                         (self.lambda_weight[1]-self.lambda_weight[0]) + self.lambda_weight[0]
 
                 loss = loss1-current_lambda_weight*loss2
 
+                loss.backward()
+
                 if plugin_data[0] is None:
-                    plugin_data[0] = batch_output.data
+                    plugin_data[0] = self.batch_output.data
                     plugin_data[1] = loss.data
 
                 return loss
 
-            self.optimizer.zero_grad()
-            self.optimizer.step(closure)
+            def closure_discriminant():
+                loss = self.criterion_discriminant(self.spk_prediction, batch_spk)
+
+                if plugin_data[0] is None:
+                    plugin_data[0] = self.batch_output.data
+                    plugin_data[1] = loss.data
+
+                return loss
+
+            self.optimizer_samplernn.zero_grad()
+            self.optimizer_samplernn.step(closure_samplernn)
+
+            self.optimizer_discriminant.zero_grad()
+            self.optimizer_discriminant.step(closure_discriminant)
+
             self.call_plugins(
                 'iteration', self.iterations, batch_inputs, batch_target,
                 *plugin_data

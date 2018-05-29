@@ -253,11 +253,20 @@ def main(exp, frame_sizes, dataset, lambda_weight, **params):
     for name, param in predictor.named_parameters():
         print(name, param.size())
 
-    optimizer = torch.optim.Adam(predictor.parameters(), lr=params['learning_rate'])
-    if params['scheduler']:
-        scheduler = MultiStepLR(optimizer, milestones=[15, 35], gamma=0.1)
-    optimizer = gradient_clipping(optimizer)
+    print('TODO: Optimizers for both discriminant and the rest')
+    quit()
     # TODO fer dos optimitzadors: Un només per discriminant i l'altre per la resta
+    optimizer_samplernn = torch.optim.Adam(predictor.parameters(), lr=params['learning_rate'])
+    optimizer_discriminant = torch.optim.Adam(predictor.parameters(), lr=params['learning_rate'])
+
+    scheduler_samplernn = None
+    scheduler_discriminant = None
+    if params['scheduler']:
+        scheduler_samplernn = MultiStepLR(optimizer_samplernn, milestones=[15, 35], gamma=0.1)
+        scheduler_discriminant = MultiStepLR(optimizer_discriminant, milestones=[15, 35], gamma=0.1)
+    optimizer_samplernn = gradient_clipping(optimizer_samplernn)
+    optimizer_discriminant = gradient_clipping(optimizer_discriminant)
+
     print('Saving results in path', results_path)
     print('Read data')
     data_loader = make_data_loader(samplernn_model.look_back, params)
@@ -273,15 +282,13 @@ def main(exp, frame_sizes, dataset, lambda_weight, **params):
             print('Data', data.size())
             print('Target', target.size())
 
-    if not params['scheduler']:    
-        scheduler = None
     if use_cuda:
         cuda = True
     else:
         cuda = False
     trainer = Trainer(
-        predictor, sequence_nll_loss_bits, discriminant_nll_loss_bits, optimizer,  data_model, cuda, scheduler,
-        params['lambda_weight']
+        predictor, sequence_nll_loss_bits, discriminant_nll_loss_bits, optimizer_samplernn, optimizer_discriminant,
+        data_model, cuda, scheduler_samplernn, scheduler_discriminant, params['lambda_weight']
     )
 
     checkpoints_path = os.path.join(results_path, 'checkpoints')
