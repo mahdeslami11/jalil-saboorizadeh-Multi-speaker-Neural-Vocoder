@@ -298,22 +298,20 @@ class ConditionerCNN(torch.nn.Module):
         super().__init__()
         self.weight_norm = w_norm
         # Acoustic conditioners expansion
-        self.cond_expand = torch.nn.Conv1d(
-            in_channels=cond_dim,
-            out_channels=ind_cond_dim,
-            kernel_size=1
+        self.cond_bottle_neck = torch.nn.Sequential(
+            torch.nn.Linear(cond_dim, 40),
+            torch.nn.ReLU(),
+            torch.nn.Linear(40, 30),
+            torch.nn.ReLU(),
+            torch.nn.Linear(30, 20),
+            torch.nn.ReLU(),
+            torch.nn.Linear(20, ind_cond_dim)
         )
-
-        # Initialize 1D-Convolution (Fully-connected Layer) for acoustic conditioners
-        init.kaiming_uniform(self.cond_expand.weight)
-        init.constant(self.cond_expand.bias, 0)
-        if self.weight_norm:
-            self.cond_expand = weight_norm(self.cond_expand, name='weight')
 
     def forward(self, x):
         if verbose:
             print('Conditioner CNN input shape:', x.size())
-        x = self.cond_expand(x.permute(0, 2, 1).float()).permute(0, 2, 1)
+        x = self.cond_bottle_neck(x.permute(0, 2, 1).float()).permute(0, 2, 1)
         if verbose:
             print('Conditioner CNN output shape:', x.size())
         return x

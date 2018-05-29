@@ -42,7 +42,7 @@ default_params = {
     'cond_len': 80,         # Conditioners are computed by Ahocoder every 80 audio samples (windows of 5ms at 16kHz)
     'norm_ind': False,      # If true, normalization is done independent by speaker. If false, normalization is joint
     'static_spk': False,     # If true, training is only done with one speaker
-    'ind_cond_dim': 50,
+    'ind_cond_dim': 10,
 
     # training parameters
     'keep_old_checkpoints': False,
