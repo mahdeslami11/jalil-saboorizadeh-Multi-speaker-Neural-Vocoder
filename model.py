@@ -176,7 +176,7 @@ class FrameLevelRNN(torch.nn.Module):
             if verbose:
                 print('Input rnn has size:', input_rnn.size())
                 print('Before expansion, conditioner has size: ', cond_cnn.size())
-            cond_rnn = self.cond_expand(cond_cnn)
+            cond_rnn = self.cond_expand(cond_cnn.permute(0, 2, 1)).permute(0, 2, 1)
             input_rnn += cond_rnn
             if verbose:
                 print('After expansion, conditioner has size: ', cond_rnn.size())
