@@ -10,7 +10,7 @@ from torch.nn.utils import weight_norm
 
 import numpy as np
 
-verbose = True
+verbose = False
 
 
 class SampleRNN(torch.nn.Module):
@@ -88,15 +88,35 @@ class FrameLevelRNN(torch.nn.Module):
         if is_cond:
             # Acoustic conditioners expansion
             self.cond_bottle_neck = torch.nn.Sequential(
-                torch.nn.Linear(cond_dim, 40),
+                torch.nn.Conv1d(
+                    in_channels=cond_dim,
+                    out_channels=40,
+                    kernel_size=1
+                ),
                 torch.nn.ReLU(),
-                torch.nn.Linear(40, 30),
+                torch.nn.Conv1d(
+                    in_channels=40,
+                    out_channels=30,
+                    kernel_size=1
+                ),
                 torch.nn.ReLU(),
-                torch.nn.Linear(30, 20),
+                torch.nn.Conv1d(
+                    in_channels=30,
+                    out_channels=20,
+                    kernel_size=1
+                ),
                 torch.nn.ReLU(),
-                torch.nn.Linear(20, 10),
+                torch.nn.Conv1d(
+                    in_channels=20,
+                    out_channels=10,
+                    kernel_size=1
+                ),
                 torch.nn.ReLU(),
-                torch.nn.Linear(10, dim)
+                torch.nn.Conv1d(
+                    in_channels=10,
+                    out_channels=dim,
+                    kernel_size=1
+                ),
             )
 
             # Speaker embedding
