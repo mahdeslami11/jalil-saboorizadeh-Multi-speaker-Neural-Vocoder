@@ -299,13 +299,30 @@ class ConditionerCNN(torch.nn.Module):
         self.weight_norm = w_norm
         # Acoustic conditioners expansion
         self.cond_bottle_neck = torch.nn.Sequential(
-            torch.nn.Linear(cond_dim, 40),
+            torch.nn.Conv1d(
+                in_channels=cond_dim,
+                out_channels=40,
+                kernel_size=1
+            ),
             torch.nn.ReLU(),
-            torch.nn.Linear(40, 30),
+            torch.nn.Conv1d(
+                in_channels=40,
+                out_channels=30,
+                kernel_size=1
+            ),
             torch.nn.ReLU(),
-            torch.nn.Linear(30, 20),
+            torch.nn.Conv1d(
+                in_channels=30,
+                out_channels=20,
+                kernel_size=1
+            ),
             torch.nn.ReLU(),
-            torch.nn.Linear(20, ind_cond_dim)
+            torch.nn.Conv1d(
+                in_channels=20,
+                out_channels=ind_cond_dim,
+                kernel_size=1
+            ),
+            torch.nn.ReLU(),
         )
 
     def forward(self, x):
