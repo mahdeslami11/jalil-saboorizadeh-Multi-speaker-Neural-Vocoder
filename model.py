@@ -9,7 +9,7 @@ from torch.nn.utils import weight_norm
 
 import numpy as np
 
-verbose = True
+verbose = False
 
 
 class SampleRNNGAN(torch.nn.Module):
