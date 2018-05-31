@@ -198,6 +198,8 @@ class FrameLevelRNN(torch.nn.Module):
         if upper_tier_conditioning is not None:
             input_rnn += upper_tier_conditioning
         else:
+            if verbose:
+                print('Cond has input size:', cond.size())
             cond = self.cond_bottle_neck(cond.permute(0, 2, 1).float()).permute(0, 2, 1)
             input_rnn += cond
             if verbose:
