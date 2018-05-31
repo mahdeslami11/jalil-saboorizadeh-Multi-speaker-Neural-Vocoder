@@ -254,8 +254,8 @@ def main(exp, frame_sizes, dataset, lambda_weight, **params):
         print(name, param.size())
 
     print('TODO: Optimizers for both discriminant and the rest')
+    print(predictor['discriminant_model'])
     quit()
-    # TODO fer dos optimitzadors: Un només per discriminant i l'altre per la resta
     optimizer_samplernn = torch.optim.Adam(predictor.parameters(), lr=params['learning_rate'])
     optimizer_discriminant = torch.optim.Adam(predictor.parameters(), lr=params['learning_rate'])
 
