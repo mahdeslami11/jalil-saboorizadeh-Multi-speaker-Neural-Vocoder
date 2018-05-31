@@ -173,11 +173,12 @@ class FrameLevelRNN(torch.nn.Module):
         if upper_tier_conditioning is not None:
             input_rnn += upper_tier_conditioning
         else:
-            cond_rnn = self.cond_expand(cond_cnn)
-            input_rnn += cond_rnn
             if verbose:
                 print('Input rnn has size:', input_rnn.size())
                 print('Before expansion, conditioner has size: ', cond_cnn.size())
+            cond_rnn = self.cond_expand(cond_cnn)
+            input_rnn += cond_rnn
+            if verbose:
                 print('After expansion, conditioner has size: ', cond_rnn.size())
                 print('Compute speaker embedding for spk of size: ', spk.size())
             spk_embed = self.spk_embedding(spk.long())
