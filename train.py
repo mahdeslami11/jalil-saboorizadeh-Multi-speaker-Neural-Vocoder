@@ -253,7 +253,8 @@ def main(exp, frame_sizes, dataset, lambda_weight, **params):
     for name, param in predictor.named_parameters():
         print(name, param.size())
 
-    print(type(predictor))
+    print('*'*60)
+    print(predictor.__dict__)
     optimizer_samplernn = torch.optim.Adam(predictor.parameters(), lr=params['learning_rate'])
     optimizer_discriminant = torch.optim.Adam(predictor.discriminant_model.parameters(), lr=params['learning_rate'])
 
