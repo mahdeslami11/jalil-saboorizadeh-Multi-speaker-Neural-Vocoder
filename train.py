@@ -167,7 +167,7 @@ def load_model(checkpoint_path):
         iteration = int(match.group(2))
     else:
         epoch, iteration = (0, 0)
-                                                                
+
     return torch.load(checkpoint_path), epoch, iteration
 
 
@@ -254,7 +254,9 @@ def main(exp, frame_sizes, dataset, lambda_weight, **params):
         print(name, param.size())
 
     print('TODO: Optimizers for both discriminant and the rest')
-    print(predictor.discriminant_model)
+    print(predictor[2])
+    print('*'*60)
+    print(predictor[0:1])
     quit()
     optimizer_samplernn = torch.optim.Adam(predictor.parameters(), lr=params['learning_rate'])
     optimizer_discriminant = torch.optim.Adam(predictor.parameters(), lr=params['learning_rate'])
@@ -278,7 +280,7 @@ def main(exp, frame_sizes, dataset, lambda_weight, **params):
         for i, full in enumerate(data_model):
             print('Data Loader---------------------------------------')
             print('batch', i)
-            (data, reset, target, cond) = full           
+            (data, reset, target, cond) = full
             print('Data', data.size())
             print('Target', target.size())
 
@@ -345,7 +347,7 @@ def main(exp, frame_sizes, dataset, lambda_weight, **params):
             }
         }
     ))
-    
+
     trainer.run(params['epoch_limit'])
 
 
