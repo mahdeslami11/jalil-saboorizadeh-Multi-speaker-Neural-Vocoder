@@ -107,7 +107,7 @@ class RunGenerator:
 
             write_wav(
                 self.filename,
-                (samples[i, :] * max_v).astype(np.int16), sr=self.sample_rate
+                (samples[i, :] * max_v).astype(np.float16), sr=self.sample_rate
             )
 
 
