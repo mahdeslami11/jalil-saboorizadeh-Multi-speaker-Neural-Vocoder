@@ -38,7 +38,6 @@ default_params = {
     'n_samples': 1,
     'sample_length': 80000,
     'seed': 77977,
-    'cond': 0,
 
     # generator parameters
     'datasets_path': '/veu/tfgveu7/project/tcstar/',
