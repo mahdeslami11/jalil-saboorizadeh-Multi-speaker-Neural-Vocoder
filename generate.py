@@ -101,14 +101,12 @@ class RunGenerator:
     def __call__(self, n_samples, sample_length, cond, speaker):
         print('Generate', n_samples, 'of length', sample_length)
         samples = self.generate(n_samples, sample_length, cond, speaker).cpu().numpy()
-        # max_v = np.iinfo(np.int16).max
         for i in range(n_samples):
             print(self.filename)
 
             write_wav(
                 self.filename,
                 samples[i, :], sr=self.sample_rate
-                # (samples[i, :] * max_v).astype(np.int16), sr=self.sample_rate
             )
 
 
