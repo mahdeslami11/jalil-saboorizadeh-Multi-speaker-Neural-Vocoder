@@ -6,7 +6,10 @@ from torch.nn import functional as F
 from torch.nn import init
 from torch.autograd import Variable
 from torch.nn.utils import weight_norm
-# from torchqrnn import QRNN
+try:
+    from torchqrnn import QRNN
+except ImportError:
+    pass
 
 import numpy as np
 

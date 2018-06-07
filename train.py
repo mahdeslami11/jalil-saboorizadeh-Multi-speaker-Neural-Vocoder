@@ -25,6 +25,8 @@ import argparse
 import random
 import numpy as np
 
+import comet_ml
+
 
 default_params = {
     # model parameters
@@ -59,7 +61,8 @@ default_params = {
     'loss_smoothing': 0.99,
     'seed': 77977,
     'model': None,
-    'scheduler': False
+    'scheduler': False,
+    'comet_key': "XVMnge3eucwKp1MB0G5M7Ahe4"
 }
 tag_params = [
     'exp', 'frame_sizes', 'n_rnn', 'dim', 'learn_h0', 'ulaw', 'q_levels', 'seq_len', 'look_ahead', 'norm_ind',
@@ -147,6 +150,33 @@ def init_random_seed(seed, cuda):
     torch.manual_seed(seed)
     if cuda:
         torch.cuda.manual_seed(seed)
+
+
+def param_to_string(value):
+    if isinstance(value, bool):
+        return 'T' if value else 'F'
+    elif isinstance(value, list):
+        return ','.join(map(param_to_string, value))
+    else:
+        return str(value)
+
+
+def init_comet(params, trainer):
+    if params['comet_key'] is not None:
+        from comet_ml import Experiment
+        from trainer.plugins import CometPlugin
+        experiment = Experiment(api_key=params['comet_key'], log_code=False)
+        hyperparams = {
+            name: param_to_string(params[name]) for name in tag_params
+        }
+        experiment.log_multiple_params(hyperparams)
+        trainer.register_plugin(CometPlugin(
+            experiment, [
+                ('training_loss', 'epoch_mean'),
+                'validation_loss',
+                'test_loss'
+            ]
+        ))
 
 
 def load_model(checkpoint_path):
@@ -317,7 +347,9 @@ def main(exp, frame_sizes, dataset, **params):
             }
         }
     ))
-    
+
+    init_comet(params, trainer)
+
     trainer.run(params['epoch_limit'])
 
 
