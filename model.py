@@ -111,12 +111,12 @@ class FrameLevelRNN(torch.nn.Module):
                 torch.nn.ReLU(),
                 torch.nn.Conv1d(
                     in_channels=20,
-                    out_channels=10,
+                    out_channels=30,
                     kernel_size=1
                 ),
                 torch.nn.ReLU(),
                 torch.nn.Conv1d(
-                    in_channels=10,
+                    in_channels=30,
                     out_channels=dim,
                     kernel_size=1
                 ),
