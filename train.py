@@ -167,7 +167,7 @@ def init_comet(params, trainer):
     if params['comet_key'] is not None:
         from comet_ml import Experiment
         from trainer.plugins import CometPlugin
-        experiment = Experiment(api_key=params['comet_key'], log_code=False)
+        experiment = Experiment(api_key=params['comet_key'], log_code=False, project_name="Bottle-neck")
         hyperparams = {
             name: param_to_string(params[name]) for name in tag_params
         }
