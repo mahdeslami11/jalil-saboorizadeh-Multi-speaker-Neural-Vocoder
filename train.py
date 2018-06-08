@@ -44,6 +44,7 @@ default_params = {
     'cond_len': 80,         # Conditioners are computed by Ahocoder every 80 audio samples (windows of 5ms at 16kHz)
     'norm_ind': False,      # If true, normalization is done independent by speaker. If false, normalization is joint
     'static_spk': False,     # If true, training is only done with one speaker
+    'ind_cond_dim': 20,
 
     # training parameters
     'keep_old_checkpoints': False,
@@ -66,7 +67,8 @@ default_params = {
 }
 tag_params = [
     'exp', 'frame_sizes', 'n_rnn', 'dim', 'learn_h0', 'ulaw', 'q_levels', 'seq_len', 'look_ahead', 'norm_ind',
-    'batch_size', 'dataset', 'cond_set', 'static_spk', 'seed', 'weight_norm', 'qrnn', 'scheduler', 'learning_rate'
+    'batch_size', 'dataset', 'cond_set', 'static_spk', 'seed', 'weight_norm', 'qrnn', 'scheduler', 'learning_rate',
+    'ind_cond_dim'
     ]
 
 
@@ -240,7 +242,8 @@ def main(exp, frame_sizes, dataset, **params):
         weight_norm=params['weight_norm'],
         cond_dim=params['cond_dim']*(1+params['look_ahead']),
         spk_dim=spk_dim,
-        qrnn=params['qrnn']
+        qrnn=params['qrnn'],
+        ind_cond_dim=params['ind_cond_dim']
     )
     if use_cuda:
         model = model.cuda()

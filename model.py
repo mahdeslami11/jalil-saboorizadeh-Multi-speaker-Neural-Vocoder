@@ -18,7 +18,8 @@ verbose = False
 
 class SampleRNN(torch.nn.Module):
 
-    def __init__(self, frame_sizes, n_rnn, dim, learn_h0, q_levels, ulaw, weight_norm, cond_dim, spk_dim, qrnn=False):
+    def __init__(self, frame_sizes, n_rnn, dim, learn_h0, q_levels, ulaw, weight_norm, cond_dim,
+                 spk_dim, ind_cond_dim, qrnn=False):
         super().__init__()
 
         self.dim = dim
@@ -48,7 +49,8 @@ class SampleRNN(torch.nn.Module):
         is_cond[-1] = True
         self.frame_level_rnns = torch.nn.ModuleList([
             FrameLevelRNN(
-                frame_size, n_frame_samples, n_rnn, dim, learn_h0, IsCond, cond_dim, spk_dim, weight_norm, qrnn
+                frame_size, n_frame_samples, n_rnn, dim, learn_h0, IsCond, cond_dim, spk_dim,
+                weight_norm, qrnn, ind_cond_dim
             )
             for (frame_size, n_frame_samples, IsCond) in zip(
                 frame_sizes, ns_frame_samples, is_cond
@@ -66,7 +68,7 @@ class SampleRNN(torch.nn.Module):
 class FrameLevelRNN(torch.nn.Module):
 
     def __init__(self, frame_size, n_frame_samples, n_rnn, dim,
-                 learn_h0, is_cond, cond_dim, spk_dim, w_norm, qrnn):
+                 learn_h0, is_cond, cond_dim, spk_dim, w_norm, qrnn, ind_cond_dim):
         super().__init__()
 
         self.frame_size = frame_size
@@ -111,12 +113,12 @@ class FrameLevelRNN(torch.nn.Module):
                 torch.nn.ReLU(),
                 torch.nn.Conv1d(
                     in_channels=20,
-                    out_channels=30,
+                    out_channels=ind_cond_dim,
                     kernel_size=1
                 ),
                 torch.nn.ReLU(),
                 torch.nn.Conv1d(
-                    in_channels=30,
+                    in_channels=ind_cond_dim,
                     out_channels=dim,
                     kernel_size=1
                 ),
