@@ -66,7 +66,7 @@ default_params = {
 tag_params = [
     'exp', 'frame_sizes', 'n_rnn', 'dim', 'learn_h0', 'ulaw', 'q_levels', 'seq_len', 'look_ahead', 'norm_ind',
     'lambda_weight', 'batch_size', 'dataset', 'cond_set', 'static_spk', 'seed', 'weight_norm', 'qrnn',
-    'scheduler', 'learning_rate'
+    'scheduler', 'learning_rate', 'ind_cond_dim'
     ]
 
 
@@ -442,6 +442,10 @@ if __name__ == '__main__':
     parser.add_argument(
         '--sample_length', type=int,
         help='length of each generated sample (in samples)'
+    )
+    parser.add_argument(
+        '--ind_cond_dim', type=int,
+        help='narrowest dimension of conditioners in the bottle-neck'
     )
     parser.add_argument(
         '--loss_smoothing', type=float,
