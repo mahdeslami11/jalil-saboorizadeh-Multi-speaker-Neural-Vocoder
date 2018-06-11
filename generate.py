@@ -213,7 +213,8 @@ def main(frame_sizes, **params):
             weight_norm=params['weight_norm'],
             cond_dim=params['cond_dim']*(1+params['look_ahead']),
             spk_dim=spk_dim,
-            qrnn=params['qrnn']
+            qrnn=params['qrnn'],
+            ind_cond_dim=params['ind_cond_dim']
         )
         print(model)
         
