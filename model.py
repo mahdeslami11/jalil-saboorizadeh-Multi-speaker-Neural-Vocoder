@@ -216,7 +216,8 @@ class FrameLevelRNN(torch.nn.Module):
         # output before upsampling torch.Size([128, 64, 512]) 	hidden torch.Size([2, 128, 512])
         # output torch.Size([128, 1024, 512])
         # (=> 64 frames, 16 input samples/frame)
-
+        if verbose:
+            print('Cond has input size:', prev_samples.size(), 'upper conditioning', upper_tier_conditioning is None)
         input_rnn = self.input_expand(
           prev_samples.permute(0, 2, 1)
         ).permute(0, 2, 1)
