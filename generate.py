@@ -30,6 +30,7 @@ default_params = {
     'cond_dim': 43,         # Conditioners of size 43 = 40 MFCC + 1 LF0 + 1FV + 1 U/V
     'norm_ind': False,      # If true, normalization is done independent by speaker. If false, normalization is joint
     'static_spk': False,    # If true, training is only done with one speaker
+    'ind_cond_dim': 20,
 
     # training parameters
     'sample_rate': 16000,
