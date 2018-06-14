@@ -331,7 +331,7 @@ class SampleLevelMLP(torch.nn.Module):
         (batch_size, _, _) = upper_tier_conditioning.size()
 
         if verbose:
-            print('Prev samples have input size:', prev_samples.size(), 'upper conditioning', upper_tier_conditioning is None)
+            print('Prev samples at sample level:', prev_samples.size())
 
         prev_samples = self.embedding(
             prev_samples.contiguous().view(-1)
