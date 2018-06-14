@@ -461,6 +461,10 @@ if __name__ == '__main__':
         help='seed init of random generator'
     )
     parser.add_argument(
+        '--ind_cond_dim', type=int,
+        help='Narrower dimension of the bottle neck'
+    )
+    parser.add_argument(
         '--weight_norm', type=parse_bool,
         help='Apply weight normalization to linear layers'
     )
