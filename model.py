@@ -217,7 +217,8 @@ class FrameLevelRNN(torch.nn.Module):
         # output torch.Size([128, 1024, 512])
         # (=> 64 frames, 16 input samples/frame)
         if verbose:
-            print('Prev samples have input size:', prev_samples.size(), 'upper conditioning', upper_tier_conditioning is None)
+            print('Prev samples have input size:', prev_samples.size(), 'upper conditioning',
+                  upper_tier_conditioning is None)
         input_rnn = self.input_expand(
           prev_samples.permute(0, 2, 1)
         ).permute(0, 2, 1)
@@ -328,6 +329,9 @@ class SampleLevelMLP(torch.nn.Module):
 
     def forward(self, prev_samples, upper_tier_conditioning):
         (batch_size, _, _) = upper_tier_conditioning.size()
+
+        if verbose:
+            print('Prev samples have input size:', prev_samples.size(), 'upper conditioning', upper_tier_conditioning is None)
 
         prev_samples = self.embedding(
             prev_samples.contiguous().view(-1)
