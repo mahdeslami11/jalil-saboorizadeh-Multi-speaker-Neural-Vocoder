@@ -13,7 +13,7 @@ except ImportError:
 
 import numpy as np
 
-verbose = False
+verbose = True
 
 
 class SampleRNN(torch.nn.Module):
