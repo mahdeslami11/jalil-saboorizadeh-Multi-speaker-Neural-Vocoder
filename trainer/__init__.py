@@ -3,6 +3,8 @@ from torch.autograd import Variable
 
 import heapq
 
+from tensorboardX import SummaryWriter
+
 
 # Based on torch.utils.trainer.Trainer code.
 # Allows multiple inputs to the model, not all need to be Tensors.
@@ -23,6 +25,7 @@ class Trainer(object):
             'batch': [],
             'update': [],
         }
+        self.writer = SummaryWriter()
 
     def register_plugin(self, plugin):
         plugin.register(self)
