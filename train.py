@@ -188,7 +188,8 @@ def make_data_loader(overlap_len, params):
 
 def main(exp, frame_sizes, dataset, lambda_weight, **params):
     scheduler = True
-    use_cuda = torch.cuda.is_available()
+    # use_cuda = torch.cuda.is_available()
+    use_cuda = None
     print('Start Sample-RNN')
     params = dict(
         default_params,
