@@ -99,7 +99,7 @@ class Trainer(object):
             plugin_data = [None, None]
 
             def closure():
-                batch_output = self.model(*batch_inputs, batch_cond, batch_spk)
+                batch_output = self.model(*batch_inputs, batch_cond, batch_spk, self.writer)
 
                 loss = self.criterion(batch_output, batch_target)
                 loss.backward()

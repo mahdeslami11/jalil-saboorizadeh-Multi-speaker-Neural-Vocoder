@@ -379,7 +379,7 @@ class Predictor(Runner, torch.nn.Module):
     def __init__(self, model):
         super().__init__(model)
 
-    def forward(self, input_sequences, reset, cond, spk):
+    def forward(self, input_sequences, reset, cond, spk, writer):
         if reset:
             self.reset_hidden_states()
 
@@ -434,12 +434,16 @@ class Predictor(Runner, torch.nn.Module):
             if verbose:
                 print('predictor rnn prev_samples view', prev_samples.size())
             if upper_tier_conditioning is None:
+                with writer(comment='Frame Level. Tier 3') as w:
+                    w.add_graph(rnn, (prev_samples, upper_tier_conditioning, cond, spk))
                 upper_tier_conditioning = self.run_rnn(
                     rnn, prev_samples, upper_tier_conditioning, cond, spk
                 )
             else:
                 cond = None
                 spk = None
+                with writer(comment='Frame Level. Tier 2') as w:
+                    w.add_graph(rnn, (prev_samples, upper_tier_conditioning, cond, spk))
                 upper_tier_conditioning = self.run_rnn(
                     rnn, prev_samples, upper_tier_conditioning, cond, spk
                 )
@@ -455,6 +459,9 @@ class Predictor(Runner, torch.nn.Module):
         # predictor mlp 48
         # predictor mlp input seq torch.Size([128, 1039])
         # predictor mlp upper tier_cond torch.Size([128, 1024, 512])
+
+        with writer(comment='Sample Level. Tier 1') as w:
+            w.add_graph(self.model.sample_level_mlp, (mlp_input_sequences, upper_tier_conditioning))
 
         return self.model.sample_level_mlp(
             mlp_input_sequences, upper_tier_conditioning
