@@ -232,6 +232,10 @@ def main(frame_sizes, **params):
         print(state_dict)
         predictor.load_state_dict(state_dict)
 
+        original_name = file_names[i].split('/')[1]
+        if original_name == "..":
+            original_name = file_names[i].split('/')[3]
+
         generator = RunGenerator(
             model=model,
             sample_rate=params['sample_rate'],
@@ -241,7 +245,7 @@ def main(frame_sizes, **params):
             spk_list=spk,
             speaker=speaker,
             checkpoints_path=f_name,
-            original_name=file_names[i].split('/')[1]
+            original_name=original_name
          )
 
         generator(params['n_samples'], params['sample_length'], cond, speaker)
