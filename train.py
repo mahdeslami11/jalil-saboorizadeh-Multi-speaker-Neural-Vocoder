@@ -63,7 +63,7 @@ default_params = {
     'seed': 77977,
     'model': None,
     'scheduler': False,
-    'comet_key': "XVMnge3eucwKp1MB0G5M7Ahe4"
+    'comet_key': None   # "XVMnge3eucwKp1MB0G5M7Ahe4"
 }
 tag_params = [
     'exp', 'frame_sizes', 'n_rnn', 'dim', 'learn_h0', 'ulaw', 'q_levels', 'seq_len', 'look_ahead', 'norm_ind',

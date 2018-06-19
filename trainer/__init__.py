@@ -25,7 +25,7 @@ class Trainer(object):
             'batch': [],
             'update': [],
         }
-        self.writer = SummaryWriter()
+        self.writer = SummaryWriter
 
     def register_plugin(self, plugin):
         plugin.register(self)
