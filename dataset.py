@@ -36,19 +36,19 @@ class FolderDataset(Dataset):
         self.cond = np.empty(shape=[0, self.cond_dim])
 
         # Define npy training dataset file names
-        npy_name_data = 'npy_datasets/' + partition + '/data' + static_spk*'_static' + '.npy'
-        npy_name_spk = 'npy_datasets/' + partition + '/speakers' + static_spk*'_static' + '.npy'
+        npy_name_data = 'npy_datasets/' + partition + '/data_little_batch' + static_spk*'_static' + '.npy'
+        npy_name_spk = 'npy_datasets/' + partition + '/speakers_little_batch' + static_spk*'_static' + '.npy'
 
-        npy_name_audio_id = 'npy_datasets/' + partition + '/audio_id' + static_spk*'_static' + '.npy'
+        npy_name_audio_id = 'npy_datasets/' + partition + '/audio_id_little_batch' + static_spk*'_static' + '.npy'
 
         # Define npy file names with maximum and minimum values of de-normalized conditioners
-        npy_name_min_max_cond = 'npy_datasets/min_max' + norm_ind*'_ind' + (not norm_ind)*'_joint' \
+        npy_name_min_max_cond = 'npy_datasets/min_max_little_batch' + norm_ind*'_ind' + (not norm_ind)*'_joint' \
                                 + static_spk*'_static' + '.npy'
-        npy_name_cond = 'npy_datasets/' + partition + '/conditioners' + norm_ind*'_ind' + (not norm_ind)*'_joint'\
+        npy_name_cond = 'npy_datasets/' + partition + '/conditioners_little_batch' + norm_ind*'_ind' + (not norm_ind)*'_joint'\
                         + static_spk*'_static' + '.npy'
 
         # Define npy file name with array of unique speakers in dataset
-        npy_name_spk_id = 'npy_datasets/spk_id' + static_spk*'_static' + '.npy'
+        npy_name_spk_id = 'npy_datasets/spk_id_little_batch' + static_spk*'_static' + '.npy'
 
         # Check if dataset has to be created
         files = [npy_name_data, npy_name_cond, npy_name_spk, npy_name_min_max_cond]
