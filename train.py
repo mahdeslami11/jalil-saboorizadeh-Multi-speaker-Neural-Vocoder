@@ -40,7 +40,7 @@ default_params = {
     'qrnn': False,
     'cond_dim': 43,         # Conditioners of size 43 = 40 MFCC + 1 LF0 + 1FV + 1 U/V
     'cond_len': 80,         # Conditioners are computed by Ahocoder every 80 audio samples (windows of 5ms at 16kHz)
-    'norm_ind': False,      # If true, normalization is done independent by speaker. If false, normalization is joint
+    'norm_ind': True,      # If true, normalization is done independent by speaker. If false, normalization is joint
     'static_spk': False,     # If true, training is only done with one speaker
 
     # training parameters
