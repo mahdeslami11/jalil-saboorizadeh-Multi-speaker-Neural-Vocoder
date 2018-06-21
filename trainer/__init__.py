@@ -105,14 +105,17 @@ class Trainer(object):
             def closure_samplernn():
                 batch_output, spk_prediction = self.model(*batch_inputs, batch_cond, batch_spk)
 
-                loss1 = self.criterion_rnn(self.batch_output, batch_target)
+                loss1 = self.criterion_rnn(batch_output, batch_target)
 
-                self.loss2 = self.criterion_discriminant(self.spk_prediction, batch_spk)
+                self.loss2 = self.criterion_discriminant(spk_prediction, batch_spk)
 
-                current_lambda_weight = (self.iterations/self.lambda_weight[2]) * \
+                if self.iterations<self.lambda_weight[2]:
+                    current_lambda_weight = (self.iterations/self.lambda_weight[2]) * \
                                         (self.lambda_weight[1]-self.lambda_weight[0]) + self.lambda_weight[0]
+                else:
+                    current_lambda_weight = self.lambda_weight[1]
 
-                loss = loss1-current_lambda_weight*loss2
+                loss = loss1-current_lambda_weight*self.loss2
 
                 loss.backward()
 
