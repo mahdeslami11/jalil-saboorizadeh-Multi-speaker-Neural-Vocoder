@@ -29,6 +29,7 @@ class Trainer(object):
         }
         self.lambda_weight = lambda_weight
         self.loss2 = None
+        self.batch_output = None
 
     def register_plugin(self, plugin):
         plugin.register(self)
@@ -103,9 +104,9 @@ class Trainer(object):
             plugin_data = [None, None]
 
             def closure_samplernn():
-                batch_output, spk_prediction = self.model(*batch_inputs, batch_cond, batch_spk)
+                self.batch_output, spk_prediction = self.model(*batch_inputs, batch_cond, batch_spk)
 
-                loss1 = self.criterion_rnn(batch_output, batch_target)
+                loss1 = self.criterion_rnn(self.batch_output, batch_target)
 
                 self.loss2 = self.criterion_discriminant(spk_prediction, batch_spk)
 
