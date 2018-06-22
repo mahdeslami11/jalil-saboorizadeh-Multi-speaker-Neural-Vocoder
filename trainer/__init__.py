@@ -25,7 +25,7 @@ class Trainer(object):
             'batch': [],
             'update': [],
         }
-        self.writer = SummaryWriter
+        self.writer = SummaryWriter()
 
     def register_plugin(self, plugin):
         plugin.register(self)
@@ -99,7 +99,7 @@ class Trainer(object):
             plugin_data = [None, None]
 
             def closure():
-                batch_output = self.model(*batch_inputs, batch_cond, batch_spk, self.writer)
+                batch_output = self.model(*batch_inputs, batch_cond, batch_spk, self.writer, self.iterations)
 
                 loss = self.criterion(batch_output, batch_target)
                 loss.backward()

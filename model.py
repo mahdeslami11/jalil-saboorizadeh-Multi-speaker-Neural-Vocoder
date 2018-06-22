@@ -92,36 +92,30 @@ class FrameLevelRNN(torch.nn.Module):
         )
         if is_cond:
             # Acoustic conditioners expansion
-            self.cond_bottle_neck = torch.nn.Sequential(
-                torch.nn.Conv1d(
-                    in_channels=cond_dim,
-                    out_channels=40,
-                    kernel_size=1
-                ),
-                torch.nn.ReLU(),
-                torch.nn.Conv1d(
-                    in_channels=40,
-                    out_channels=40,
-                    kernel_size=1
-                ),
-                torch.nn.ReLU(),
-                torch.nn.Conv1d(
-                    in_channels=40,
-                    out_channels=30,
-                    kernel_size=1
-                ),
-                torch.nn.ReLU(),
-                torch.nn.Conv1d(
-                    in_channels=30,
-                    out_channels=ind_cond_dim,
-                    kernel_size=1
-                ),
-                torch.nn.ReLU(),
-                torch.nn.Conv1d(
-                    in_channels=ind_cond_dim,
-                    out_channels=dim,
-                    kernel_size=1
-                ),
+            self.cond_bottle_neck_1 = torch.nn.Conv1d(
+                in_channels=cond_dim,
+                out_channels=40,
+                kernel_size=1
+            )
+            self.cond_bottle_neck_2 = torch.nn.Conv1d(
+                in_channels=40,
+                out_channels=40,
+                kernel_size=1
+            )
+            self.cond_bottle_neck_3 = torch.nn.Conv1d(
+                in_channels=40,
+                out_channels=30,
+                kernel_size=1
+            )
+            self.cond_bottle_neck_4 = torch.nn.Conv1d(
+                in_channels=30,
+                out_channels=ind_cond_dim,
+                kernel_size=1
+            )
+            self.cond_bottle_neck_5 = torch.nn.Conv1d(
+                in_channels=ind_cond_dim,
+                out_channels=dim,
+                kernel_size=1
             )
 
             # Speaker embedding
@@ -142,10 +136,19 @@ class FrameLevelRNN(torch.nn.Module):
 
             # Apply weight normalization if chosen
             if self.weight_norm:
+                self.cond_bottle_neck_1 = weight_norm(self.cond_bottle_neck_1, name='weight')
+                self.cond_bottle_neck_2 = weight_norm(self.cond_bottle_neck_2, name='weight')
+                self.cond_bottle_neck_3 = weight_norm(self.cond_bottle_neck_3, name='weight')
+                self.cond_bottle_neck_4 = weight_norm(self.cond_bottle_neck_4, name='weight')
+                self.cond_bottle_neck_5 = weight_norm(self.cond_bottle_neck_5, name='weight')
                 self.spk_expand = weight_norm(self.spk_expand, name='weight')
 
         else:
-            self.cond_bottle_neck = None
+            self.cond_bottle_neck_1 = None
+            self.cond_bottle_neck_2 = None
+            self.cond_bottle_neck_3 = None
+            self.cond_bottle_neck_4 = None
+            self.cond_bottle_neck_5 = None
             self.spk_expand = None
             self.spk_embedding = None
         init.kaiming_uniform(self.input_expand.weight)
@@ -201,7 +204,7 @@ class FrameLevelRNN(torch.nn.Module):
         if weight_norm:
             self.upsampling.conv_t = weight_norm(self.upsampling.conv_t, name='weight')
 
-    def forward(self, prev_samples, upper_tier_conditioning, hidden, cond, spk):
+    def forward(self, prev_samples, upper_tier_conditioning, hidden, cond, spk, writer, iterations):
         (batch_size, _, _) = prev_samples.size()
         # The first called
         # forward rnn     frame_size:  4  n_frame_samples:  64    prev_samples: torch.Size([128, 16, 64])
@@ -227,7 +230,31 @@ class FrameLevelRNN(torch.nn.Module):
         else:
             if verbose:
                 print('Cond has input size:', cond.size())
-            cond = self.cond_bottle_neck(cond.permute(0, 2, 1).float()).permute(0, 2, 1)
+            cond = F.relu(self.cond_bottle_neck_1(cond.permute(0, 2, 1).float()))
+            writer.add_histogram('Cond after bottle neck 1', cond.clone().cpu().data.numpy(),
+                                 iterations, bins='sturges')
+            writer.add_histogram('weight 1st layer bottle neck', self.cond_bottle_neck_1.weight.data.cpu(),
+                                 iterations, bins='sturges')
+            cond = F.relu(self.cond_bottle_neck_2(cond))
+            writer.add_histogram('Cond after bottle neck 2', cond.clone().cpu().data.numpy(),
+                                 iterations, bins='sturges')
+            writer.add_histogram('weight 2nd layer bottle neck', self.cond_bottle_neck_2.weight.data.cpu(),
+                                 iterations, bins='sturges')
+            cond = F.relu(self.cond_bottle_neck_3(cond))
+            writer.add_histogram('Cond after bottle neck 3', cond.clone().cpu().data.numpy(),
+                                 iterations, bins='sturges')
+            writer.add_histogram('weight 3rd layer bottle neck', self.cond_bottle_neck_3.weight.data.cpu(),
+                                 iterations, bins='sturges')
+            cond = F.relu(self.cond_bottle_neck_4(cond))
+            writer.add_histogram('Cond after bottle neck 4', cond.clone().cpu().data.numpy(),
+                                 iterations, bins='sturges')
+            writer.add_histogram('weight 4th layer bottle neck', self.cond_bottle_neck_4.weight.data.cpu(),
+                                 iterations, bins='sturges')
+            cond = self.cond_bottle_neck_5(cond).permute(0, 2, 1)
+            writer.add_histogram('Cond after bottle neck 4', cond.clone().cpu().data.numpy(),
+                                 iterations, bins='sturges')
+            writer.add_histogram('weight 5th layer bottle neck', self.cond_bottle_neck_5.weight.data.cpu(),
+                                 iterations, bins='sturges')
             input_rnn += cond
             if verbose:
                 print('Input rnn has size:', input_rnn.size())
@@ -360,15 +387,10 @@ class Runner:
     def reset_hidden_states(self):
         self.hidden_states = {rnn: None for rnn in self.model.frame_level_rnns}
 
-    def run_rnn(self, rnn, prev_samples, upper_tier_conditioning, cond, spk):
-        if cond is None:
-            (output, new_hidden) = rnn(
-                prev_samples, upper_tier_conditioning, self.hidden_states[rnn], cond, spk
-            )
-        else:
-            (output, new_hidden) = rnn(
-                prev_samples, upper_tier_conditioning, self.hidden_states[rnn], cond, spk
-            )
+    def run_rnn(self, rnn, prev_samples, upper_tier_conditioning, cond, spk, writer, iterations):
+        (output, new_hidden) = rnn(
+            prev_samples, upper_tier_conditioning, self.hidden_states[rnn], cond, spk, writer, iterations
+        )
 
         self.hidden_states[rnn] = new_hidden.detach()
         return output
@@ -379,7 +401,7 @@ class Predictor(Runner, torch.nn.Module):
     def __init__(self, model):
         super().__init__(model)
 
-    def forward(self, input_sequences, reset, cond, spk, writer):
+    def forward(self, input_sequences, reset, cond, spk, writer, iterations):
         if reset:
             self.reset_hidden_states()
 
@@ -434,18 +456,14 @@ class Predictor(Runner, torch.nn.Module):
             if verbose:
                 print('predictor rnn prev_samples view', prev_samples.size())
             if upper_tier_conditioning is None:
-                with writer(comment='Frame Level. Tier 3') as w:
-                    w.add_graph(rnn, (prev_samples, upper_tier_conditioning, cond, spk))
                 upper_tier_conditioning = self.run_rnn(
-                    rnn, prev_samples, upper_tier_conditioning, cond, spk
+                    rnn, prev_samples, upper_tier_conditioning, cond, spk, writer, iterations
                 )
             else:
                 cond = None
                 spk = None
-                with writer(comment='Frame Level. Tier 2') as w:
-                    w.add_graph(rnn, (prev_samples, upper_tier_conditioning, cond, spk))
                 upper_tier_conditioning = self.run_rnn(
-                    rnn, prev_samples, upper_tier_conditioning, cond, spk
+                    rnn, prev_samples, upper_tier_conditioning, cond, spk, writer, iterations
                 )
 
         bottom_frame_size = self.model.frame_level_rnns[0].frame_size
@@ -459,9 +477,6 @@ class Predictor(Runner, torch.nn.Module):
         # predictor mlp 48
         # predictor mlp input seq torch.Size([128, 1039])
         # predictor mlp upper tier_cond torch.Size([128, 1024, 512])
-
-        with writer(comment='Sample Level. Tier 1') as w:
-            w.add_graph(self.model.sample_level_mlp, (mlp_input_sequences, upper_tier_conditioning))
 
         return self.model.sample_level_mlp(
             mlp_input_sequences, upper_tier_conditioning
