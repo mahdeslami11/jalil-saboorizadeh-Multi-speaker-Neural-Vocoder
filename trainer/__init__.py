@@ -3,13 +3,11 @@ from torch.autograd import Variable
 
 import heapq
 
-from tensorboardX import SummaryWriter
-
 
 # Based on torch.utils.trainer.Trainer code.
 # Allows multiple inputs to the model, not all need to be Tensors.
 class Trainer(object):
-    def __init__(self, model, criterion, optimizer, dataset, cuda, scheduler=None):
+    def __init__(self, model, criterion, optimizer, dataset, cuda, writer, scheduler=None):
         self.model = model
         self.criterion = criterion
         self.optimizer = optimizer
@@ -25,7 +23,7 @@ class Trainer(object):
             'batch': [],
             'update': [],
         }
-        self.writer = SummaryWriter()
+        self.writer = writer
 
     def register_plugin(self, plugin):
         plugin.register(self)
