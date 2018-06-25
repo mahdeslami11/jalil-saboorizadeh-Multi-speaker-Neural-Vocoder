@@ -293,7 +293,7 @@ def main(exp, frame_sizes, dataset, **params):
         cuda = False
     writer = SummaryWriter()
     trainer = Trainer(
-        predictor, sequence_nll_loss_bits, optimizer,  data_model, cuda, scheduler, writer
+        predictor, sequence_nll_loss_bits, optimizer,  data_model, cuda, writer, scheduler
 
     )
 
