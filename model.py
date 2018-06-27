@@ -434,7 +434,7 @@ class Generator(Runner):
         super().__init__(model)
         self.cuda = cuda
 
-    def __call__(self, n_seqs, seq_len, cond, spk):
+    def __call__(self, n_seqs, seq_len, cond, spk, writer):
         # generation doesn't work with CUDNN for some reason
 
         cuda_enabled = torch.backends.cudnn.enabled
@@ -506,6 +506,8 @@ class Generator(Runner):
             sample_dist = self.model.sample_level_mlp(
                 prev_samples, upper_tier_conditioning
             ).squeeze(1).exp_().data
+            print('Sample dist shape:', sample_dist.size())
+            # writer.add_histogram('Output distribution', sample_dist.cpu(), train_step, bins='sturges')
             sequences[:, i] = sample_dist.multinomial(1).squeeze(1)
 
         torch.backends.cudnn.enabled = cuda_enabled
