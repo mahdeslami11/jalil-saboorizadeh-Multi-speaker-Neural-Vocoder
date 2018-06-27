@@ -96,15 +96,16 @@ class RunGenerator:
         self.cond = cond
         self.speaker = speaker
         self.writer = writer
+        self.original_name = original_name
 
         path_split = checkpoints_path.split('/')
         self.filename = '/'.join(path_split[:2]) + '/samples/' + path_split[-1] + '_file-' + \
-                        original_name + '_spk-' + spk_list[self.speaker] + '.wav'
+                        self.original_name + '_spk-' + spk_list[self.speaker] + '.wav'
         print('Generating file', self.filename)
 
     def __call__(self, n_samples, sample_length, cond, speaker):
         print('Generate', n_samples, 'of length', sample_length)
-        samples = self.generate(n_samples, sample_length, cond, speaker, self.writer).cpu().numpy()
+        samples = self.generate(n_samples, sample_length, cond, speaker, self.writer, self.original_name).cpu().numpy()
         for i in range(n_samples):
             print(self.filename)
 
