@@ -291,7 +291,7 @@ def main(exp, frame_sizes, dataset, **params):
         cuda = True
     else:
         cuda = False
-    writer = SummaryWriter()
+    writer = SummaryWriter(log_dir='tensorboard')
     trainer = Trainer(
         predictor, sequence_nll_loss_bits, optimizer,  data_model, cuda, writer, scheduler
 
