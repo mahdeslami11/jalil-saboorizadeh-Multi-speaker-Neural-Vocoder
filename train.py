@@ -1,3 +1,5 @@
+from tensorboardX import SummaryWriter
+
 from model import SampleRNNGAN, ConditionerCNN, Discriminant, Predictor
 from optim import gradient_clipping
 from nn import sequence_nll_loss_bits, discriminant_nll_loss_bits
@@ -287,9 +289,10 @@ def main(exp, frame_sizes, dataset, lambda_weight, **params):
         cuda = True
     else:
         cuda = False
+    writer = SummaryWriter(log_dir='gan')
     trainer = Trainer(
         predictor, sequence_nll_loss_bits, discriminant_nll_loss_bits, optimizer_samplernn, optimizer_discriminant,
-        data_model, cuda, scheduler_samplernn, scheduler_discriminant, params['lambda_weight']
+        data_model, cuda, scheduler_samplernn, writer, scheduler_discriminant, params['lambda_weight']
     )
 
     checkpoints_path = os.path.join(results_path, 'checkpoints')
@@ -305,7 +308,8 @@ def main(exp, frame_sizes, dataset, lambda_weight, **params):
     ))
     trainer.register_plugin(ValidationPlugin(
         data_loader('validation'),
-        data_loader('test')
+        data_loader('test'),
+        writer
     ))
     trainer.register_plugin(AbsoluteTimeMonitor())
     trainer.register_plugin(SaverPlugin(

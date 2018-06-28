@@ -151,7 +151,7 @@ class FrameLevelRNN(torch.nn.Module):
         if weight_norm:
             self.upsampling.conv_t = weight_norm(self.upsampling.conv_t, name='weight')
 
-    def forward(self, prev_samples, upper_tier_conditioning, hidden, cond_cnn, spk):
+    def forward(self, prev_samples, upper_tier_conditioning, hidden, cond_cnn, spk, writer, iterations):
         (batch_size, _, _) = prev_samples.size()
         # The first called
         # forward rnn     frame_size:  4  n_frame_samples:  64    prev_samples: torch.Size([128, 16, 64])
@@ -182,6 +182,7 @@ class FrameLevelRNN(torch.nn.Module):
                 print('After expansion, conditioner has size: ', cond_rnn.size())
                 print('Compute speaker embedding for spk of size: ', spk.size())
             spk_embed = self.spk_embedding(spk.long())
+            writer.add_embedding(spk_embed, label_img=spk, global_step=iterations)
             if verbose:
                 print('Embedding has size: ', spk_embed.size())
             input_rnn += spk_embed
@@ -453,7 +454,7 @@ class Predictor(Runner, torch.nn.Module):
     def __init__(self, samplernn_model, conditioner_model, discriminant_model):
         super().__init__(samplernn_model, conditioner_model, discriminant_model)
 
-    def forward(self, input_sequences, reset, cond, spk):
+    def forward(self, input_sequences, reset, cond, spk, writer, iterations):
         if reset:
             self.reset_hidden_states()
 
@@ -514,7 +515,7 @@ class Predictor(Runner, torch.nn.Module):
                     print('predictor rnn prev_samples view', prev_samples.size())
                     print('Cond_cnn has size:', cond_cnn.size())
                 upper_tier_conditioning = self.run_rnn(
-                    rnn, prev_samples, upper_tier_conditioning, cond_cnn, spk
+                    rnn, prev_samples, upper_tier_conditioning, cond_cnn, spk, writer, iterations
                 )
 
                 spk_prediction = self.run_discriminant(cond_cnn)
@@ -522,7 +523,7 @@ class Predictor(Runner, torch.nn.Module):
                 cond_cnn = None
                 spk = None
                 upper_tier_conditioning = self.run_rnn(
-                    rnn, prev_samples, upper_tier_conditioning, cond_cnn, spk
+                    rnn, prev_samples, upper_tier_conditioning, cond_cnn, spk, writer, iterations
                 )
 
         bottom_frame_size = self.samplernn_model.frame_level_rnns[0].frame_size

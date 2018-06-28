@@ -8,7 +8,7 @@ import heapq
 # Allows multiple inputs to the model, not all need to be Tensors.
 class Trainer(object):
     def __init__(self, model, criterion_rnn, criterion_discriminant, optimizer_samplernn, optimizer_discriminant,
-                 dataset, cuda, scheduler_samplernn, scheduler_discriminant, lambda_weight):
+                 dataset, cuda, writer, scheduler_samplernn, scheduler_discriminant, lambda_weight):
         self.model = model
         self.criterion_rnn = criterion_rnn
         self.criterion_discriminant = criterion_discriminant
@@ -27,9 +27,10 @@ class Trainer(object):
             'batch': [],
             'update': [],
         }
+        self.writer = writer
         self.lambda_weight = lambda_weight
         self.loss2 = None
-        self.batch_output = None
+        self.spk_prediction = None
 
     def register_plugin(self, plugin):
         plugin.register(self)
@@ -104,13 +105,14 @@ class Trainer(object):
             plugin_data = [None, None]
 
             def closure_samplernn():
-                self.batch_output, spk_prediction = self.model(*batch_inputs, batch_cond, batch_spk)
+                batch_output, self.spk_prediction = self.model(*batch_inputs, batch_cond,
+                                                               batch_spk, self.writer, self.iterations)
 
-                loss1 = self.criterion_rnn(self.batch_output, batch_target)
+                loss1 = self.criterion_rnn(batch_output, batch_target)
 
-                self.loss2 = self.criterion_discriminant(spk_prediction, batch_spk)
+                self.loss2 = self.criterion_discriminant(self.spk_prediction, batch_spk)
 
-                if self.iterations<self.lambda_weight[2]:
+                if self.iterations < self.lambda_weight[2]:
                     current_lambda_weight = (self.iterations/self.lambda_weight[2]) * \
                                         (self.lambda_weight[1]-self.lambda_weight[0]) + self.lambda_weight[0]
                 else:
@@ -118,10 +120,14 @@ class Trainer(object):
 
                 loss = loss1-current_lambda_weight*self.loss2
 
+                self.writer.add_scalar('Loss1', loss1, self.iterations)
+                self.writer.add_scalar('Loss2', self.loss2, self.iterations)
+                self.writer.add_scalar('Loss', loss, self.iterations)
+
                 loss.backward()
 
                 if plugin_data[0] is None:
-                    plugin_data[0] = self.batch_output.data
+                    plugin_data[0] = self.spk_prediction.data
                     plugin_data[1] = loss.data
 
                 return loss
