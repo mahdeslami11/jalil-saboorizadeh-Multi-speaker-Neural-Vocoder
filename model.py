@@ -435,17 +435,16 @@ class Generator(Runner):
         self.cuda = cuda
 
     @staticmethod
-    def distribution2histogram(dist_tensor, original_name, iteration, quantization):
+    def distribution2histogram(dist_tensor, original_name, iteration, quantization, writer):
         histogram = np.empty(shape=quantization)
         cdf = 0
         for i in range(dist_tensor.shape[1]):
             prob = dist_tensor[0, i]
-            print('Probability', prob)
             levels = int(round(prob*quantization))
-            print('Vector from ', cdf, ' to ', levels)
             if cdf + levels <= quantization & levels != 0:
                 histogram[cdf:levels] = i
                 cdf = cdf + levels
+        print('Cdf=', cdf)
         writer.add_histogram('Output distribution for ' + original_name, histogram, iteration, bins='sturges')
 
     def __call__(self, n_seqs, seq_len, cond, spk, writer, original_name):
@@ -520,7 +519,8 @@ class Generator(Runner):
             sample_dist = self.model.sample_level_mlp(
                 prev_samples, upper_tier_conditioning
             ).squeeze(1).exp_().data
-            self.distribution2histogram(sample_dist.cpu().numpy(), original_name, iteration=i, quantization=10000)
+            self.distribution2histogram(sample_dist.cpu().numpy(), original_name, iteration=i,
+                                        quantization=10000, writer)
             sequences[:, i] = sample_dist.multinomial(1).squeeze(1)
 
         torch.backends.cudnn.enabled = cuda_enabled
