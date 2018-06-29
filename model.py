@@ -446,6 +446,7 @@ class Generator(Runner):
                 histogram[cdf:levels] = i
                 cdf = cdf + levels
         print('Cdf=', cdf)
+        print('Sum of all elements', sum(dist_tensor))
         exit()
         writer.add_histogram('Output distribution for ' + original_name, histogram, iteration, bins='sturges')
 
