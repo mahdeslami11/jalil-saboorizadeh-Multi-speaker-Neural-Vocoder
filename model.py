@@ -436,7 +436,6 @@ class Generator(Runner):
 
     @staticmethod
     def distribution2histogram(dist_tensor, original_name, writer, iteration, quantization):
-        print('Distribution tensor', dist_tensor)
         histogram = np.empty(shape=quantization)
         cdf = 0
         for i in range(dist_tensor.shape[1]):
