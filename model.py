@@ -440,7 +440,7 @@ class Generator(Runner):
         cdf = 0
         print('Tensor size: ', dist_tensor.size())
         for i in range(dist_tensor.size()[1]):
-            prob = dist_tensor[1, i]
+            prob = dist_tensor[0, i]
             print('Probability', prob)
             levels = round(prob*quantization)
             if cdf + levels <= quantization:
