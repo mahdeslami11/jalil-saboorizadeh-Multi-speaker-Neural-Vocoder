@@ -521,7 +521,7 @@ class Generator(Runner):
                 prev_samples, upper_tier_conditioning
             ).squeeze(1).exp_().data
             self.distribution2histogram(sample_dist.cpu().numpy(), original_name, writer,
-                                        iteration=i, quantization=int(1e11))
+                                        iteration=i, quantization=int(1e10))
             sequences[:, i] = sample_dist.multinomial(1).squeeze(1)
 
         torch.backends.cudnn.enabled = cuda_enabled
