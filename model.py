@@ -435,7 +435,7 @@ class Generator(Runner):
         self.cuda = cuda
 
     @staticmethod
-    def distribution2histogram(dist_tensor, original_name, iteration, quantization, writer):
+    def distribution2histogram(dist_tensor, original_name, writer, iteration, quantization):
         histogram = np.empty(shape=quantization)
         cdf = 0
         for i in range(dist_tensor.shape[1]):
@@ -519,8 +519,8 @@ class Generator(Runner):
             sample_dist = self.model.sample_level_mlp(
                 prev_samples, upper_tier_conditioning
             ).squeeze(1).exp_().data
-            self.distribution2histogram(sample_dist.cpu().numpy(), original_name, iteration=i,
-                                        quantization=10000, writer)
+            self.distribution2histogram(sample_dist.cpu().numpy(), original_name, writer,
+                                        iteration=i, quantization=10000)
             sequences[:, i] = sample_dist.multinomial(1).squeeze(1)
 
         torch.backends.cudnn.enabled = cuda_enabled
