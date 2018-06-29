@@ -446,7 +446,6 @@ class Generator(Runner):
                 cdf = cdf + levels
         print('Cdf=', cdf)
         print('Sum of all elements ', np.sum(dist_tensor))
-        exit()
         writer.add_histogram('Output distribution for ' + original_name, histogram, iteration, bins='sturges')
 
     def __call__(self, n_seqs, seq_len, cond, spk, writer, original_name):
@@ -522,7 +521,7 @@ class Generator(Runner):
                 prev_samples, upper_tier_conditioning
             ).squeeze(1).exp_().data
             self.distribution2histogram(sample_dist.cpu().numpy(), original_name, writer,
-                                        iteration=i, quantization=1000000)
+                                        iteration=i, quantization=int(1e12))
             sequences[:, i] = sample_dist.multinomial(1).squeeze(1)
 
         torch.backends.cudnn.enabled = cuda_enabled
