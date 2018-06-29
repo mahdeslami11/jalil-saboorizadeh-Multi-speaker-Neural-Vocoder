@@ -438,8 +438,7 @@ class Generator(Runner):
     def distribution2histogram(dist_tensor, original_name, iteration, quantization):
         histogram = np.empty(shape=quantization)
         cdf = 0
-        print('Tensor size: ', dist_tensor.size())
-        for i in range(dist_tensor.size()[1]):
+        for i in range(dist_tensor.shape[1]):
             prob = dist_tensor[0, i]
             print('Probability', prob)
             levels = round(prob*quantization)
