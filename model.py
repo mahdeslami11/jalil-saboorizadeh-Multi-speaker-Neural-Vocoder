@@ -442,6 +442,7 @@ class Generator(Runner):
             prob = dist_tensor[0, i]
             print('Probability', prob)
             levels = round(prob*quantization)
+            print('Vector from ', cdf, ' to ', levels)
             if cdf + levels <= quantization:
                 histogram[cdf:levels] = i
                 cdf = cdf + levels
