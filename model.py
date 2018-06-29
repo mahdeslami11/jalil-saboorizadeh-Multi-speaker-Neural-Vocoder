@@ -520,7 +520,7 @@ class Generator(Runner):
             sample_dist = self.model.sample_level_mlp(
                 prev_samples, upper_tier_conditioning
             ).squeeze(1).exp_().data
-            self.distribution2histogram(sample_dist.cpu(), original_name, iteration=i, quantization=10000)
+            self.distribution2histogram(sample_dist.cpu().numpy(), original_name, iteration=i, quantization=10000)
             sequences[:, i] = sample_dist.multinomial(1).squeeze(1)
 
         torch.backends.cudnn.enabled = cuda_enabled
