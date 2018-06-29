@@ -434,6 +434,20 @@ class Generator(Runner):
         super().__init__(model)
         self.cuda = cuda
 
+    @staticmethod
+    def distribution2histogram(dist_tensor, original_name, iteration, quantization):
+        histogram = np.empty(shape=quantization)
+        cdf = 0
+        print('Tensor size: ', dist_tensor.size())
+        for i in range(dist_tensor.size()[1]):
+            prob = dist_tensor[1, i]
+            print('Probability', prob)
+            levels = round(prob*quantization)
+            if cdf + levels <= quantization:
+                histogram[cdf:levels] = i
+                cdf = cdf + levels
+        writer.add_histogram('Output distribution for ' + original_name, histogram, iteration, bins='sturges')
+
     def __call__(self, n_seqs, seq_len, cond, spk, writer, original_name):
         # generation doesn't work with CUDNN for some reason
 
@@ -506,7 +520,7 @@ class Generator(Runner):
             sample_dist = self.model.sample_level_mlp(
                 prev_samples, upper_tier_conditioning
             ).squeeze(1).exp_().data
-            writer.add_histogram('Output distribution for '+original_name, sample_dist.cpu(), i, bins='sturges')
+            self.distribution2histogram(sample_dist.cpu(), original_name, iteration=i, quantization=10000)
             sequences[:, i] = sample_dist.multinomial(1).squeeze(1)
 
         torch.backends.cudnn.enabled = cuda_enabled
