@@ -441,9 +441,9 @@ class Generator(Runner):
         for i in range(dist_tensor.shape[1]):
             prob = dist_tensor[0, i]
             print('Probability', prob)
-            levels = round(prob*quantization)
+            levels = int(round(prob*quantization))
             print('Vector from ', cdf, ' to ', levels)
-            if cdf + levels <= quantization:
+            if cdf + levels <= quantization & levels != 0:
                 histogram[cdf:levels] = i
                 cdf = cdf + levels
         writer.add_histogram('Output distribution for ' + original_name, histogram, iteration, bins='sturges')
