@@ -206,8 +206,6 @@ class FrameLevelRNN(torch.nn.Module):
             spk_embed = self.spk_embedding(spk.long())
             if verbose:
                 print('Embedding has size: ', spk_embed.size())
-            if writer is not None:
-                writer.add_embedding(spk_embed.view(-1, 6).data.cpu(), global_step=iterations)
             spk_expand = self.spk_expand(spk_embed.permute(0, 2, 1).float()).permute(0, 2, 1)
             input_rnn += spk_expand
             if verbose:
