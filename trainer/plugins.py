@@ -25,10 +25,11 @@ class TrainingLossMonitor(LossMonitor):
 
 class ValidationPlugin(Plugin):
 
-    def __init__(self, val_dataset, test_dataset):
+    def __init__(self, val_dataset, test_dataset, writer):
         super().__init__([(1, 'epoch')])
         self.val_dataset = val_dataset
         self.test_dataset = test_dataset
+        self.writer = writer
 
     def register(self, trainer):
         self.trainer = trainer
@@ -41,13 +42,13 @@ class ValidationPlugin(Plugin):
         self.trainer.model.eval()
 
         val_stats = self.trainer.stats.setdefault('validation_loss', {})
-        val_stats['last'] = self._evaluate(self.val_dataset)
+        val_stats['last'] = self._evaluate(self.val_dataset, idx)
         test_stats = self.trainer.stats.setdefault('test_loss', {})
-        test_stats['last'] = self._evaluate(self.test_dataset)
+        test_stats['last'] = self._evaluate(self.test_dataset, idx)
 
         self.trainer.model.train()
 
-    def _evaluate(self, dataset):
+    def _evaluate(self, dataset, idx):
         loss_sum = 0
         n_examples = 0
         for data in dataset:
@@ -81,7 +82,7 @@ class ValidationPlugin(Plugin):
                 batch_cond = batch_cond.cuda()
                 batch_spk = batch_spk.cuda()
 
-            batch_output = self.trainer.model(*batch_inputs, batch_cond, batch_spk)
+            batch_output = self.trainer.model(*batch_inputs, batch_cond, batch_spk, self.writer, idx)
             loss = self.trainer.criterion(batch_output, batch_target)  
             print('loss evaluate', loss)
             loss_sum += loss .data[0] * batch_size

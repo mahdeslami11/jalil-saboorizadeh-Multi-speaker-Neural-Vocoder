@@ -7,7 +7,7 @@ import heapq
 # Based on torch.utils.trainer.Trainer code.
 # Allows multiple inputs to the model, not all need to be Tensors.
 class Trainer(object):
-    def __init__(self, model, criterion, optimizer, dataset, cuda, scheduler=None):
+    def __init__(self, model, criterion, optimizer, dataset, cuda, writer, scheduler=None):
         self.model = model
         self.criterion = criterion
         self.optimizer = optimizer
@@ -23,6 +23,7 @@ class Trainer(object):
             'batch': [],
             'update': [],
         }
+        self.writer = writer
 
     def register_plugin(self, plugin):
         plugin.register(self)
@@ -96,7 +97,7 @@ class Trainer(object):
             plugin_data = [None, None]
 
             def closure():
-                batch_output = self.model(*batch_inputs, batch_cond, batch_spk)
+                batch_output = self.model(*batch_inputs, batch_cond, batch_spk, self.writer, self.iterations)
 
                 loss = self.criterion(batch_output, batch_target)
                 loss.backward()

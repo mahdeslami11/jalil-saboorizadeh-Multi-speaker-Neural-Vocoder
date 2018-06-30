@@ -206,7 +206,8 @@ class FrameLevelRNN(torch.nn.Module):
             spk_embed = self.spk_embedding(spk.long())
             if verbose:
                 print('Embedding has size: ', spk_embed.size())
-            writer.add_embedding(spk_embed.view(1, -1).data.cpu(), global_step=iterations)
+            if writer is not None:
+                writer.add_embedding(spk_embed.view(1, -1).data.cpu(), global_step=iterations)
             spk_expand = self.spk_expand(spk_embed.permute(0, 2, 1).float()).permute(0, 2, 1)
             input_rnn += spk_expand
             if verbose:
@@ -328,7 +329,7 @@ class Runner:
     def reset_hidden_states(self):
         self.hidden_states = {rnn: None for rnn in self.model.frame_level_rnns}
 
-    def run_rnn(self, rnn, prev_samples, upper_tier_conditioning, cond, spk, writer, iterations):
+    def run_rnn(self, rnn, prev_samples, upper_tier_conditioning, cond, spk, writer=None, iterations=None):
         if cond is None:
             (output, new_hidden) = rnn(
                 prev_samples, upper_tier_conditioning, self.hidden_states[rnn], cond, spk, writer, iterations
@@ -347,7 +348,7 @@ class Predictor(Runner, torch.nn.Module):
     def __init__(self, model):
         super().__init__(model)
 
-    def forward(self, input_sequences, reset, cond, spk, writer):
+    def forward(self, input_sequences, reset, cond, spk, writer, iterations):
         if reset:
             self.reset_hidden_states()
 
@@ -403,13 +404,13 @@ class Predictor(Runner, torch.nn.Module):
                 print('predictor rnn prev_samples view', prev_samples.size())
             if upper_tier_conditioning is None:
                 upper_tier_conditioning = self.run_rnn(
-                    rnn, prev_samples, upper_tier_conditioning, cond, spk, writer
+                    rnn, prev_samples, upper_tier_conditioning, cond, spk, writer, iterations
                 )
             else:
                 cond = None
                 spk = None
                 upper_tier_conditioning = self.run_rnn(
-                    rnn, prev_samples, upper_tier_conditioning, cond, spk, writer
+                    rnn, prev_samples, upper_tier_conditioning, cond, spk, writer, iterations
                 )
 
         bottom_frame_size = self.model.frame_level_rnns[0].frame_size
@@ -435,7 +436,7 @@ class Generator(Runner):
         super().__init__(model)
         self.cuda = cuda
 
-    def __call__(self, n_seqs, seq_len, cond, spk, writer, file):
+    def __call__(self, n_seqs, seq_len, cond, spk, file):
         # generation doesn't work with CUDNN for some reason
 
         cuda_enabled = torch.backends.cudnn.enabled
@@ -491,7 +492,7 @@ class Generator(Runner):
                     cond = Variable(cond).cuda()
                     spk = Variable(spk).cuda()
                 frame_level_outputs[tier_index] = self.run_rnn(
-                    rnn, prev_samples, upper_tier_conditioning, cond, spk, writer, i
+                    rnn, prev_samples, upper_tier_conditioning, cond, spk, i
                 )
             # print('frame out', frame_level_outputs)
             prev_samples = torch.autograd.Variable(

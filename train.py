@@ -1,3 +1,5 @@
+from tensorboardX import SummaryWriter
+
 from model import SampleRNN, Predictor
 from optim import gradient_clipping
 from nn import sequence_nll_loss_bits
@@ -258,8 +260,9 @@ def main(exp, frame_sizes, dataset, **params):
         cuda = True
     else:
         cuda = False
+    writer = SummaryWriter(log_dir='sample_board')
     trainer = Trainer(
-        predictor, sequence_nll_loss_bits, optimizer,  data_model, cuda, scheduler
+        predictor, sequence_nll_loss_bits, optimizer,  data_model, cuda, writer, scheduler
 
     )
 
@@ -276,7 +279,8 @@ def main(exp, frame_sizes, dataset, **params):
     ))
     trainer.register_plugin(ValidationPlugin(
         data_loader('validation'),
-        data_loader('test')
+        data_loader('test'),
+        writer
     ))
     trainer.register_plugin(AbsoluteTimeMonitor())
     trainer.register_plugin(SaverPlugin(
