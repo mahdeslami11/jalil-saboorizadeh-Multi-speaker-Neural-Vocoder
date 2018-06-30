@@ -251,7 +251,6 @@ def main(frame_sizes, **params):
             speaker=speaker,
             checkpoints_path=f_name,
             original_name=original_name,
-            writer=writer,
             file=file
          )
 
