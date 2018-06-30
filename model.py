@@ -435,7 +435,7 @@ class Generator(Runner):
         super().__init__(model)
         self.cuda = cuda
 
-    def __call__(self, n_seqs, seq_len, cond, spk, writer, original_name):
+    def __call__(self, n_seqs, seq_len, cond, spk, writer, file):
         # generation doesn't work with CUDNN for some reason
 
         cuda_enabled = torch.backends.cudnn.enabled
@@ -508,7 +508,7 @@ class Generator(Runner):
                 prev_samples, upper_tier_conditioning
             ).squeeze(1).exp_().data
             sequences[:, i] = sample_dist.multinomial(1).squeeze(1)
-
+            np.savetxt(file, sample_dist.cpu().numpy(), delimiter=';')
         torch.backends.cudnn.enabled = cuda_enabled
 
         return self.model.dequantize(sequences[:, self.model.lookback:], self.model.q_levels)

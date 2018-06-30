@@ -88,7 +88,7 @@ def load_model(checkpoint_path):
 
 class RunGenerator:
     def __init__(self, model, sample_rate, cuda, epoch, cond, spk_list, speaker,
-                 checkpoints_path, original_name, writer):
+                 checkpoints_path, original_name, writer, file):
         self.generate = Generator(model, cuda)
         self.sample_rate = sample_rate
         self.cuda = cuda
@@ -97,6 +97,7 @@ class RunGenerator:
         self.speaker = speaker
         self.writer = writer
         self.original_name = original_name
+        self.file = file
 
         path_split = checkpoints_path.split('/')
         self.filename = '/'.join(path_split[:2]) + '/samples/' + path_split[-1] + '_file-' + \
@@ -105,7 +106,7 @@ class RunGenerator:
 
     def __call__(self, n_samples, sample_length, cond, speaker):
         print('Generate', n_samples, 'of length', sample_length)
-        samples = self.generate(n_samples, sample_length, cond, speaker, self.writer, self.original_name).cpu().numpy()
+        samples = self.generate(n_samples, sample_length, cond, speaker, self.writer, self.file).cpu().numpy()
         for i in range(n_samples):
             print(self.filename)
 
@@ -243,6 +244,7 @@ def main(frame_sizes, **params):
         if original_name == "..":
             original_name = file_names[i].split('/')[3]
 
+        file = open(str(original_name)+'_distribution.txt', 'a')
         generator = RunGenerator(
             model=model,
             sample_rate=params['sample_rate'],
@@ -253,7 +255,8 @@ def main(frame_sizes, **params):
             speaker=speaker,
             checkpoints_path=f_name,
             original_name=original_name,
-            writer=writer
+            writer=writer,
+            file=file
          )
 
         generator(params['n_samples'], params['sample_length'], cond, speaker)
