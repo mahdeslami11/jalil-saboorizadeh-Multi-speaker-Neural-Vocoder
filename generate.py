@@ -141,10 +141,10 @@ def main(frame_sizes, **params):
 
     # Get file names from partition's list
     file_names = open(str(params['datasets_path']) +
-                      'generate_cond_vocoder.list', 'r').read().splitlines()
+                      'generate_cond_gina.list', 'r').read().splitlines()
 
     spk_names = open(str(params['datasets_path']) +
-                     'generate_spk_vocoder.list', 'r').read().splitlines()
+                     'generate_spk_gina.list', 'r').read().splitlines()
 
     datasets_path = os.path.join(params['datasets_path'], params['cond_set'])
 
