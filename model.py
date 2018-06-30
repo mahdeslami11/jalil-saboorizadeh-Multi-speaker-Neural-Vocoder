@@ -204,8 +204,8 @@ class FrameLevelRNN(torch.nn.Module):
                 print('After expansion, conditioner has size: ', cond.size())
                 print('Compute speaker embedding for spk of size: ', spk.size())
             spk_embed = self.spk_embedding(spk.long())
-            print('Label img', spk)
-            print('Embedding', spk_embed)
+            spk
+            spk_embed
             writer.add_embedding(spk_embed, label_img=spk.long().unsqueeze(1), global_step=iterations)
             spk_expand = self.spk_expand(spk_embed.permute(0, 2, 1).float()).permute(0, 2, 1)
             if verbose:
