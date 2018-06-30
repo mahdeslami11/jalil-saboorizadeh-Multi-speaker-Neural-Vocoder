@@ -10,7 +10,7 @@ from torch.nn.utils import weight_norm
 
 import numpy as np
 
-verbose = False
+verbose = True
 
 
 class SampleRNN(torch.nn.Module):
