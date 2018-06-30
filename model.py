@@ -175,7 +175,7 @@ class FrameLevelRNN(torch.nn.Module):
         if weight_norm:
             self.upsampling.conv_t = weight_norm(self.upsampling.conv_t, name='weight')
 
-    def forward(self, prev_samples, upper_tier_conditioning, hidden, cond, spk, writer):
+    def forward(self, prev_samples, upper_tier_conditioning, hidden, cond, spk, writer, iterations):
         (batch_size, _, _) = prev_samples.size()
         # The first called
         # forward rnn     frame_size:  4  n_frame_samples:  64    prev_samples: torch.Size([128, 16, 64])
@@ -328,14 +328,14 @@ class Runner:
     def reset_hidden_states(self):
         self.hidden_states = {rnn: None for rnn in self.model.frame_level_rnns}
 
-    def run_rnn(self, rnn, prev_samples, upper_tier_conditioning, cond, spk, writer):
+    def run_rnn(self, rnn, prev_samples, upper_tier_conditioning, cond, spk, writer, iterations):
         if cond is None:
             (output, new_hidden) = rnn(
-                prev_samples, upper_tier_conditioning, self.hidden_states[rnn], cond, spk, writer
+                prev_samples, upper_tier_conditioning, self.hidden_states[rnn], cond, spk, writer, iterations
             )
         else:
             (output, new_hidden) = rnn(
-                prev_samples, upper_tier_conditioning, self.hidden_states[rnn], cond, spk, writer
+                prev_samples, upper_tier_conditioning, self.hidden_states[rnn], cond, spk, writer, iterations
             )
 
         self.hidden_states[rnn] = new_hidden.detach()
@@ -491,7 +491,7 @@ class Generator(Runner):
                     cond = Variable(cond).cuda()
                     spk = Variable(spk).cuda()
                 frame_level_outputs[tier_index] = self.run_rnn(
-                    rnn, prev_samples, upper_tier_conditioning, cond, spk, writer
+                    rnn, prev_samples, upper_tier_conditioning, cond, spk, writer, i
                 )
             # print('frame out', frame_level_outputs)
             prev_samples = torch.autograd.Variable(
