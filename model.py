@@ -175,7 +175,7 @@ class FrameLevelRNN(torch.nn.Module):
         if weight_norm:
             self.upsampling.conv_t = weight_norm(self.upsampling.conv_t, name='weight')
 
-    def forward(self, prev_samples, upper_tier_conditioning, hidden, cond, spk):
+    def forward(self, prev_samples, upper_tier_conditioning, hidden, cond, spk, writer):
         (batch_size, _, _) = prev_samples.size()
         # The first called
         # forward rnn     frame_size:  4  n_frame_samples:  64    prev_samples: torch.Size([128, 16, 64])
@@ -204,6 +204,7 @@ class FrameLevelRNN(torch.nn.Module):
                 print('After expansion, conditioner has size: ', cond.size())
                 print('Compute speaker embedding for spk of size: ', spk.size())
             spk_embed = self.spk_embedding(spk.long())
+            writer.add_embedding(spk_embed, label_img=spk, global_step=iterations)
             spk_expand = self.spk_expand(spk_embed.permute(0, 2, 1).float()).permute(0, 2, 1)
             if verbose:
                 print('Embedding has size: ', spk_embed.size())
@@ -327,14 +328,14 @@ class Runner:
     def reset_hidden_states(self):
         self.hidden_states = {rnn: None for rnn in self.model.frame_level_rnns}
 
-    def run_rnn(self, rnn, prev_samples, upper_tier_conditioning, cond, spk):
+    def run_rnn(self, rnn, prev_samples, upper_tier_conditioning, cond, spk, writer):
         if cond is None:
             (output, new_hidden) = rnn(
-                prev_samples, upper_tier_conditioning, self.hidden_states[rnn], cond, spk
+                prev_samples, upper_tier_conditioning, self.hidden_states[rnn], cond, spk, writer
             )
         else:
             (output, new_hidden) = rnn(
-                prev_samples, upper_tier_conditioning, self.hidden_states[rnn], cond, spk
+                prev_samples, upper_tier_conditioning, self.hidden_states[rnn], cond, spk, writer
             )
 
         self.hidden_states[rnn] = new_hidden.detach()
@@ -346,7 +347,7 @@ class Predictor(Runner, torch.nn.Module):
     def __init__(self, model):
         super().__init__(model)
 
-    def forward(self, input_sequences, reset, cond, spk):
+    def forward(self, input_sequences, reset, cond, spk, writer):
         if reset:
             self.reset_hidden_states()
 
@@ -402,13 +403,13 @@ class Predictor(Runner, torch.nn.Module):
                 print('predictor rnn prev_samples view', prev_samples.size())
             if upper_tier_conditioning is None:
                 upper_tier_conditioning = self.run_rnn(
-                    rnn, prev_samples, upper_tier_conditioning, cond, spk
+                    rnn, prev_samples, upper_tier_conditioning, cond, spk, writer
                 )
             else:
                 cond = None
                 spk = None
                 upper_tier_conditioning = self.run_rnn(
-                    rnn, prev_samples, upper_tier_conditioning, cond, spk
+                    rnn, prev_samples, upper_tier_conditioning, cond, spk, writer
                 )
 
         bottom_frame_size = self.model.frame_level_rnns[0].frame_size
@@ -433,20 +434,6 @@ class Generator(Runner):
     def __init__(self, model, cuda=False):
         super().__init__(model)
         self.cuda = cuda
-
-    @staticmethod
-    def distribution2histogram(dist_tensor, original_name, writer, iteration, quantization):
-        histogram = np.empty(shape=quantization)
-        cdf = 0
-        for i in range(dist_tensor.shape[1]):
-            prob = dist_tensor[0, i]
-            levels = int(round(prob*quantization))
-            if cdf + levels <= quantization & levels != 0:
-                histogram[cdf:levels] = i
-                cdf = cdf + levels
-        print('Cdf=', cdf)
-        print('Sum of all elements ', np.sum(dist_tensor))
-        writer.add_histogram('Output distribution for ' + original_name, histogram, iteration, bins='sturges')
 
     def __call__(self, n_seqs, seq_len, cond, spk, writer, original_name):
         # generation doesn't work with CUDNN for some reason
@@ -504,7 +491,7 @@ class Generator(Runner):
                     cond = Variable(cond).cuda()
                     spk = Variable(spk).cuda()
                 frame_level_outputs[tier_index] = self.run_rnn(
-                    rnn, prev_samples, upper_tier_conditioning, cond, spk
+                    rnn, prev_samples, upper_tier_conditioning, cond, spk, writer
                 )
             # print('frame out', frame_level_outputs)
             prev_samples = torch.autograd.Variable(
@@ -520,8 +507,6 @@ class Generator(Runner):
             sample_dist = self.model.sample_level_mlp(
                 prev_samples, upper_tier_conditioning
             ).squeeze(1).exp_().data
-            self.distribution2histogram(sample_dist.cpu().numpy(), original_name, writer,
-                                        iteration=i, quantization=int(1e10))
             sequences[:, i] = sample_dist.multinomial(1).squeeze(1)
 
         torch.backends.cudnn.enabled = cuda_enabled
