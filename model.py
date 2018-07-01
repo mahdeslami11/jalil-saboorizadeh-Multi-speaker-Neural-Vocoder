@@ -10,6 +10,8 @@ from torch.nn.utils import weight_norm
 
 import numpy as np
 
+import os
+
 verbose = False
 
 
@@ -204,6 +206,10 @@ class FrameLevelRNN(torch.nn.Module):
                 print('After expansion, conditioner has size: ', cond.size())
                 print('Compute speaker embedding for spk of size: ', spk.size())
             spk_embed = self.spk_embedding(spk.long())
+            print('File ', str(spk.cpu().data.numpy()), '.txt exists?')
+            if not os.path.isfile(str(spk.cpu().data.numpy())+'.txt'):
+                file = open(str(spk.cpu().data.numpy())+'.txt', 'w')
+                np.savetxt(file, spk_embed.cpu().data.numpy())
             if verbose:
                 print('Embedding has size: ', spk_embed.size())
             spk_expand = self.spk_expand(spk_embed.permute(0, 2, 1).float()).permute(0, 2, 1)
@@ -434,7 +440,7 @@ class Generator(Runner):
         super().__init__(model)
         self.cuda = cuda
 
-    def __call__(self, n_seqs, seq_len, cond, spk, file):
+    def __call__(self, n_seqs, seq_len, cond, spk):
         # generation doesn't work with CUDNN for some reason
 
         cuda_enabled = torch.backends.cudnn.enabled
@@ -507,7 +513,6 @@ class Generator(Runner):
                 prev_samples, upper_tier_conditioning
             ).squeeze(1).exp_().data
             sequences[:, i] = sample_dist.multinomial(1).squeeze(1)
-            np.savetxt(file, sample_dist.cpu().numpy(), delimiter=';')
         torch.backends.cudnn.enabled = cuda_enabled
 
         return self.model.dequantize(sequences[:, self.model.lookback:], self.model.q_levels)

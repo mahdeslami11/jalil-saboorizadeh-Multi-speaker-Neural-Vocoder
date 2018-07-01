@@ -240,7 +240,6 @@ def main(frame_sizes, **params):
         if original_name == "..":
             original_name = file_names[i].split('/')[3]
 
-        file = open(str(original_name)+'_distribution.txt', 'a')
         generator = RunGenerator(
             model=model,
             sample_rate=params['sample_rate'],
@@ -250,8 +249,7 @@ def main(frame_sizes, **params):
             spk_list=spk,
             speaker=speaker,
             checkpoints_path=f_name,
-            original_name=original_name,
-            file=file
+            original_name=original_name
          )
 
         generator(params['n_samples'], params['sample_length'], cond, speaker)
