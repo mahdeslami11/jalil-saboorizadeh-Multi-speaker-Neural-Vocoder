@@ -110,7 +110,6 @@ class RunGenerator:
                 self.filename,
                 samples[i, :], sr=self.sample_rate
             )
-        self.file.close()
 
 
 def main(frame_sizes, **params):
