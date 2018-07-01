@@ -207,10 +207,9 @@ class FrameLevelRNN(torch.nn.Module):
                 print('Compute speaker embedding for spk of size: ', spk.size())
             spk_embed = self.spk_embedding(spk.long())
             filename = ' '.join(map(str, spk.cpu().data.numpy().reshape(1))) + '.txt'
-            print('File ', filename, ' exists?')
             if not os.path.isfile(filename):
                 file = open(filename, 'w')
-                np.savetxt(file, spk_embed.cpu().data.numpy())
+                np.savetxt(file, spk_embed.cpu().data.numpy().reshape(6))
             if verbose:
                 print('Embedding has size: ', spk_embed.size())
             spk_expand = self.spk_expand(spk_embed.permute(0, 2, 1).float()).permute(0, 2, 1)
