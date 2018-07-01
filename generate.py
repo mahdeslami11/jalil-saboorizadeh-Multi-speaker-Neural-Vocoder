@@ -86,7 +86,7 @@ def load_model(checkpoint_path):
 
 class RunGenerator:
     def __init__(self, model, sample_rate, cuda, epoch, cond, spk_list, speaker,
-                 checkpoints_path, original_name, file):
+                 checkpoints_path, original_name):
         self.generate = Generator(model, cuda)
         self.sample_rate = sample_rate
         self.cuda = cuda
@@ -94,7 +94,6 @@ class RunGenerator:
         self.cond = cond
         self.speaker = speaker
         self.original_name = original_name
-        self.file = file
 
         path_split = checkpoints_path.split('/')
         self.filename = '/'.join(path_split[:2]) + '/samples/' + path_split[-1] + '_file-' + \
@@ -103,7 +102,7 @@ class RunGenerator:
 
     def __call__(self, n_samples, sample_length, cond, speaker):
         print('Generate', n_samples, 'of length', sample_length)
-        samples = self.generate(n_samples, sample_length, cond, speaker, self.file).cpu().numpy()
+        samples = self.generate(n_samples, sample_length, cond, speaker).cpu().numpy()
         for i in range(n_samples):
             print(self.filename)
 
