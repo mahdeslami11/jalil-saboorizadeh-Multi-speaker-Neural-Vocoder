@@ -209,7 +209,9 @@ class FrameLevelRNN(torch.nn.Module):
             filename = ' '.join(map(str, spk.cpu().data.numpy().reshape(1))) + '.txt'
             if not os.path.isfile(filename):
                 file = open(filename, 'w')
+                print('Embedding is: ', spk_embed.cpu().data.numpy().reshape(6))
                 np.savetxt(file, spk_embed.cpu().data.numpy().reshape(6))
+                file.close()
             if verbose:
                 print('Embedding has size: ', spk_embed.size())
             spk_expand = self.spk_expand(spk_embed.permute(0, 2, 1).float()).permute(0, 2, 1)
