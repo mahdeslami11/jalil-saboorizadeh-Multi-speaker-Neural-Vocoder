@@ -1,10 +1,10 @@
-source /veu/tfgveu7/env/bin/activate
+source env/bin/activate
 
-program="/veu/spascual/anaconda3/bin/tensorboard"
+program="/usr/anaconda3/bin/tensorboard"
 
 name=tboard
 
-CMD="/veu/spascual/anaconda3/bin/python $program --logdir=/veu4/tfgveu7/gan --port=11222"
+CMD="usr/anaconda3/bin/python $program --logdir=gan --port=11222"
 
 date
 

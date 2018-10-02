@@ -1,6 +1,4 @@
 #!/bin/bash
-cd /veu4/tfgveu7/
-
 experiment=$1
 
 if [ "${experiment,,}" = "samplernn" ]; then
