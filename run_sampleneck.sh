@@ -1,15 +1,11 @@
-cd /veu/tfgveu7/project/
-
 git fetch
 git reset --hard origin/bottle-neck
 
-cd /veu4/tfgveu7/
+source env/bin/activate
 
-source /veu/tfgveu7/env/bin/activate
+PRG_PY=train.py
 
-PRG_PY=/veu/tfgveu7/project/train.py
-
-DB_PATH=/veu/tfgveu7/project/tcstar/
+DB_PATH=tcstar/
 
 DB_WAV=wav/
 

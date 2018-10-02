@@ -1,5 +1,5 @@
 #!/bin/bash
-listdir=$(ls ~/project/veu4/results)
+listdir=$(ls results)
 blue='\033[0;34m'
 green='\033[0;32m'
 nc='\033[0m'
@@ -40,13 +40,10 @@ fi
 
 echo -e "Your branch based on the chosen experiment is ${green}$branch${nc}\n"
 
-cd /veu/tfgveu7/project/
 git fetch
 git reset --hard origin/$branch
 
-cd /veu4/tfgveu7/
-
-source /veu/tfgveu7/env/bin/activate
+source env/bin/activate
 
 PRG_PY=/veu/tfgveu7/project/generate.py
 
