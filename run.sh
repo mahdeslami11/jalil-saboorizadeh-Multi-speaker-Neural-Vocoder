@@ -5,8 +5,6 @@ if [ "${experiment,,}" = "samplernn" ]; then
 	run_samplernn.sh
 elif [ "${experiment,,}" = "samplernn-gan" ]; then
 	run_samplegan.sh
-elif [ "${experiment,,}" = "eigen-voice" ]; then
-	echo "Experiment is not yet implemented"
 elif [ "${experiment,,}" = "bottle-neck" ]; then
 	run_sampleneck.sh
 else
