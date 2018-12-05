@@ -30,7 +30,7 @@ Hear the audio generated with our best model [here](https://github.com/Barbany/M
 * [Train your model](#train-your-model)
 
 ## Baseline model
-The starting point of this project is an open-source PyTorch implementation of [SampleRNN: An Unconditional End-to-End Neural Audio Generation Model](https://arxiv.org/abs/1612.07837): https://github.com/deepsound-project/samplernn-pytorch.
+The starting point of this project is an open-source PyTorch implementation of [SampleRNN: An Unconditional End-to-End Neural Audio Generation Model](https://arxiv.org/abs/1612.07837) that can be found in https://github.com/deepsound-project/samplernn-pytorch.
 
 ![A visual representation of the SampleRNN architecture](http://deepsound.io/images/samplernn.png)
 
