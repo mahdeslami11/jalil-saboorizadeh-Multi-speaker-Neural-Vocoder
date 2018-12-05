@@ -30,11 +30,11 @@ Hear the audio generated with our best model [here](https://github.com/Barbany/M
 * [Train your model](#train-your-model)
 
 ## Baseline model
-The starting point of this project is an open-source PyTorch implementation of [SampleRNN: An Unconditional End-to-End Neural Audio Generation Model](https://arxiv.org/abs/1612.07837).
+The starting point of this project is an open-source PyTorch implementation of [SampleRNN: An Unconditional End-to-End Neural Audio Generation Model](https://arxiv.org/abs/1612.07837): https://github.com/deepsound-project/samplernn-pytorch.
 
 ![A visual representation of the SampleRNN architecture](http://deepsound.io/images/samplernn.png)
 
-It's based on the reference implementation in Theano provided in the same paper: https://github.com/soroushmehr/sampleRNN_ICLR2017. Unlike the Theano version, PyTorch code allows training models with arbitrary number of tiers, whereas the original implementation allows maximum 3 tiers. However, it doesn't have weight normalization and doesn't allow using LSTM units (only GRU). For more details and motivation behind rewriting this model to PyTorch, see our blog post: http://deepsound.io/samplernn_pytorch.html.
+It's based on the reference implementation in Theano provided in the same paper: https://github.com/soroushmehr/sampleRNN_ICLR2017. Unlike the Theano version, PyTorch code allows training models with arbitrary number of tiers, whereas the original implementation allows maximum 3 tiers. For more details and motivation behind the implementation of this model to PyTorch, see the blog post: http://deepsound.io/samplernn_pytorch.html.
 
 ## Dependencies
 
