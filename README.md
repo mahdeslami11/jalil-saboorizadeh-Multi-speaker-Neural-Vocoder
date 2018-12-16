@@ -1,6 +1,6 @@
 # Multi-speaker Neural Vocoder
 
-Welcome to the repository of my Bachelor's Thesis. My Bachelor's thesis basically consisted in building a speech synthesizer based on Recurrent Neural Networks capable of speaking with different Spanish voices. The baseline code was the Pytorch implementation of the SampleRNN paper. Under the supervision of Dr. Antonio Bonafonte and the help of the PhD candidate Santiago Pascual, we adapted this code and introduced some improvements listed in a paper that was accepted for the IBERSPEECH conference of 2018. Take a look at both the [thesis and the paper](https://github.com/Barbany/Multi-speaker-Neural-Vocoder/tree/master/doc). Please cite this work if it's useful for this research:
+Welcome to the repository of my Bachelor's Thesis. My Bachelor's thesis basically consisted in building a speech synthesizer based on Recurrent Neural Networks capable of speaking with different Spanish voices. The baseline code was the Pytorch implementation of the SampleRNN paper. Under the supervision of Dr. Antonio Bonafonte and the help of the PhD candidate Santiago Pascual, we adapted this code and introduced some improvements listed in a paper that was accepted for the IBERSPEECH conference of 2018. Take a look at both the [thesis and the paper](https://github.com/Barbany/Multi-speaker-Neural-Vocoder/tree/master/doc). Please cite this work if it's useful for your research:
 
 ```
 @bachelorsthesis{barbany2018thesis,
