@@ -13,7 +13,7 @@ Welcome to the repository of my Bachelor's Thesis. My Bachelor's thesis basicall
 
 ```
 @article{barbany2018paper,
-author = {{Barbany}, Oriol, Bonafonte, Antonio and Pascual, Santiago},
+author = {{Barbany}, Oriol and Bonafonte, Antonio and Pascual, Santiago},
 journal = {IberSpeech},
 title = {{Multi-Speaker Neural Vocoder}},
 year = {2018}
