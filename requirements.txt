@@ -33,7 +33,7 @@ scipy==1.1.0
 six==1.11.0
 tensorboard==1.8.0
 tensorboardX==1.2
-tensorflow==1.8.0
+tensorflow>=1.12.1
 tensorflow-tensorboard==1.5.1
 termcolor==1.1.0
 torch==0.4.0
