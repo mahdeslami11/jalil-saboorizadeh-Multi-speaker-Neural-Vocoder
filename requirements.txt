@@ -20,7 +20,7 @@ matplotlib==2.2.2
 natsort==5.3.2
 numba==0.38.0
 numpy==1.14.5
-Pillow==5.1.0
+Pillow==6.2.0
 pkg-resources==0.0.0
 protobuf==3.6.0
 pyparsing==2.2.0
