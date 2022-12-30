@@ -51,3 +51,7 @@ To train your model you need to run `run` followed by the name of the experiment
 A run script to monitor the project with the tool TensorBoard is also provided. Check the location of your tensoboard binaries, your python interpreter and the desired log directory. Also note that TensorBoard runs on a given port indicated in the same script. Ensure that this port is not blocked and make an SSH tunnel if you are working on a remote machine.
 
 The results - training log, loss plots, model checkpoints and generated samples will be saved in `results/`.
+
+target :
+
+1-The goal of this project was to build a speech synthesizer based on recurrent neural networks capable of speaking with different Spanish voices.
