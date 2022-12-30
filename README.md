@@ -52,6 +52,6 @@ A run script to monitor the project with the tool TensorBoard is also provided. 
 
 The results - training log, loss plots, model checkpoints and generated samples will be saved in `results/`.
 
-target :
+1-target :
 
-1-The goal of this project was to build a speech synthesizer based on recurrent neural networks capable of speaking with different Spanish voices.
+The goal of this project was to build a speech synthesizer based on recurrent neural networks capable of speaking with different Spanish voices.
