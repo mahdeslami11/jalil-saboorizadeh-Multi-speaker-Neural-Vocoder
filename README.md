@@ -55,3 +55,7 @@ The results - training log, loss plots, model checkpoints and generated samples 
 1-target :
 
 The goal of this project was to build a speech synthesizer based on recurrent neural networks capable of speaking with different Spanish voices.
+
+2-Description of innovation:
+
+Speaker-dependent normalization was not enough for voice conversion purposes, so more complex architectures were pro- . Nevertheless, human listeners preferred the speech modeled with speaker-dependent normalization and, given the similarity of the features normalized for each speaker, a better quantization could be applied for coding applications or for de- ployment of neural networks with limited resources.Whilst the speaker-dependent normalization itself doesn’t seem to improve the results obtained with the classical speaker-independent feature scaling, when combined with the look ahead approach, it achieves a 4 score with the male balanced dataset. To sum up, with the combination of the two proposals,a state-of-the-art MOS score have been achieved for a multi- speaker speech synthesis system. Both of that approaches were novelties introduced in this thesis and results show that they could be beneficial to other TTS systems as well as for a bunch of other applications involving features from different sources and modeling of no-real-time sequences.
