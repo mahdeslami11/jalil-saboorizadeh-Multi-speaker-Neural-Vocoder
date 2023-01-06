@@ -247,3 +247,16 @@ Speaker-dependent normalization was not enough for voice conversion purposes, so
 4-The result of changing and improving the evaluation of the output audio file :
 
 this project introduce FFTNet, a deep learning approach synthesizing audio waveforms. this approach builds on the recent WaveNet project, which showed that it was possible to synthesize a natural sounding audio waveform directly from a deep convolutional neural network. FFTNet offers two improvements over WaveNet. First it is substantially faster, allowing for real-time synthesis of audio waveforms. Second, when used as a vocoder, the resulting speech sounds more natural, as measured via a "mean opinion score" test. 
+
+5-Reference to the project :
+
+https://github.com/syang1993/FFTNet
+https://gfx.cs.princeton.edu/pubs/Jin_2018_FAR/
+
+6-introducing myself :
+
+My name is Jalil Sabourizadeh and I am studying for a master's degree in medical engineering and this project is for the digital signal processing course.
+
+7-The updated article file was uploaded on GitHub
+
+8-
