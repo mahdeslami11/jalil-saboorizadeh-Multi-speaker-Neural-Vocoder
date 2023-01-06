@@ -251,6 +251,7 @@ this project introduce FFTNet, a deep learning approach synthesizing audio wavef
 5-Reference to the project :
 
 https://github.com/syang1993/FFTNet
+
 https://gfx.cs.princeton.edu/pubs/Jin_2018_FAR/
 
 6-introducing myself :
