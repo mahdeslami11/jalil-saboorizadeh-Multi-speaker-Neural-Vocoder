@@ -263,3 +263,5 @@ My name is Jalil Sabourizadeh and I am studying for a master's degree in medical
 8-My explanation files about the project in Google Drive :
 
 https://drive.google.com/drive/folders/1LD2y1YpvpZu33SAhIlQrXnkPzrgX2BUj?usp=sharing
+
+The proposal file for the project : 
