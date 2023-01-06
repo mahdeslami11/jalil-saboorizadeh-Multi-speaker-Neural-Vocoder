@@ -1,0 +1,6 @@
+4-The result of changing and improving the evaluation of the output audio file :
+
+this project introduce FFTNet, a deep learning approach synthesizing audio waveforms. 
+this approach builds on the recent WaveNet project, which showed that it was possible to synthesize a natural sounding audio waveform directly from a deep convolutional neural network. 
+FFTNet offers two improvements over WaveNet. First it is substantially faster, allowing for real-time synthesis of audio waveforms. 
+Second, when used as a vocoder, the resulting speech sounds more natural, as measured via a "mean opinion score" test.
